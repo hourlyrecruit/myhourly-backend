@@ -2,6 +2,7 @@ package com.my_hourly.authentication.api.controller;
 
 import com.my_hourly.authentication.api.request.AdminRegisterRequest;
 import com.my_hourly.authentication.api.request.GrantRoleRequest;
+import com.my_hourly.authentication.api.request.UpdateUserStatusRequest;
 import com.my_hourly.authentication.api.response.RegisterResponse;
 import com.my_hourly.authentication.api.response.UserProfileResponse;
 import com.my_hourly.authentication.service.AdminService;
@@ -123,6 +124,47 @@ public class AdminController {
                         .success(true)
                         .message("User fetched successfully.")
                         .data(user)
+                        .build()
+        );
+
+    }
+
+    /**
+     * Delete a user by ID.
+     * Only SUPER_ADMIN can access this endpoint.
+     */
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
+            @PathVariable Long userId
+    ) {
+
+        adminService.deleteUser(userId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("User deleted successfully.")
+                        .build()
+        );
+
+    }
+
+    /**
+     * Update the status of an existing user (ACTIVE, INACTIVE, LOCKED, DISABLED, PASSWORD_EXPIRED).
+     * Only SUPER_ADMIN can access this endpoint.
+     */
+    @PatchMapping("/users/{userId}/status")
+    public ResponseEntity<ApiResponse<Void>> updateUserStatus(
+            @PathVariable Long userId,
+            @Valid @RequestBody UpdateUserStatusRequest request
+    ) {
+
+        adminService.updateUserStatus(userId, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("User status updated to '" + request.getStatus() + "' successfully.")
                         .build()
         );
 

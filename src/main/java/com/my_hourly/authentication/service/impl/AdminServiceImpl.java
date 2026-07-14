@@ -2,6 +2,7 @@ package com.my_hourly.authentication.service.impl;
 
 import com.my_hourly.authentication.api.request.AdminRegisterRequest;
 import com.my_hourly.authentication.api.request.GrantRoleRequest;
+import com.my_hourly.authentication.api.request.UpdateUserStatusRequest;
 import com.my_hourly.authentication.api.response.RegisterResponse;
 import com.my_hourly.authentication.api.response.UserProfileResponse;
 import com.my_hourly.authentication.entity.*;
@@ -13,11 +14,13 @@ import com.my_hourly.common.enums.RoleName;
 import com.my_hourly.common.exception.BadRequestException;
 import com.my_hourly.common.exception.DuplicateResourceException;
 import com.my_hourly.common.exception.ResourceNotFoundException;
+import com.my_hourly.security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 public class AdminServiceImpl implements AdminService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
@@ -138,6 +142,67 @@ public class AdminServiceImpl implements AdminService {
 
     private UserProfileResponse buildUserProfile(User user) {
         return userMapper.toUserProfile(user);
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Long userId) {
+
+        if (SecurityUtils.getCurrentUserId().equals(userId)) {
+            throw new BadRequestException(
+                    "You cannot delete your own account.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with id: " + userId,
+                        ErrorCode.RESOURCE_NOT_FOUND
+                ));
+
+        // Delete associated refresh tokens first
+        refreshTokenRepository.deleteByUser(user);
+
+        // Delete the user
+        userRepository.delete(user);
+
+    }
+
+    @Override
+    @Transactional
+    public void updateUserStatus(Long userId, UpdateUserStatusRequest request) {
+
+        if (SecurityUtils.getCurrentUserId().equals(userId)) {
+            throw new BadRequestException(
+                    "You cannot change your own account status.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with id: " + userId,
+                        ErrorCode.RESOURCE_NOT_FOUND
+                ));
+
+        user.setUserStatus(request.getStatus());
+        userRepository.save(user);
+
+        // Revoke all active refresh tokens if user is no longer active
+        if (request.getStatus() != UserStatus.ACTIVE) {
+            List<RefreshToken> activeTokens =
+                    refreshTokenRepository.findByUserAndRevokedFalse(user);
+            if (!activeTokens.isEmpty()) {
+                LocalDateTime now = LocalDateTime.now();
+                activeTokens.forEach(token -> {
+                    token.setRevoked(true);
+                    token.setRevokedAt(now);
+                });
+                refreshTokenRepository.saveAll(activeTokens);
+            }
+        }
+
     }
 
 }

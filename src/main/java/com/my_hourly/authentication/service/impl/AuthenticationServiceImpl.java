@@ -74,6 +74,34 @@ public class AuthenticationServiceImpl
                     ErrorCode.INVALID_CREDENTIALS
             );
 
+        } catch (org.springframework.security.authentication.DisabledException ex) {
+
+            throw new UnauthorizedException(
+                    "User is inactive or disabled.",
+                    ErrorCode.UNAUTHORIZED
+            );
+
+        } catch (org.springframework.security.authentication.LockedException ex) {
+
+            throw new UnauthorizedException(
+                    "User account is locked.",
+                    ErrorCode.UNAUTHORIZED
+            );
+
+        } catch (org.springframework.security.authentication.CredentialsExpiredException ex) {
+
+            throw new UnauthorizedException(
+                    "User credentials/password has expired.",
+                    ErrorCode.UNAUTHORIZED
+            );
+
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+
+            throw new UnauthorizedException(
+                    "Authentication failed: " + ex.getMessage(),
+                    ErrorCode.UNAUTHORIZED
+            );
+
         }
     }
 
@@ -243,6 +271,13 @@ public class AuthenticationServiceImpl
                 validateRefreshToken(request.getRefreshToken());
 
         User user = refreshToken.getUser();
+
+        if (user.getUserStatus() != UserStatus.ACTIVE) {
+            throw new UnauthorizedException(
+                    "User is not active.",
+                    ErrorCode.UNAUTHORIZED
+            );
+        }
 
         String accessToken =
                 generateAccessToken(user);
