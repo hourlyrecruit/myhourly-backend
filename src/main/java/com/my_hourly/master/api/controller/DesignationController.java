@@ -6,6 +6,8 @@ import com.my_hourly.master.api.request.CreateDesignationRequest;
 import com.my_hourly.master.api.request.UpdateDesignationRequest;
 import com.my_hourly.master.api.response.DesignationResponse;
 import com.my_hourly.master.service.DesignationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,12 +20,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/designations")
 @RequiredArgsConstructor
+@Tag(name = "Designation Controller", description = "Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
 public class DesignationController {
 
     private final DesignationService designationService;
 
     @PostMapping
     @PreAuthorize("hasAuthority('designation:create')")
+    @Operation(description = "Add Designation like: HR Manager, IT Manager, Software Engineer, QA Engineer, Design Engineer etc.")
     public ResponseEntity<ApiResponse<DesignationResponse>> create(
             @Valid @RequestBody CreateDesignationRequest request) {
 

@@ -10,6 +10,8 @@ import com.my_hourly.authentication.api.response.RegisterResponse;
 import com.my_hourly.authentication.api.response.UserProfileResponse;
 import com.my_hourly.authentication.service.AuthenticationService;
 import com.my_hourly.common.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,10 +21,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication Controller", description = "Public Endpoints: Registration, Login, Logout, Refresh Token, Change Password, CurrentUser")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
+    @Operation(description = "Register Employee")
     @PostMapping("/register/employee")
     public ResponseEntity<ApiResponse<RegisterResponse>> registerEmployee(
             @Valid @RequestBody EmployeeRegisterRequest request
@@ -41,6 +45,7 @@ public class AuthenticationController {
 
     }
 
+    @Operation(description = "User login")
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
             @Valid @RequestBody LoginRequest request
@@ -59,6 +64,7 @@ public class AuthenticationController {
 
     }
 
+    @Operation(description = "Refresh Token")
     @PostMapping("/token/refresh")
     public ResponseEntity<ApiResponse<RefreshTokenResponse>> refreshToken(
             @Valid @RequestBody RefreshTokenRequest request
@@ -76,6 +82,7 @@ public class AuthenticationController {
         );
     }
 
+    @Operation(description = "User Logout")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @Valid @RequestBody RefreshTokenRequest request,
@@ -97,6 +104,7 @@ public class AuthenticationController {
         );
     }
 
+    @Operation(description = "Change Password")
     @PostMapping("/change-password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @Valid @RequestBody ChangePasswordRequest request
@@ -112,6 +120,7 @@ public class AuthenticationController {
         );
     }
 
+    @Operation(description = "Getting About User")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getCurrentUser() {
 

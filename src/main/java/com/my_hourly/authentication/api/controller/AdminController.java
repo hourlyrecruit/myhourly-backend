@@ -8,11 +8,14 @@ import com.my_hourly.authentication.api.response.UserProfileResponse;
 import com.my_hourly.authentication.service.AdminService;
 import com.my_hourly.common.enums.RoleName;
 import com.my_hourly.common.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,15 +24,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SUPER_ADMIN')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER')")
+@Tag(name = "Admin Controller", description = "Only SUPER_ADMIN and MANAGER can access these endpoint.")
 public class AdminController {
 
     private final AdminService adminService;
 
-    /**
-     * Register a new user with a specific role (any RoleName).
-     * Only SUPER_ADMIN can access this endpoint.
-     */
+    @Operation(description = "super_admin and manager can add any user")
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> registerUser(
             @Valid @RequestBody AdminRegisterRequest request
@@ -47,10 +48,7 @@ public class AdminController {
 
     }
 
-    /**
-     * Grant a role to an existing user.
-     * Only SUPER_ADMIN can access this endpoint.
-     */
+    @Operation(description = "Change/Grant a role to an existing user.")
     @PostMapping("/users/{userId}/roles")
     public ResponseEntity<ApiResponse<Void>> grantRole(
             @PathVariable Long userId,
@@ -68,10 +66,8 @@ public class AdminController {
 
     }
 
-    /**
-     * Revoke a role from an existing user.
-     * Only SUPER_ADMIN can access this endpoint.
-     */
+
+    @Operation(description = "Change/Grant a role to an existing user.")
     @DeleteMapping("/users/{userId}/roles/{roleName}")
     public ResponseEntity<ApiResponse<Void>> revokeRole(
             @PathVariable Long userId,
@@ -89,10 +85,8 @@ public class AdminController {
 
     }
 
-    /**
-     * List all users with their roles and permissions.
-     * Only SUPER_ADMIN can access this endpoint.
-     */
+
+    @Operation(description = "List all users with their roles and permissions.")
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<List<UserProfileResponse>>> getAllUsers() {
 
@@ -108,10 +102,7 @@ public class AdminController {
 
     }
 
-    /**
-     * Get a single user by their ID.
-     * Only SUPER_ADMIN can access this endpoint.
-     */
+    @Operation(description = "Get a single user by their ID.")
     @GetMapping("/users/{userId}")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getUserById(
             @PathVariable Long userId
@@ -129,10 +120,7 @@ public class AdminController {
 
     }
 
-    /**
-     * Delete a user by ID.
-     * Only SUPER_ADMIN can access this endpoint.
-     */
+    @Operation(description = "Delete a user by ID.")
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
             @PathVariable Long userId
@@ -149,10 +137,8 @@ public class AdminController {
 
     }
 
-    /**
-     * Update the status of an existing user (ACTIVE, INACTIVE, LOCKED, DISABLED, PASSWORD_EXPIRED).
-     * Only SUPER_ADMIN can access this endpoint.
-     */
+
+    @Operation(description = "Update the status of an existing user (ACTIVE, INACTIVE, LOCKED, DISABLED, PASSWORD_EXPIRED).")
     @PatchMapping("/users/{userId}/status")
     public ResponseEntity<ApiResponse<Void>> updateUserStatus(
             @PathVariable Long userId,

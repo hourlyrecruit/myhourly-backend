@@ -6,6 +6,8 @@ import com.my_hourly.master.api.request.CreateJobTitleRequest;
 import com.my_hourly.master.api.request.UpdateJobTitleRequest;
 import com.my_hourly.master.api.response.JobTitleResponse;
 import com.my_hourly.master.service.JobTitleService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -15,12 +17,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/job-titles")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('SUPER_ADMIN, MANAGER, HR_ADMIN')")
+@Tag(name = "JobTitle Controller", description = "Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
 public class JobTitleController {
 
     private final JobTitleService jobTitleService;
 
     @PostMapping
     @PreAuthorize("hasAuthority('job-title:create')")
+    @Operation(description = "Add JobTitle like: Backend Engineer, Frontend Engineer, Full Stack Engineer, Software Developer, DevOps Engineer etc.")
     public ResponseEntity<ApiResponse<JobTitleResponse>> create(
             @Valid @RequestBody CreateJobTitleRequest request) {
 

@@ -48,6 +48,7 @@ public class CustomUserDetailsService
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
             switch (role) {
                 case SUPER_ADMIN:
+                case MANAGER:
                 case HR_ADMIN:
                     authorities.add(new SimpleGrantedAuthority("department:create"));
                     authorities.add(new SimpleGrantedAuthority("department:view"));
@@ -58,7 +59,6 @@ public class CustomUserDetailsService
                     authorities.add(new SimpleGrantedAuthority("designation:update"));
                     authorities.add(new SimpleGrantedAuthority("designation:delete"));
                     break;
-                case MANAGER:
                 case EMPLOYEE:
                     authorities.add(new SimpleGrantedAuthority("department:view"));
                     authorities.add(new SimpleGrantedAuthority("designation:view"));
