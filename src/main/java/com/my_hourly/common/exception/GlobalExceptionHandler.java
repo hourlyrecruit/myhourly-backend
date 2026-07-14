@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleUnexpected(
             Exception exception,
             HttpServletRequest request) {
-
+        exception.printStackTrace(); // Log the unexpected exception details
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseFactory.build(
                         "An unexpected error occurred.",

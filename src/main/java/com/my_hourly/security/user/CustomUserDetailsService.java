@@ -1,11 +1,6 @@
 package com.my_hourly.security.user;
 
-import com.my_hourly.authentication.entity.Role;
-import com.my_hourly.authentication.entity.RolePermission;
-import com.my_hourly.authentication.entity.UserRole;
-import com.my_hourly.authentication.repository.RolePermissionRepository;
 import com.my_hourly.authentication.repository.UserRepository;
-import com.my_hourly.authentication.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,9 +20,6 @@ public class CustomUserDetailsService
         implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final UserRoleRepository userRoleRepository;
-
-    private final RolePermissionRepository rolePermissionRepository;
 
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail)
@@ -50,41 +42,32 @@ public class CustomUserDetailsService
     }
 
     private Collection<GrantedAuthority> getAuthorities(User user) {
-
         Set<GrantedAuthority> authorities = new HashSet<>();
-
-        List<UserRole> userRoles =
-                userRoleRepository.findAllByUser(user);
-
-        for (UserRole userRole : userRoles) {
-
-            Role role = userRole.getRole();
-
-            authorities.add(
-                    new SimpleGrantedAuthority(
-                            "ROLE_" + role.getName()
-                    )
-            );
-
-            List<RolePermission> rolePermissions =
-                    rolePermissionRepository.findAllByRole(role);
-
-            for (RolePermission rolePermission : rolePermissions) {
-
-                authorities.add(
-                        new SimpleGrantedAuthority(
-                                rolePermission
-                                        .getPermission()
-                                        .getName()
-                        )
-                );
-
+        com.my_hourly.common.enums.RoleName role = user.getRole();
+        if (role != null) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
+            switch (role) {
+                case SUPER_ADMIN:
+                case HR_ADMIN:
+                    authorities.add(new SimpleGrantedAuthority("department:create"));
+                    authorities.add(new SimpleGrantedAuthority("department:view"));
+                    authorities.add(new SimpleGrantedAuthority("department:update"));
+                    authorities.add(new SimpleGrantedAuthority("department:delete"));
+                    authorities.add(new SimpleGrantedAuthority("designation:create"));
+                    authorities.add(new SimpleGrantedAuthority("designation:view"));
+                    authorities.add(new SimpleGrantedAuthority("designation:update"));
+                    authorities.add(new SimpleGrantedAuthority("designation:delete"));
+                    break;
+                case MANAGER:
+                case EMPLOYEE:
+                    authorities.add(new SimpleGrantedAuthority("department:view"));
+                    authorities.add(new SimpleGrantedAuthority("designation:view"));
+                    break;
+                default:
+                    break;
             }
-
         }
-
         return authorities;
-
     }
 
 }

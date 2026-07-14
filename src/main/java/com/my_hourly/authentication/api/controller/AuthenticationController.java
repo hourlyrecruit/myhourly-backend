@@ -1,15 +1,18 @@
 package com.my_hourly.authentication.api.controller;
 
 import com.my_hourly.authentication.api.request.ChangePasswordRequest;
+import com.my_hourly.authentication.api.request.EmployeeRegisterRequest;
 import com.my_hourly.authentication.api.request.LoginRequest;
 import com.my_hourly.authentication.api.request.RefreshTokenRequest;
 import com.my_hourly.authentication.api.response.LoginResponse;
 import com.my_hourly.authentication.api.response.RefreshTokenResponse;
+import com.my_hourly.authentication.api.response.RegisterResponse;
 import com.my_hourly.authentication.api.response.UserProfileResponse;
 import com.my_hourly.authentication.service.AuthenticationService;
 import com.my_hourly.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +22,24 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+
+    @PostMapping("/register/employee")
+    public ResponseEntity<ApiResponse<RegisterResponse>> registerEmployee(
+            @Valid @RequestBody EmployeeRegisterRequest request
+    ) {
+
+        RegisterResponse response =
+                authenticationService.registerEmployee(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse.<RegisterResponse>builder()
+                        .success(true)
+                        .message("Employee registered successfully.")
+                        .data(response)
+                        .build()
+        );
+
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(

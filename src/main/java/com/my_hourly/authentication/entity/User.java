@@ -5,8 +5,9 @@ import jakarta.persistence.Entity;
 import lombok.*;
 import jakarta.persistence.*;
 
+import com.my_hourly.common.enums.RoleName;
 import java.time.LocalDateTime;
-import java.util.UUID;
+
 
 @Getter
 @Setter
@@ -14,17 +15,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(
-        name = "users",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_user_username", columnNames = "username"),
-                @UniqueConstraint(name = "uk_user_email", columnNames = "email")
-        }
-)
+@Table(name = "users")
 public class User extends BaseEntity {
 
     @Column(name = "employee_id")
-    private UUID employeeId;
+    private Long employeeId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 30)
+    private RoleName role;
 
     @Column(nullable = false, length = 50)
     private String username;

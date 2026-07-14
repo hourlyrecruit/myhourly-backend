@@ -1,32 +1,33 @@
 package com.my_hourly.common.entity;
 
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
+@Access(AccessType.FIELD)
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, updatable = false)
-    private UUID id;
+    private Long id;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -37,10 +38,10 @@ public abstract class BaseEntity {
     private LocalDateTime updatedAt;
 
     @Column(name = "created_by")
-    private UUID createdBy;
+    private Long createdBy;
 
     @Column(name = "updated_by")
-    private UUID updatedBy;
+    private Long updatedBy;
 
     @Version
     @Column(name = "version")

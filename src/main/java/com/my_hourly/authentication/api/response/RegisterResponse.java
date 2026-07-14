@@ -1,31 +1,26 @@
 package com.my_hourly.authentication.api.response;
 
-import com.my_hourly.authentication.entity.UserStatus;
 import com.my_hourly.common.enums.RoleName;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserProfileResponse {
+public class RegisterResponse {
 
-    private Long id;
-
-    private Long employeeId;
+    private Long userId;
 
     private String username;
 
     private String email;
 
-    private UserStatus userStatus;
-
     private List<RoleName> roles;
-
-    private List<String> permissions;
 
 }

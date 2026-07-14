@@ -1,21 +1,22 @@
 package com.my_hourly.authentication.service.impl;
 
 import com.my_hourly.authentication.api.request.ChangePasswordRequest;
+import com.my_hourly.authentication.api.request.EmployeeRegisterRequest;
 import com.my_hourly.authentication.api.request.LoginRequest;
 import com.my_hourly.authentication.api.request.RefreshTokenRequest;
 import com.my_hourly.authentication.api.response.LoginResponse;
 import com.my_hourly.authentication.api.response.RefreshTokenResponse;
+import com.my_hourly.authentication.api.response.RegisterResponse;
 import com.my_hourly.authentication.api.response.UserProfileResponse;
 import com.my_hourly.authentication.entity.*;
 import com.my_hourly.authentication.mapper.AuthenticationMapper;
 import com.my_hourly.authentication.mapper.UserMapper;
 import com.my_hourly.authentication.repository.RefreshTokenRepository;
-import com.my_hourly.authentication.repository.RolePermissionRepository;
 import com.my_hourly.authentication.repository.UserRepository;
-import com.my_hourly.authentication.repository.UserRoleRepository;
 import com.my_hourly.authentication.service.AuthenticationService;
 import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.enums.RoleName;
+import com.my_hourly.common.exception.DuplicateResourceException;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.common.exception.UnauthorizedException;
 import com.my_hourly.common.exception.ValidationException;
@@ -45,20 +46,11 @@ public class AuthenticationServiceImpl
     private final JwtService jwtService;
 
     private final UserRepository userRepository;
-
-    private final UserRoleRepository userRoleRepository;
-
     private final RefreshTokenRepository refreshTokenRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final AuthenticationMapper authenticationMapper;
-
     private final UserMapper userMapper;
-
     private final JwtProperties jwtProperties;
-
-    private final RolePermissionRepository rolePermissionRepository;
 
 
     private void authenticate(LoginRequest request) {
@@ -150,11 +142,8 @@ public class AuthenticationServiceImpl
             String refreshToken
     ) {
 
-        List<UserRole> userRoles =
-                userRoleRepository.findByUserId(user.getId());
-
         UserProfileResponse userProfile =
-                userMapper.toUserProfile(user, userRoles);
+                userMapper.toUserProfile(user);
 
         return authenticationMapper.toLoginResponse(
                 accessToken,
@@ -162,6 +151,50 @@ public class AuthenticationServiceImpl
                 jwtProperties.getAccessTokenExpiration(),
                 userProfile
         );
+
+    }
+
+    @Override
+    @Transactional
+    public RegisterResponse registerEmployee(EmployeeRegisterRequest request) {
+
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new DuplicateResourceException(
+                    "Username '" + request.getUsername() + "' is already taken.",
+                    ErrorCode.USER_ALREADY_EXISTS
+            );
+        }
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException(
+                    "Email '" + request.getEmail() + "' is already registered.",
+                    ErrorCode.USER_ALREADY_EXISTS
+            );
+        }
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new ValidationException(
+                    "Password and confirm password do not match.",
+                    ErrorCode.PASSWORD_MISMATCH
+            );
+        }
+
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .userStatus(UserStatus.ACTIVE)
+                .role(RoleName.EMPLOYEE)
+                .build();
+
+        userRepository.save(user);
+
+        return RegisterResponse.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .roles(List.of(RoleName.EMPLOYEE))
+                .build();
 
     }
 
@@ -362,43 +395,6 @@ public class AuthenticationServiceImpl
     }
 
     private UserProfileResponse buildUserProfile(User user) {
-
-        List<UserRole> userRoles =
-                userRoleRepository.findAllByUser(user);
-
-        List<RoleName> roles = userRoles.stream()
-                .map(UserRole::getRole)
-                .map(Role::getName)
-                .toList();
-
-        Set<String> permissions = new HashSet<>();
-
-        for (UserRole userRole : userRoles) {
-
-            List<RolePermission> rolePermissions =
-                    rolePermissionRepository.findAllByRole(
-                            userRole.getRole()
-                    );
-
-            rolePermissions.forEach(rolePermission ->
-                    permissions.add(
-                            rolePermission
-                                    .getPermission()
-                                    .getName()
-                    )
-            );
-
-        }
-
-        return UserProfileResponse.builder()
-                .id(user.getId())
-                .employeeId(user.getEmployeeId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .userStatus(user.getUserStatus())
-                .roles(roles)
-                .permissions(new ArrayList<>(permissions))
-                .build();
-
+        return userMapper.toUserProfile(user);
     }
 }

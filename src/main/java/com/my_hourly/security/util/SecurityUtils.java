@@ -6,7 +6,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.UUID;
+
 
 public final class SecurityUtils {
 
@@ -50,7 +50,7 @@ public final class SecurityUtils {
         return getCurrentUserDetails().getUser();
     }
 
-    public static UUID getCurrentUserId() {
+    public static Long getCurrentUserId() {
         return getCurrentUser().getId();
     }
 
