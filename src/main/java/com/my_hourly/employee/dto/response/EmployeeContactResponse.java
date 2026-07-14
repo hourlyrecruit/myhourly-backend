@@ -1,54 +1,36 @@
-package com.my_hourly.employee.entity;
+package com.my_hourly.employee.dto.response;
 
-import jakarta.persistence.*;
+public class EmployeeContactResponse {
 
-@Entity
-@Table(name = "employee_contacts")
-public class EmployeeContact {
-
-   
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    
     private Long id;
 
     
 
-    @OneToOne
-    @JoinColumn(name = "employee_id", nullable = false)
-    private Employee employee;
-
-    
-
-    @Column(name = "employee_code", nullable = false, unique = true)
     private String employeeCode;
 
-    
-    @Column(name = "mobile_number", nullable = false)
+   
     private String mobileNumber;
 
-    @Column(name = "office_email", nullable = false)
     private String officeEmail;
 
-    @Column(name = "personal_email")
     private String personalEmail;
 
+   
 
+    public EmployeeContactResponse() {
 
-    public EmployeeContact() {
     }
 
     
 
-    public EmployeeContact(Long id,
-                           Employee employee,
-                           String employeeCode,
-                           String mobileNumber,
-                           String officeEmail,
-                           String personalEmail) {
+    public EmployeeContactResponse(Long id,
+                                   String employeeCode,
+                                   String mobileNumber,
+                                   String officeEmail,
+                                   String personalEmail) {
 
         this.id = id;
-        this.employee = employee;
         this.employeeCode = employeeCode;
         this.mobileNumber = mobileNumber;
         this.officeEmail = officeEmail;
@@ -63,14 +45,6 @@ public class EmployeeContact {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
     }
 
     public String getEmployeeCode() {
@@ -104,4 +78,5 @@ public class EmployeeContact {
     public void setPersonalEmail(String personalEmail) {
         this.personalEmail = personalEmail;
     }
+
 }

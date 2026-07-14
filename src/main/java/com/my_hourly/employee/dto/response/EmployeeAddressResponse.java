@@ -1,67 +1,57 @@
-package com.my_hourly.employee.entity;
+package com.my_hourly.employee.dto.response;
 
-import jakarta.persistence.*;
+public class EmployeeAddressResponse {
 
-@Entity
-@Table(name = "employee_addresses")
-public class EmployeeAddress {
+    // =====================================
+    // Primary Key
+    // =====================================
 
-    
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    
+    // =====================================
+    // Employee Details
+    // =====================================
 
-    @OneToOne
-    @JoinColumn(name = "employee_id", nullable = false)
-    private Employee employee;
-
-    
-
-    @Column(name = "employee_code", nullable = false, unique = true)
     private String employeeCode;
 
-   
+    // =====================================
+    // Address Details
+    // =====================================
 
-    @Column(name = "current_address", nullable = false, length = 500)
     private String currentAddress;
 
-    @Column(name = "permanent_address", length = 500)
     private String permanentAddress;
 
-    @Column(name = "city", nullable = false)
     private String city;
 
-    @Column(name = "state", nullable = false)
     private String state;
 
-    @Column(name = "country", nullable = false)
     private String country;
 
-    @Column(name = "pincode", nullable = false)
     private String pincode;
 
-    
+    // =====================================
+    // Default Constructor
+    // =====================================
 
-    public EmployeeAddress() {
+    public EmployeeAddressResponse() {
+
     }
 
-   
+    // =====================================
+    // Parameterized Constructor
+    // =====================================
 
-    public EmployeeAddress(Long id,
-                           Employee employee,
-                           String employeeCode,
-                           String currentAddress,
-                           String permanentAddress,
-                           String city,
-                           String state,
-                           String country,
-                           String pincode) {
+    public EmployeeAddressResponse(Long id,
+                                   String employeeCode,
+                                   String currentAddress,
+                                   String permanentAddress,
+                                   String city,
+                                   String state,
+                                   String country,
+                                   String pincode) {
 
         this.id = id;
-        this.employee = employee;
         this.employeeCode = employeeCode;
         this.currentAddress = currentAddress;
         this.permanentAddress = permanentAddress;
@@ -71,7 +61,9 @@ public class EmployeeAddress {
         this.pincode = pincode;
     }
 
-    
+    // =====================================
+    // Getters & Setters
+    // =====================================
 
     public Long getId() {
         return id;
@@ -79,14 +71,6 @@ public class EmployeeAddress {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
     }
 
     public String getEmployeeCode() {

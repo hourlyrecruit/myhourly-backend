@@ -1,68 +1,44 @@
-package com.my_hourly.employee.entity;
+package com.my_hourly.employee.dto.request;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "employee_educations")
-public class Education {
-
-   
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class EducationRequest {
 
     
 
-    @ManyToOne
-    @JoinColumn(name = "employee_id", nullable = false)
-    private Employee employee;
-
-    
-
-    @Column(name = "employee_code", nullable = false)
     private String employeeCode;
 
     
-    @Column(name = "qualification", nullable = false)
+
     private String qualification;
 
-    @Column(name = "specialization")
     private String specialization;
 
-    @Column(name = "college_name")
     private String collegeName;
 
-    @Column(name = "university_name")
     private String universityName;
 
-    @Column(name = "percentage")
     private Double percentage;
 
-    @Column(name = "cgpa")
     private Double cgpa;
 
-    @Column(name = "passing_year")
     private Integer passingYear;
 
     
 
-    public Education() {
+    public EducationRequest() {
+
     }
 
-    public Education(Long id,
-                     Employee employee,
-                     String employeeCode,
-                     String qualification,
-                     String specialization,
-                     String collegeName,
-                     String universityName,
-                     Double percentage,
-                     Double cgpa,
-                     Integer passingYear) {
+    
 
-        this.id = id;
-        this.employee = employee;
+    public EducationRequest(String employeeCode,
+                            String qualification,
+                            String specialization,
+                            String collegeName,
+                            String universityName,
+                            Double percentage,
+                            Double cgpa,
+                            Integer passingYear) {
+
         this.employeeCode = employeeCode;
         this.qualification = qualification;
         this.specialization = specialization;
@@ -73,23 +49,7 @@ public class Education {
         this.passingYear = passingYear;
     }
 
-   
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
+    
 
     public String getEmployeeCode() {
         return employeeCode;
@@ -154,4 +114,5 @@ public class Education {
     public void setPassingYear(Integer passingYear) {
         this.passingYear = passingYear;
     }
+
 }

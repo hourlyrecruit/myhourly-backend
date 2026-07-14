@@ -1,61 +1,39 @@
-package com.my_hourly.employee.entity;
+package com.my_hourly.employee.dto.request;
 
-import jakarta.persistence.*;
+public class EmployeeProfileRequest {
 
-@Entity
-@Table(name = "employee_profiles")
-public class EmployeeProfile {
+   
 
-  
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-  
-    @OneToOne
-    @JoinColumn(name = "employee_id", nullable = false)
-    private Employee employee;
-
-    
-
-    @Column(name = "employee_code", nullable = false)
     private String employeeCode;
 
     
 
-    @Column(name = "profile_photo")
     private String profilePhoto;
 
-    @Column(name = "blood_group")
     private String bloodGroup;
 
-    @Column(name = "marital_status")
     private String maritalStatus;
 
-    @Column(name = "nationality")
     private String nationality;
 
     
 
-    @Column(name = "aadhaar_number", unique = true)
     private String aadhaarNumber;
 
-    @Column(name = "pan_number", unique = true)
     private String panNumber;
 
-    @Column(name = "passport_number")
     private String passportNumber;
 
     
-    public EmployeeProfile() {
+   
+
+    public EmployeeProfileRequest() {
 
     }
 
     
 
-    public EmployeeProfile(Long id,
-            Employee employee,
-            String employeeCode,
+    public EmployeeProfileRequest(String employeeCode,
             String profilePhoto,
             String bloodGroup,
             String maritalStatus,
@@ -64,8 +42,6 @@ public class EmployeeProfile {
             String panNumber,
             String passportNumber) {
 
-        this.id = id;
-        this.employee = employee;
         this.employeeCode = employeeCode;
         this.profilePhoto = profilePhoto;
         this.bloodGroup = bloodGroup;
@@ -77,22 +53,6 @@ public class EmployeeProfile {
     }
 
     
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
 
     public String getEmployeeCode() {
         return employeeCode;

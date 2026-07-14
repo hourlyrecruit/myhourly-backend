@@ -1,83 +1,55 @@
-package com.my_hourly.employee.entity;
+package com.my_hourly.employee.dto.response;
 
 import java.time.LocalDate;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "employees")
-public class Employee {
+public class EmployeeResponse {
 
     
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-  
-    @Column(name = "employee_code", nullable = false, unique = true)
+    
     private String employeeCode;
 
-    
-    @Column(name = "employee_name", nullable = false)
+   
     private String name;
 
- 
-    @Column(name = "email", nullable = false, unique = true)
+    
     private String email;
 
    
-    @Column(name = "mobile_number", nullable = false, unique = true)
     private String mobileNumber;
 
-    @Column(name = "date_of_birth")
+    
     private LocalDate dateOfBirth;
 
-  
-    @Column(name = "gender")
+   
     private String gender;
 
-    @Column(name = "joining_date")
+   
     private LocalDate joiningDate;
 
-   
-    @Column(name = "department_name")
+  
     private String departmentName;
 
    
-    @Column(name = "designation_name")
     private String designationName;
 
-   
-
-    @Column(name = "employment_type")
+    
     private String employmentType;
 
     
-
-    @Column(name = "employee_status")
     private String status;
 
-    
-
-    public Employee() {
-
+   
+    public EmployeeResponse() {
     }
 
-    
-
-    public Employee(Long id,
-                    String employeeCode,
-                    String name,
-                    String email,
-                    String mobileNumber,
-                    LocalDate dateOfBirth,
-                    String gender,
-                    LocalDate joiningDate,
-                    String departmentName,
-                    String designationName,
-                    String employmentType,
-                    String status) {
+   
+    public EmployeeResponse(Long id, String employeeCode, String name,
+            String email, String mobileNumber, LocalDate dateOfBirth,
+            String gender, LocalDate joiningDate,
+            String departmentName, String designationName,
+            String employmentType, String status) {
 
         this.id = id;
         this.employeeCode = employeeCode;
