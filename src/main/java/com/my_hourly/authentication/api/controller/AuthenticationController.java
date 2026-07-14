@@ -78,10 +78,16 @@ public class AuthenticationController {
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
-            @Valid @RequestBody RefreshTokenRequest request
+            @Valid @RequestBody RefreshTokenRequest request,
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader
     ) {
 
-        authenticationService.logout(request.getRefreshToken());
+        String accessToken = null;
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            accessToken = authorizationHeader.substring(7);
+        }
+
+        authenticationService.logout(accessToken, request.getRefreshToken());
 
         return ResponseEntity.ok(
                 ApiResponse.<Void>builder()

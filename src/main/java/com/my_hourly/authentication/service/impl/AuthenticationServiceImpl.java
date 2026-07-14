@@ -12,6 +12,8 @@ import com.my_hourly.authentication.entity.*;
 import com.my_hourly.authentication.mapper.AuthenticationMapper;
 import com.my_hourly.authentication.mapper.UserMapper;
 import com.my_hourly.authentication.repository.RefreshTokenRepository;
+import com.my_hourly.authentication.repository.RevokedTokenRepository;
+import com.my_hourly.authentication.entity.RevokedToken;
 import com.my_hourly.authentication.repository.UserRepository;
 import com.my_hourly.authentication.service.AuthenticationService;
 import com.my_hourly.common.enums.ErrorCode;
@@ -47,6 +49,7 @@ public class AuthenticationServiceImpl
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RevokedTokenRepository revokedTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationMapper authenticationMapper;
     private final UserMapper userMapper;
@@ -281,10 +284,23 @@ public class AuthenticationServiceImpl
 
     @Override
     @Transactional
-    public void logout(String refreshToken) {
+    public void logout(String accessToken, String refreshToken) {
 
+        // Blacklist the access token so it cannot be reused
+        if (accessToken != null && !accessToken.isBlank()) {
+            LocalDateTime expiresAt = jwtService.extractExpiration(accessToken);
+            if (expiresAt != null && expiresAt.isAfter(LocalDateTime.now())) {
+                revokedTokenRepository.save(
+                        RevokedToken.builder()
+                                .token(accessToken)
+                                .expiresAt(expiresAt)
+                                .build()
+                );
+            }
+        }
+
+        // Revoke the refresh token
         RefreshToken token = validateRefreshToken(refreshToken);
-
         revokeRefreshToken(token);
 
     }

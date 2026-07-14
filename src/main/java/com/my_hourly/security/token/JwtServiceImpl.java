@@ -1,5 +1,8 @@
 package com.my_hourly.security.token;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 
 import io.jsonwebtoken.Claims;
@@ -108,6 +111,15 @@ public class JwtServiceImpl implements JwtService {
                 token,
                 Claims::getExpiration
         ).before(new Date());
+    }
+
+    @Override
+    public LocalDateTime extractExpiration(String token) {
+        Date expiration = extractClaim(token, Claims::getExpiration);
+        if (expiration == null) return null;
+        return Instant.ofEpochMilli(expiration.getTime())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.my_hourly.security.token;
 
+import com.my_hourly.authentication.repository.RevokedTokenRepository;
 import com.my_hourly.security.user.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,8 +22,8 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-
     private final CustomUserDetailsService customUserDetailsService;
+    private final RevokedTokenRepository revokedTokenRepository;
 
     @Override
     protected void doFilterInternal(
@@ -52,6 +53,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             username = jwtService.extractUsername(jwt);
         } catch (Exception exception) {
             // Invalid token
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Reject revoked (blacklisted) tokens immediately
+        if (revokedTokenRepository.existsByToken(jwt)) {
             filterChain.doFilter(request, response);
             return;
         }
