@@ -13,13 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(
-        name = "refresh_tokens",
-        indexes = {
-                @Index(
-                        name = "idx_refresh_token",
-                        columnList = "token"
-                )
-        }
+        name = "refresh_tokens"
 )
 public class RefreshToken extends BaseEntity {
 
@@ -31,7 +25,7 @@ public class RefreshToken extends BaseEntity {
     )
     private User user;
 
-    @Column(nullable = false, unique = true, length = 500)
+    @Column(nullable = false, unique = true, length = 255)
     private String token;
 
     @Column(nullable = false)

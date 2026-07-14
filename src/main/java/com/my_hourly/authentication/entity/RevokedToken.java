@@ -12,18 +12,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(
-        name = "revoked_tokens",
-        indexes = {
-                @Index(
-                        name = "idx_revoked_token",
-                        columnList = "token"
-                )
-        }
-)
+@Table(name = "revoked_tokens")
 public class RevokedToken extends BaseEntity {
 
-    @Column(nullable = false, unique = true, length = 1000)
+    @Column(nullable = false, unique = true, length = 255)
     private String token;
 
     @Column(nullable = false)

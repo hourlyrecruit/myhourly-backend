@@ -15,10 +15,6 @@ import lombok.*;
 @AllArgsConstructor
 public class JobTitle extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "job_title_code", nullable = false, unique = true)
     private String jobTitleCode;
 

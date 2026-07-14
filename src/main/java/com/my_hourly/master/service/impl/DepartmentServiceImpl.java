@@ -55,7 +55,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 request.getDepartmentName())) {
 
             throw new ValidationException(
-                    "Department already exists in this branch.",
+                    "Department already exists.",
                     ErrorCode.VALIDATION_FAILED
             );
         }
@@ -104,7 +104,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             )) {
 
                 throw new ValidationException(
-                        "Department already exists in this branch.",
+                        "Department already exists.",
                         ErrorCode.VALIDATION_FAILED
                 );
             }

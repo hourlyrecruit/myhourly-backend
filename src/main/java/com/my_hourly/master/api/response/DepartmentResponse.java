@@ -17,10 +17,6 @@ public class DepartmentResponse {
 
     private String departmentName;
 
-    private Long branchId;
-
-    private String branchName;
-
     private String description;
 
     private boolean active;
