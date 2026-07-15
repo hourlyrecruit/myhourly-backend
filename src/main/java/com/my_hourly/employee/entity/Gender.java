@@ -1,4 +1,6 @@
 package com.my_hourly.employee.entity;
 
-public interface Gender {
+public enum Gender {
+    MALE,
+    FEMALE
 }

@@ -69,7 +69,7 @@ public class EmployeeController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('employee:view')")
+    @PreAuthorize("hasAuthority('employee:viewAll')")
     public ResponseEntity<ApiResponse<PageResponse<EmployeeResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -95,7 +95,7 @@ public class EmployeeController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('employee:update')")
+    @PreAuthorize("hasAuthority('employee:updateStatus')")
     public ResponseEntity<ApiResponse<Void>> changeStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
@@ -122,6 +122,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasAuthority('employee:view')")
     public ResponseEntity<ApiResponse<EmployeeResponse>> getMyProfile() {
 
         return ResponseEntity.ok(

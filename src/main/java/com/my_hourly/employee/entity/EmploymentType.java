@@ -1,4 +1,8 @@
 package com.my_hourly.employee.entity;
 
-public interface EmploymentType {
+public enum EmploymentType {
+    FULL_TIME,
+    PART_TIME,
+    CONTRACT,
+    INTERN
 }

@@ -58,10 +58,16 @@ public class CustomUserDetailsService
                     authorities.add(new SimpleGrantedAuthority("designation:view"));
                     authorities.add(new SimpleGrantedAuthority("designation:update"));
                     authorities.add(new SimpleGrantedAuthority("designation:delete"));
+                    authorities.add(new SimpleGrantedAuthority("employee:view"));
+                    authorities.add(new SimpleGrantedAuthority("employee:viewAll"));
+                    authorities.add(new SimpleGrantedAuthority("employee:updateStatus"));
                     break;
                 case EMPLOYEE:
                     authorities.add(new SimpleGrantedAuthority("department:view"));
                     authorities.add(new SimpleGrantedAuthority("designation:view"));
+                    authorities.add(new SimpleGrantedAuthority("employee:create"));
+                    authorities.add(new SimpleGrantedAuthority("employee:view"));
+                    authorities.add(new SimpleGrantedAuthority("employee:update"));
                     break;
                 default:
                     break;
