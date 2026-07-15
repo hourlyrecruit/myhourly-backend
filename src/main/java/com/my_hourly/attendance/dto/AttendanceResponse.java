@@ -1,4 +1,4 @@
-package com.my_hourly.attendance.entity;
+package com.my_hourly.attendance.dto;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -8,134 +8,117 @@ import java.time.LocalTime;
 import com.my_hourly.attendance.enums.AttendanceStatus;
 import com.my_hourly.attendance.enums.AttendanceType;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+public class AttendanceResponse {
 
-@Entity
-@Table(name="attendance")
-public class Attendance {
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private Long id;
-	private Long employeeId;
-	private LocalDate attendanceDate;
-	private LocalTime checkInTime;
-	private LocalTime checkOutTime;
-	private Duration workingHours;
-	private Duration totalBreakHours;
-	private Duration overtimeHours;
-	@Enumerated(EnumType.STRING)
-	private AttendanceStatus attendanceStatus;
-	@Enumerated(EnumType.STRING)
-	private AttendanceType attendanceType;
-	@Column(length=500)
-	private String remarks;
-	private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
-	public Attendance(Long id, Long employeeId, LocalDate attendanceDate, LocalTime checkInTime, LocalTime checkOutTime,
-			Duration workingHours, Duration totalBreakHours, Duration overtimeHours, AttendanceStatus attendanceStatus,
-			AttendanceType attendanceType, String remarks, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    private Long attendanceId;
+    private Long employeeId;
+    private LocalDate attendanceDate;
+    private LocalTime checkInTime;
+    private LocalTime checkOutTime;
+    private Duration workingHours;
+    private Duration totalBreakHours;
+    private AttendanceStatus attendanceStatus;
+    private AttendanceType attendanceType;
+    private String remarks;
+
+    public AttendanceResponse() {
+    }
+
+	public AttendanceResponse(Long attendanceId, Long employeeId, LocalDate attendanceDate, LocalTime checkInTime,
+			LocalTime checkOutTime, Duration workingHours, Duration totalBreakHours,
+			AttendanceStatus attendanceStatus, AttendanceType attendanceType, String remarks) {
 		super();
-		this.id = id;
+		this.attendanceId = attendanceId;
 		this.employeeId = employeeId;
 		this.attendanceDate = attendanceDate;
 		this.checkInTime = checkInTime;
 		this.checkOutTime = checkOutTime;
 		this.workingHours = workingHours;
 		this.totalBreakHours = totalBreakHours;
-		this.overtimeHours = overtimeHours;
 		this.attendanceStatus = attendanceStatus;
 		this.attendanceType = attendanceType;
 		this.remarks = remarks;
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
 	}
-	public Attendance() {
-		super();
+
+	public Long getAttendanceId() {
+		return attendanceId;
 	}
-	public Long getId() {
-		return id;
+
+	public void setAttendanceId(Long attendanceId) {
+		this.attendanceId = attendanceId;
 	}
-	public void setId(Long id) {
-		this.id = id;
-	}
+
 	public Long getEmployeeId() {
 		return employeeId;
 	}
+
 	public void setEmployeeId(Long employeeId) {
 		this.employeeId = employeeId;
 	}
+
 	public LocalDate getAttendanceDate() {
 		return attendanceDate;
 	}
+
 	public void setAttendanceDate(LocalDate attendanceDate) {
 		this.attendanceDate = attendanceDate;
 	}
+
 	public LocalTime getCheckInTime() {
 		return checkInTime;
 	}
+
 	public void setCheckInTime(LocalTime checkInTime) {
 		this.checkInTime = checkInTime;
 	}
+
 	public LocalTime getCheckOutTime() {
 		return checkOutTime;
 	}
+
 	public void setCheckOutTime(LocalTime checkOutTime) {
 		this.checkOutTime = checkOutTime;
-	}
+	} 
+
 	public Duration getWorkingHours() {
 		return workingHours;
 	}
+
 	public void setWorkingHours(Duration workingHours) {
 		this.workingHours = workingHours;
 	}
+
 	public Duration getTotalBreakHours() {
 		return totalBreakHours;
 	}
+
 	public void setTotalBreakHours(Duration totalBreakHours) {
 		this.totalBreakHours = totalBreakHours;
 	}
-	public Duration getOvertimeHours() {
-		return overtimeHours;
-	}
-	public void setOvertimeHours(Duration overtimeHours) {
-		this.overtimeHours = overtimeHours;
-	}
+
 	public AttendanceStatus getAttendanceStatus() {
 		return attendanceStatus;
 	}
+
 	public void setAttendanceStatus(AttendanceStatus attendanceStatus) {
 		this.attendanceStatus = attendanceStatus;
 	}
+
 	public AttendanceType getAttendanceType() {
 		return attendanceType;
 	}
+
 	public void setAttendanceType(AttendanceType attendanceType) {
 		this.attendanceType = attendanceType;
 	}
+
 	public String getRemarks() {
 		return remarks;
 	}
+
 	public void setRemarks(String remarks) {
 		this.remarks = remarks;
 	}
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
-	public LocalDateTime getUpdatedAt() {
-		return updatedAt;
-	}
-	public void setUpdatedAt(LocalDateTime updatedAt) {
-		this.updatedAt = updatedAt;
-	} 
-	
+
+    
 }
