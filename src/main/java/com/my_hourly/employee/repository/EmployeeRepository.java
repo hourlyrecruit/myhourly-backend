@@ -10,22 +10,40 @@ import com.my_hourly.employee.entity.Employee;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
-    
+    // =====================================================
+    // Find Employee By Employee Code
+    // =====================================================
+
     Optional<Employee> findByEmployeeCode(String employeeCode);
 
-   
-    Optional<Employee> findByEmail(String email);
+    // =====================================================
+    // Find Employee By Office Email
+    // =====================================================
 
-    
-    Optional<Employee> findByMobileNumber(String mobileNumber);
+    Optional<Employee> findByOfficeEmail(String officeEmail);
 
-    
+    // =====================================================
+    // Check Employee Code Exists
+    // =====================================================
+
     boolean existsByEmployeeCode(String employeeCode);
 
-    
-    boolean existsByEmail(String email);
+    // =====================================================
+    // Check Office Email Exists
+    // =====================================================
 
-   
-    boolean existsByMobileNumber(String mobileNumber);
+    boolean existsByOfficeEmail(String officeEmail);
+
+    // =====================================================
+    // Check Personal Email Exists
+    // =====================================================
+
+    boolean existsByPersonalEmail(String personalEmail);
+
+    // =====================================================
+    // Check Phone Number Exists
+    // =====================================================
+
+    boolean existsByPhoneNumber(String phoneNumber);
 
 }

@@ -2,98 +2,134 @@ package com.my_hourly.employee.entity;
 
 import java.time.LocalDate;
 
+import com.my_hourly.employee.enums.EmploymentType;
+import com.my_hourly.employee.enums.Gender;
+
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "employees")
 public class Employee {
 
-    
+    // =====================================================
+    // Primary Key
+    // =====================================================
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-  
+    // =====================================================
+    // Employee Details
+    // =====================================================
+
     @Column(name = "employee_code", nullable = false, unique = true)
     private String employeeCode;
 
-    
-    @Column(name = "employee_name", nullable = false)
-    private String name;
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
 
- 
-    @Column(name = "email", nullable = false, unique = true)
-    private String email;
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
 
-   
-    @Column(name = "mobile_number", nullable = false, unique = true)
-    private String mobileNumber;
+    @Column(name = "office_email", nullable = false, unique = true)
+    private String officeEmail;
+
+    @Column(name = "personal_email", unique = true)
+    private String personalEmail;
+
+    @Column(name = "phone_number", unique = true)
+    private String phoneNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
 
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-  
-    @Column(name = "gender")
-    private String gender;
+    @Column(name = "date_of_joining")
+    private LocalDate dateOfJoining;
 
-    @Column(name = "joining_date")
-    private LocalDate joiningDate;
+    // =====================================================
+    // Employment Details
+    // =====================================================
 
-   
     @Column(name = "department_name")
     private String departmentName;
 
-   
     @Column(name = "designation_name")
     private String designationName;
 
-   
-
+    @Enumerated(EnumType.STRING)
     @Column(name = "employment_type")
-    private String employmentType;
+    private EmploymentType employmentType;
 
-    
+    // =====================================================
+    // Reporting Manager
+    // =====================================================
 
-    @Column(name = "employee_status")
-    private String status;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reporting_manager_id")
+    private Employee reportingManager;
 
-    
+    // =====================================================
+    // Profile Photo
+    // =====================================================
+
+    @Column(name = "profile_photo")
+    private String profilePhoto;
+
+    // =====================================================
+    // Authentication
+    // =====================================================
+
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    // =====================================================
+    // Employee Status
+    // =====================================================
+
+    @Column(name = "active")
+    private Boolean active;
+
+    // =====================================================
+    // Constructors
+    // =====================================================
 
     public Employee() {
-
     }
 
-    
-
-    public Employee(Long id,
-                    String employeeCode,
-                    String name,
-                    String email,
-                    String mobileNumber,
-                    LocalDate dateOfBirth,
-                    String gender,
-                    LocalDate joiningDate,
-                    String departmentName,
-                    String designationName,
-                    String employmentType,
-                    String status) {
+    public Employee(Long id, String employeeCode, String firstName, String lastName,
+                    String officeEmail, String personalEmail, String phoneNumber,
+                    Gender gender, LocalDate dateOfBirth, LocalDate dateOfJoining,
+                    String departmentName, String designationName,
+                    EmploymentType employmentType, Employee reportingManager,
+                    String profilePhoto, String password, Boolean active) {
 
         this.id = id;
         this.employeeCode = employeeCode;
-        this.name = name;
-        this.email = email;
-        this.mobileNumber = mobileNumber;
-        this.dateOfBirth = dateOfBirth;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.officeEmail = officeEmail;
+        this.personalEmail = personalEmail;
+        this.phoneNumber = phoneNumber;
         this.gender = gender;
-        this.joiningDate = joiningDate;
+        this.dateOfBirth = dateOfBirth;
+        this.dateOfJoining = dateOfJoining;
         this.departmentName = departmentName;
         this.designationName = designationName;
         this.employmentType = employmentType;
-        this.status = status;
+        this.reportingManager = reportingManager;
+        this.profilePhoto = profilePhoto;
+        this.password = password;
+        this.active = active;
     }
 
-   
+    // =====================================================
+    // Getters & Setters
+    // =====================================================
 
     public Long getId() {
         return id;
@@ -111,28 +147,52 @@ public class Employee {
         this.employeeCode = employeeCode;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getEmail() {
-        return email;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    public String getMobileNumber() {
-        return mobileNumber;
+    public String getOfficeEmail() {
+        return officeEmail;
     }
 
-    public void setMobileNumber(String mobileNumber) {
-        this.mobileNumber = mobileNumber;
+    public void setOfficeEmail(String officeEmail) {
+        this.officeEmail = officeEmail;
+    }
+
+    public String getPersonalEmail() {
+        return personalEmail;
+    }
+
+    public void setPersonalEmail(String personalEmail) {
+        this.personalEmail = personalEmail;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
     }
 
     public LocalDate getDateOfBirth() {
@@ -143,20 +203,12 @@ public class Employee {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public String getGender() {
-        return gender;
+    public LocalDate getDateOfJoining() {
+        return dateOfJoining;
     }
 
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public LocalDate getJoiningDate() {
-        return joiningDate;
-    }
-
-    public void setJoiningDate(LocalDate joiningDate) {
-        this.joiningDate = joiningDate;
+    public void setDateOfJoining(LocalDate dateOfJoining) {
+        this.dateOfJoining = dateOfJoining;
     }
 
     public String getDepartmentName() {
@@ -175,19 +227,43 @@ public class Employee {
         this.designationName = designationName;
     }
 
-    public String getEmploymentType() {
+    public EmploymentType getEmploymentType() {
         return employmentType;
     }
 
-    public void setEmploymentType(String employmentType) {
+    public void setEmploymentType(EmploymentType employmentType) {
         this.employmentType = employmentType;
     }
 
-    public String getStatus() {
-        return status;
+    public Employee getReportingManager() {
+        return reportingManager;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setReportingManager(Employee reportingManager) {
+        this.reportingManager = reportingManager;
+    }
+
+    public String getProfilePhoto() {
+        return profilePhoto;
+    }
+
+    public void setProfilePhoto(String profilePhoto) {
+        this.profilePhoto = profilePhoto;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }

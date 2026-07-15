@@ -2,13 +2,19 @@ package com.my_hourly.employee.serviceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.my_hourly.employee.dto.request.EmployeeRequest;
+import com.my_hourly.employee.dto.request.CreateEmployeeRequest;
+import com.my_hourly.employee.dto.request.UpdateEmployeeRequest;
+import com.my_hourly.employee.dto.request.UpdateMyProfileRequest;
 import com.my_hourly.employee.dto.response.EmployeeResponse;
 import com.my_hourly.employee.entity.Employee;
+import com.my_hourly.employee.exception.EmployeeAlreadyExistsException;
+import com.my_hourly.employee.exception.EmployeeNotFoundException;
 import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.employee.service.EmployeeService;
 
@@ -18,127 +24,298 @@ public class EmployeeserviceImpl implements EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    
+    // =====================================================
+    // HR / Manager - Create Employee
+    // =====================================================
+
     @Override
-    public EmployeeResponse createEmployee(EmployeeRequest request) {
+    public EmployeeResponse createEmployee(
+            CreateEmployeeRequest request) {
 
-        if (employeeRepository.existsByEmployeeCode(request.getEmployeeCode())) {
-            throw new RuntimeException("Employee Code Already Exists");
-        }
+        // Check Office Email
+        if (employeeRepository.existsByOfficeEmail(
+                request.getOfficeEmail())) {
 
-        if (employeeRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email Already Exists");
-        }
-
-        if (employeeRepository.existsByMobileNumber(request.getMobileNumber())) {
-            throw new RuntimeException("Mobile Number Already Exists");
+            throw new EmployeeAlreadyExistsException(
+                    "Office Email Already Exists.");
         }
 
         Employee employee = new Employee();
 
-        employee.setEmployeeCode(request.getEmployeeCode());
-        employee.setName(request.getName());
-        employee.setEmail(request.getEmail());
-        employee.setMobileNumber(request.getMobileNumber());
-        employee.setDateOfBirth(request.getDateOfBirth());
-        employee.setGender(request.getGender());
-        employee.setJoiningDate(request.getJoiningDate());
+        // Generate Employee Code
+        employee.setEmployeeCode(generateEmployeeCode());
+
+        employee.setFirstName(request.getFirstName());
+        employee.setLastName(request.getLastName());
+        employee.setOfficeEmail(request.getOfficeEmail());
+
         employee.setDepartmentName(request.getDepartmentName());
         employee.setDesignationName(request.getDesignationName());
         employee.setEmploymentType(request.getEmploymentType());
-        employee.setStatus(request.getStatus());
 
-        Employee savedEmployee = employeeRepository.save(employee);
+        // Reporting Manager
+        if (request.getReportingManagerCode() != null &&
+                !request.getReportingManagerCode().isBlank()) {
+
+            Employee reportingManager =
+                    employeeRepository
+                            .findByEmployeeCode(
+                                    request.getReportingManagerCode())
+                            .orElseThrow(() ->
+                                    new EmployeeNotFoundException(
+                                            "Reporting Manager Not Found"));
+
+            employee.setReportingManager(reportingManager);
+        }
+
+        // Dummy Password
+        employee.setPassword(request.getPassword());
+
+        // Default Active
+        employee.setActive(true);
+
+        Employee savedEmployee =
+                employeeRepository.save(employee);
 
         return mapToResponse(savedEmployee);
     }
 
+    // =====================================================
+    // Generate Employee Code
+    // EMP0001
+    // EMP0002
+    // =====================================================
+
+    private String generateEmployeeCode() {
+
+        List<Employee> employees =
+                employeeRepository.findAll();
+
+        if (employees.isEmpty()) {
+            return "EMP0001";
+        }
+
+        Employee lastEmployee = employees.stream()
+                .max(Comparator.comparing(Employee::getId))
+                .orElseThrow();
+
+        String lastCode = lastEmployee.getEmployeeCode();
+
+        int number =
+                Integer.parseInt(lastCode.substring(3));
+
+        return String.format("EMP%04d", number + 1);
+    }
     
+    
+    // =====================================================
+    // HR / Manager - Update Employee
+    // =====================================================
 
     @Override
-    public EmployeeResponse updateEmployee(Long employeeId, EmployeeRequest request) {
+    public EmployeeResponse updateEmployee(
+            String employeeCode,
+            UpdateEmployeeRequest request) {
 
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee Not Found"));
+        Employee employee = employeeRepository
+                .findByEmployeeCode(employeeCode)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                                "Employee Not Found"));
 
-        employee.setEmployeeCode(request.getEmployeeCode());
-        employee.setName(request.getName());
-        employee.setEmail(request.getEmail());
-        employee.setMobileNumber(request.getMobileNumber());
-        employee.setDateOfBirth(request.getDateOfBirth());
-        employee.setGender(request.getGender());
-        employee.setJoiningDate(request.getJoiningDate());
+        employee.setFirstName(request.getFirstName());
+        employee.setLastName(request.getLastName());
+        employee.setOfficeEmail(request.getOfficeEmail());
+
         employee.setDepartmentName(request.getDepartmentName());
         employee.setDesignationName(request.getDesignationName());
         employee.setEmploymentType(request.getEmploymentType());
-        employee.setStatus(request.getStatus());
+        employee.setDateOfJoining(request.getDateOfJoining());
 
-        Employee updatedEmployee = employeeRepository.save(employee);
+        // Update Reporting Manager
+        if (request.getReportingManagerCode() != null &&
+                !request.getReportingManagerCode().isBlank()) {
+
+            Employee reportingManager =
+                    employeeRepository
+                            .findByEmployeeCode(
+                                    request.getReportingManagerCode())
+                            .orElseThrow(() ->
+                                    new EmployeeNotFoundException(
+                                            "Reporting Manager Not Found"));
+
+            employee.setReportingManager(reportingManager);
+        } else {
+            employee.setReportingManager(null);
+        }
+
+        employee.setActive(request.getActive());
+
+        Employee updatedEmployee =
+                employeeRepository.save(employee);
 
         return mapToResponse(updatedEmployee);
     }
 
-    
+    // =====================================================
+    // HR / Manager - Delete Employee
+    // =====================================================
 
     @Override
-    public EmployeeResponse getEmployeeById(Long employeeId) {
+    public void deleteEmployee(String employeeCode) {
 
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee Not Found"));
+        Employee employee = employeeRepository
+                .findByEmployeeCode(employeeCode)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                                "Employee Not Found"));
+
+        employeeRepository.delete(employee);
+    }
+
+    // =====================================================
+    // HR / Manager - Get Employee By Employee Code
+    // =====================================================
+
+    @Override
+    public EmployeeResponse getEmployeeByEmployeeCode(
+            String employeeCode) {
+
+        Employee employee = employeeRepository
+                .findByEmployeeCode(employeeCode)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                                "Employee Not Found"));
 
         return mapToResponse(employee);
     }
 
-   
+    // =====================================================
+    // HR / Manager - Get All Employees
+    // =====================================================
 
     @Override
     public List<EmployeeResponse> getAllEmployees() {
 
-        List<Employee> employeeList = employeeRepository.findAll();
+        List<Employee> employeeList =
+                employeeRepository.findAll();
 
-        List<EmployeeResponse> responseList = new ArrayList<>();
+        List<EmployeeResponse> responseList =
+                new java.util.ArrayList<>();
 
         for (Employee employee : employeeList) {
 
-            responseList.add(mapToResponse(employee));
+            responseList.add(
+                    mapToResponse(employee));
 
         }
 
         return responseList;
     }
-
-   
+    
+    
+    // =====================================================
+    // Employee - View Own Profile
+    // =====================================================
 
     @Override
-    public void deleteEmployee(Long employeeId) {
+    public EmployeeResponse getMyProfile(
+            String employeeCode) {
 
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee Not Found"));
+        Employee employee = employeeRepository
+                .findByEmployeeCode(employeeCode)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                                "Employee Not Found"));
 
-        employeeRepository.delete(employee);
-
+        return mapToResponse(employee);
     }
 
-    
+    // =====================================================
+    // Employee - Update Own Profile
+    // =====================================================
 
-    private EmployeeResponse mapToResponse(Employee employee) {
+    @Override
+    public EmployeeResponse updateMyProfile(
+            String employeeCode,
+            UpdateMyProfileRequest request) {
 
-        EmployeeResponse response = new EmployeeResponse();
+        Employee employee = employeeRepository
+                .findByEmployeeCode(employeeCode)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                                "Employee Not Found"));
+
+        // Personal Details
+        employee.setPersonalEmail(request.getPersonalEmail());
+        employee.setPhoneNumber(request.getPhoneNumber());
+        employee.setGender(request.getGender());
+        employee.setDateOfBirth(request.getDateOfBirth());
+
+        // Profile Photo
+        employee.setProfilePhoto(request.getProfilePhoto());
+
+        Employee updatedEmployee =
+                employeeRepository.save(employee);
+
+        return mapToResponse(updatedEmployee);
+    }
+
+    // =====================================================
+    // Entity -> Response
+    // =====================================================
+
+    private EmployeeResponse mapToResponse(
+            Employee employee) {
+
+        EmployeeResponse response =
+                new EmployeeResponse();
 
         response.setId(employee.getId());
         response.setEmployeeCode(employee.getEmployeeCode());
-        response.setName(employee.getName());
-        response.setEmail(employee.getEmail());
-        response.setMobileNumber(employee.getMobileNumber());
-        response.setDateOfBirth(employee.getDateOfBirth());
+
+        response.setFirstName(employee.getFirstName());
+        response.setLastName(employee.getLastName());
+
+        response.setOfficeEmail(employee.getOfficeEmail());
+        response.setPersonalEmail(employee.getPersonalEmail());
+
+        response.setPhoneNumber(employee.getPhoneNumber());
+
         response.setGender(employee.getGender());
-        response.setJoiningDate(employee.getJoiningDate());
+
+        response.setDateOfBirth(employee.getDateOfBirth());
+        response.setDateOfJoining(employee.getDateOfJoining());
+
         response.setDepartmentName(employee.getDepartmentName());
         response.setDesignationName(employee.getDesignationName());
+
         response.setEmploymentType(employee.getEmploymentType());
-        response.setStatus(employee.getStatus());
+
+        if (employee.getReportingManager() != null) {
+
+            response.setReportingManagerCode(
+                    employee.getReportingManager().getEmployeeCode());
+
+            response.setReportingManagerName(
+                    employee.getReportingManager().getFirstName()
+                            + " "
+                            + employee.getReportingManager().getLastName());
+        }
+
+        response.setProfilePhoto(employee.getProfilePhoto());
+
+        response.setActive(employee.getActive());
 
         return response;
     }
 
 }
+
+
+
+
+
+    
+    
+    
