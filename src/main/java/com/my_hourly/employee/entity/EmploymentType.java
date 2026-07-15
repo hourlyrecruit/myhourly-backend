@@ -1,0 +1,4 @@
+package com.my_hourly.employee.entity;
+
+public interface EmploymentType {
+}

@@ -19,4 +19,5 @@ public interface JobTitleRepository extends JpaRepository<JobTitle, Long> {
 
     JobTitle findTopByOrderByJobTitleCodeDesc();
 
+    boolean existsByIdAndDesignationId(Long jobTitleId, Long designationId);
 }

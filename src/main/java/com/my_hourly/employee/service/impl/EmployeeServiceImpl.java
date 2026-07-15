@@ -1,0 +1,349 @@
+package com.my_hourly.employee.service.impl;
+
+import com.my_hourly.authentication.entity.User;
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
+import com.my_hourly.common.exception.ValidationException;
+
+import com.my_hourly.common.response.PageResponse;
+import com.my_hourly.employee.api.request.CreateEmployeeRequest;
+import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
+import com.my_hourly.employee.api.response.EmployeeDropdownResponse;
+import com.my_hourly.employee.api.response.EmployeeResponse;
+import com.my_hourly.employee.entity.Employee;
+import com.my_hourly.employee.mapper.EmployeeMapper;
+import com.my_hourly.employee.repository.EmployeeRepository;
+import com.my_hourly.employee.service.EmployeeService;
+
+import com.my_hourly.master.entity.Department;
+import com.my_hourly.master.entity.Designation;
+import com.my_hourly.master.entity.JobTitle;
+import com.my_hourly.master.repository.DepartmentRepository;
+import com.my_hourly.master.repository.DesignationRepository;
+import com.my_hourly.master.repository.JobTitleRepository;
+import com.my_hourly.security.util.SecurityUtils;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class EmployeeServiceImpl implements EmployeeService {
+
+    private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
+    private final DesignationRepository designationRepository;
+    private final JobTitleRepository jobTitleRepository;
+    private final EmployeeMapper employeeMapper;
+
+    private String generateEmployeeCode() {
+
+        Optional<Employee> lastEmployee =
+                employeeRepository.findTopByOrderByEmployeeCodeDesc();
+
+        if (lastEmployee.isEmpty()) {
+            return "EMP0001";
+        }
+
+        String lastCode = lastEmployee.get().getEmployeeCode();
+
+        int number = Integer.parseInt(lastCode.substring(3));
+
+        return String.format("EMP%04d", number + 1);
+    }
+
+    private Department getDepartment(Long departmentId) {
+
+        return departmentRepository.findById(departmentId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Department not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+    }
+
+    private Designation getDesignation(Long designationId) {
+
+        return designationRepository.findById(designationId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Designation not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+    }
+
+    private JobTitle getJobTitle(Long jobTitleId) {
+
+        return jobTitleRepository.findById(jobTitleId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Job title not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+    }
+
+    private Employee getReportingManager(Long reportingManagerId) {
+
+        if (reportingManagerId == null) {
+            return null;
+        }
+
+        return employeeRepository.findById(reportingManagerId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Reporting manager not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+    }
+
+    private void validateHierarchy(
+            Long departmentId,
+            Long designationId,
+            Long jobTitleId
+    ) {
+
+        if (!designationRepository.existsByIdAndDepartmentId(
+                designationId,
+                departmentId)) {
+
+            throw new ValidationException(
+                    "Selected designation does not belong to the selected department.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        if (!jobTitleRepository.existsByIdAndDesignationId(
+                jobTitleId,
+                designationId)) {
+
+            throw new ValidationException(
+                    "Selected job title does not belong to the selected designation.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+    }
+
+    @Override
+    public EmployeeResponse create(CreateEmployeeRequest request) {
+
+        User user = SecurityUtils.getCurrentUser();
+
+        if (employeeRepository.existsByEmail(user.getEmail())) {
+
+            throw new ValidationException(
+                    "Email already exists.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        validateHierarchy(
+                request.getDepartmentId(),
+                request.getDesignationId(),
+                request.getJobTitleId()
+        );
+
+        Department department =
+                getDepartment(request.getDepartmentId());
+
+        Designation designation =
+                getDesignation(request.getDesignationId());
+
+        JobTitle jobTitle =
+                getJobTitle(request.getJobTitleId());
+
+        Employee reportingManager =
+                getReportingManager(request.getReportingManagerId());
+
+        Employee employee = employeeMapper.toEntity(
+                request,
+                user,
+                department,
+                designation,
+                jobTitle,
+                reportingManager
+        );
+
+        employee.setEmployeeCode(generateEmployeeCode());
+
+        Employee savedEmployee =
+                employeeRepository.save(employee);
+
+        return employeeMapper.toResponse(savedEmployee);
+    }
+
+    @Override
+    public EmployeeResponse update(UpdateEmployeeRequest request) {
+
+        Employee employee = employeeRepository.findById(getCurrentEmployee().getId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Employee not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+
+        if (!employee.getEmail().equalsIgnoreCase(request.getEmail())
+                && employeeRepository.existsByEmail(request.getEmail())) {
+
+            throw new ValidationException(
+                    "Email already exists.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        validateHierarchy(
+                request.getDepartmentId(),
+                request.getDesignationId(),
+                request.getJobTitleId()
+        );
+
+        Department department = getDepartment(request.getDepartmentId());
+
+        Designation designation = getDesignation(request.getDesignationId());
+
+        JobTitle jobTitle = getJobTitle(request.getJobTitleId());
+
+        Employee reportingManager =
+                getReportingManager(request.getReportingManagerId());
+
+        employeeMapper.updateEntity(
+                employee,
+                request,
+                department,
+                designation,
+                jobTitle,
+                reportingManager
+        );
+
+        Employee updatedEmployee = employeeRepository.save(employee);
+
+        return employeeMapper.toResponse(updatedEmployee);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public EmployeeResponse getById(Long id) {
+
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Employee not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+
+        return employeeMapper.toResponse(employee);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<EmployeeResponse> getAll(
+            int page,
+            int size,
+            String search,
+            String sortBy,
+            String sortDirection
+    ) {
+
+        Sort sort = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Employee> employees;
+
+        if (search == null || search.isBlank()) {
+
+            employees = employeeRepository.findAll(pageable);
+
+        } else {
+
+            employees = employeeRepository
+                    .findByEmployeeCodeContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                            search,
+                            search,
+                            search,
+                            search,
+                            pageable
+                    );
+        }
+
+        List<EmployeeResponse> responses = employees.getContent()
+                .stream()
+                .map(employeeMapper::toResponse)
+                .toList();
+
+        return PageResponse.<EmployeeResponse>builder()
+                .content(responses)
+                .page(employees.getNumber())
+                .size(employees.getSize())
+                .totalElements(employees.getTotalElements())
+                .totalPages(employees.getTotalPages())
+                .last(employees.isLast())
+                .build();
+    }
+
+    @Override
+    public void changeStatus(Long id, boolean active) {
+
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Employee not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+
+        employee.setActive(active);
+
+        employeeRepository.save(employee);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmployeeDropdownResponse> getDropdown() {
+
+        return employeeRepository.findByActiveTrueOrderByFirstNameAsc()
+                .stream()
+                .map(employeeMapper::toDropdownResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public EmployeeResponse getMyProfile() {
+
+        User user = SecurityUtils.getCurrentUser();
+
+        Employee employee = employeeRepository.findByUser(user)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Employee not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+
+        return employeeMapper.toResponse(employee);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Employee getCurrentEmployee() {
+
+        User user = SecurityUtils.getCurrentUser();
+
+        return employeeRepository.findByUser(user)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Employee not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+    }
+}
+

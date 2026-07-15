@@ -23,4 +23,5 @@ public interface DesignationRepository extends JpaRepository<Designation, Long> 
             Pageable pageable
     );
 
+    boolean existsByIdAndDepartmentId(Long designationId, Long departmentId);
 }
