@@ -25,9 +25,9 @@ public class UpdateEmployeeRequest {
 
     private String lastName;
 
-    @NotBlank(message = "Email is required.")
-    @Email(message = "Invalid email address.")
-    private String email;
+//    @NotBlank(message = "Email is required.")
+//    @Email(message = "Invalid email address.")
+//    private String email;
 
     @NotBlank(message = "Phone number is required.")
     private String phoneNumber;
@@ -54,9 +54,5 @@ public class UpdateEmployeeRequest {
     private Long jobTitleId;
 
     private Long reportingManagerId;
-
-    private String profilePhoto;
-
-    private boolean active;
 
 }

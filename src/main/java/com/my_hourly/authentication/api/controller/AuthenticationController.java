@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,8 +27,9 @@ public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
-    @Operation(description = "Register Employee")
+
     @PostMapping("/register/employee")
+    @Operation(summary = "Public EndPoint any can register as Employee")
     public ResponseEntity<ApiResponse<RegisterResponse>> registerEmployee(
             @Valid @RequestBody EmployeeRegisterRequest request
     ) {
@@ -45,7 +47,7 @@ public class AuthenticationController {
 
     }
 
-    @Operation(description = "User login")
+    @Operation(summary = "Common Login Endpoint for All Users ")
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
             @Valid @RequestBody LoginRequest request
@@ -64,7 +66,7 @@ public class AuthenticationController {
 
     }
 
-    @Operation(description = "Refresh Token")
+    @Operation(summary = "Send Refresh Token to Get Fresh Access Token")
     @PostMapping("/token/refresh")
     public ResponseEntity<ApiResponse<RefreshTokenResponse>> refreshToken(
             @Valid @RequestBody RefreshTokenRequest request
@@ -82,7 +84,7 @@ public class AuthenticationController {
         );
     }
 
-    @Operation(description = "User Logout")
+    @Operation(summary = "Common Logout Endpoint for All Users")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @Valid @RequestBody RefreshTokenRequest request,
@@ -104,7 +106,7 @@ public class AuthenticationController {
         );
     }
 
-    @Operation(description = "Change Password")
+    @Operation(summary = "User can Change Password")
     @PostMapping("/change-password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @Valid @RequestBody ChangePasswordRequest request
@@ -120,8 +122,9 @@ public class AuthenticationController {
         );
     }
 
-    @Operation(description = "Getting About User")
+    @Operation(summary = "Get Current logged in User Details: employeeId, username, email, userStatus, role, permissions")
     @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getCurrentUser() {
 
         UserProfileResponse response =

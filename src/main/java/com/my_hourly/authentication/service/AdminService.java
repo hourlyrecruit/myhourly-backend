@@ -5,7 +5,7 @@ import com.my_hourly.authentication.api.request.GrantRoleRequest;
 import com.my_hourly.authentication.api.request.UpdateUserStatusRequest;
 import com.my_hourly.authentication.api.response.RegisterResponse;
 import com.my_hourly.authentication.api.response.UserProfileResponse;
-import com.my_hourly.common.enums.RoleName;
+import com.my_hourly.authentication.entity.RoleName;
 
 import java.util.List;
 

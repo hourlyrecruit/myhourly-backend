@@ -1,7 +1,7 @@
 package com.my_hourly.authentication.api.response;
 
 import com.my_hourly.authentication.entity.UserStatus;
-import com.my_hourly.common.enums.RoleName;
+import com.my_hourly.authentication.entity.RoleName;
 import lombok.*;
 
 import java.util.List;

@@ -2,7 +2,7 @@ package com.my_hourly.authentication.mapper;
 
 import com.my_hourly.authentication.api.response.UserProfileResponse;
 import com.my_hourly.authentication.entity.User;
-import com.my_hourly.common.enums.RoleName;
+import com.my_hourly.authentication.entity.RoleName;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

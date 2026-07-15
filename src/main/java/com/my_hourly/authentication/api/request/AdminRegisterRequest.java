@@ -1,6 +1,6 @@
 package com.my_hourly.authentication.api.request;
 
-import com.my_hourly.common.enums.RoleName;
+import com.my_hourly.authentication.entity.RoleName;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

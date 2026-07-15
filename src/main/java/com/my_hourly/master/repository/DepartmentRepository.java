@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
@@ -20,6 +21,8 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
             String keyword,
             Pageable pageable
     );
+
+    List<Department> findByActiveTrueOrderByDepartmentNameAsc();
 
 
 }

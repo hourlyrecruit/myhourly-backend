@@ -10,7 +10,7 @@ import com.my_hourly.authentication.repository.*;
 import com.my_hourly.authentication.service.AdminService;
 import com.my_hourly.authentication.mapper.UserMapper;
 import com.my_hourly.common.enums.ErrorCode;
-import com.my_hourly.common.enums.RoleName;
+import com.my_hourly.authentication.entity.RoleName;
 import com.my_hourly.common.exception.BadRequestException;
 import com.my_hourly.common.exception.DuplicateResourceException;
 import com.my_hourly.common.exception.ResourceNotFoundException;

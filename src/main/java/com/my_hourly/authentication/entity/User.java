@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import lombok.*;
 import jakarta.persistence.*;
 
-import com.my_hourly.common.enums.RoleName;
 import java.time.LocalDateTime;
 
 

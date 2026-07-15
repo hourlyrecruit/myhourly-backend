@@ -6,6 +6,7 @@ import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
 import com.my_hourly.employee.api.response.EmployeeDropdownResponse;
 import com.my_hourly.employee.api.response.EmployeeResponse;
 import com.my_hourly.employee.entity.Employee;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -34,4 +35,9 @@ public interface EmployeeService {
     EmployeeResponse getMyProfile();
 
     Employee getCurrentEmployee();
+
+
+    EmployeeResponse uploadProfilePhoto(MultipartFile file);
+
+    //byte[] getProfilePhoto(Long employeeId);
 }

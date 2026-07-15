@@ -6,7 +6,7 @@ import com.my_hourly.authentication.api.request.UpdateUserStatusRequest;
 import com.my_hourly.authentication.api.response.RegisterResponse;
 import com.my_hourly.authentication.api.response.UserProfileResponse;
 import com.my_hourly.authentication.service.AdminService;
-import com.my_hourly.common.enums.RoleName;
+import com.my_hourly.authentication.entity.RoleName;
 import com.my_hourly.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,13 +23,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', HR)")
 @Tag(name = "Admin Controller", description = "Only SUPER_ADMIN and MANAGER can access these endpoint.")
 public class AdminController {
 
     private final AdminService adminService;
 
-    @Operation(description = "super_admin and manager can add any user")
+    @Operation(summary = "super_admin and manager can add any user", description = "super_admin and manager can add any user")
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> registerUser(
             @Valid @RequestBody AdminRegisterRequest request
@@ -48,7 +47,7 @@ public class AdminController {
 
     }
 
-    @Operation(description = "Change/Grant a role to an existing user.")
+    @Operation(summary = "Change/Grant a role to an existing user.")
     @PostMapping("/users/{userId}/roles")
     public ResponseEntity<ApiResponse<Void>> grantRole(
             @PathVariable Long userId,
@@ -67,7 +66,7 @@ public class AdminController {
     }
 
 
-    @Operation(description = "Change/Grant a role to an existing user.")
+    @Operation(summary = "Change/Grant a role to an existing user.")
     @DeleteMapping("/users/{userId}/roles/{roleName}")
     public ResponseEntity<ApiResponse<Void>> revokeRole(
             @PathVariable Long userId,
@@ -86,7 +85,7 @@ public class AdminController {
     }
 
 
-    @Operation(description = "List all users with their roles and permissions.")
+    @Operation(summary = "List all users with their roles and permissions.")
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<List<UserProfileResponse>>> getAllUsers() {
 
@@ -102,7 +101,7 @@ public class AdminController {
 
     }
 
-    @Operation(description = "Get a single user by their ID.")
+    @Operation(summary = "Get a single user by their ID.")
     @GetMapping("/users/{userId}")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getUserById(
             @PathVariable Long userId
@@ -120,7 +119,7 @@ public class AdminController {
 
     }
 
-    @Operation(description = "Delete a user by ID.")
+    @Operation(summary = "Delete a user by ID.")
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
             @PathVariable Long userId
@@ -138,7 +137,7 @@ public class AdminController {
     }
 
 
-    @Operation(description = "Update the status of an existing user (ACTIVE, INACTIVE, LOCKED, DISABLED, PASSWORD_EXPIRED).")
+    @Operation(summary = "Update the status of an existing user (ACTIVE, INACTIVE, LOCKED, DISABLED, PASSWORD_EXPIRED).")
     @PatchMapping("/users/{userId}/status")
     public ResponseEntity<ApiResponse<Void>> updateUserStatus(
             @PathVariable Long userId,

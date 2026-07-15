@@ -1,4 +1,4 @@
-package com.my_hourly.common.enums;
+package com.my_hourly.authentication.entity;
 
 public enum RoleName {
 

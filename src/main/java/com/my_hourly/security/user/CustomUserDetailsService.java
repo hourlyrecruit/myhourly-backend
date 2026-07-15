@@ -1,5 +1,6 @@
 package com.my_hourly.security.user;
 
+import com.my_hourly.authentication.entity.RoleName;
 import com.my_hourly.authentication.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,7 +11,6 @@ import com.my_hourly.authentication.entity.User;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -43,7 +43,7 @@ public class CustomUserDetailsService
 
     private Collection<GrantedAuthority> getAuthorities(User user) {
         Set<GrantedAuthority> authorities = new HashSet<>();
-        com.my_hourly.common.enums.RoleName role = user.getRole();
+        RoleName role = user.getRole();
         if (role != null) {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
             switch (role) {
@@ -54,20 +54,32 @@ public class CustomUserDetailsService
                     authorities.add(new SimpleGrantedAuthority("department:view"));
                     authorities.add(new SimpleGrantedAuthority("department:update"));
                     authorities.add(new SimpleGrantedAuthority("department:delete"));
+
                     authorities.add(new SimpleGrantedAuthority("designation:create"));
                     authorities.add(new SimpleGrantedAuthority("designation:view"));
                     authorities.add(new SimpleGrantedAuthority("designation:update"));
                     authorities.add(new SimpleGrantedAuthority("designation:delete"));
+
+                    authorities.add(new SimpleGrantedAuthority("job-title:create"));
+                    authorities.add(new SimpleGrantedAuthority("job-title:view"));
+                    authorities.add(new SimpleGrantedAuthority("job-title:update"));
+                    authorities.add(new SimpleGrantedAuthority("job-title:delete"));
+
                     authorities.add(new SimpleGrantedAuthority("employee:view"));
                     authorities.add(new SimpleGrantedAuthority("employee:viewAll"));
                     authorities.add(new SimpleGrantedAuthority("employee:updateStatus"));
+                    //authorities.add(new SimpleGrantedAuthority("employee:update"));
+                    authorities.add(new SimpleGrantedAuthority("employee:viewDropDown"));
                     break;
                 case EMPLOYEE:
                     authorities.add(new SimpleGrantedAuthority("department:view"));
                     authorities.add(new SimpleGrantedAuthority("designation:view"));
+
                     authorities.add(new SimpleGrantedAuthority("employee:create"));
                     authorities.add(new SimpleGrantedAuthority("employee:view"));
+                    authorities.add(new SimpleGrantedAuthority("employee:viewMe"));
                     authorities.add(new SimpleGrantedAuthority("employee:update"));
+                    //authorities.add(new SimpleGrantedAuthority("employee:updatePhoto"));
                     break;
                 default:
                     break;

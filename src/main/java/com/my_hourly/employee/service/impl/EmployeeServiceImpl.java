@@ -29,7 +29,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,7 +94,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private Employee getReportingManager(Long reportingManagerId) {
 
-        if (reportingManagerId == null) {
+        if (reportingManagerId == null || reportingManagerId == 0) {
             return null;
         }
 
@@ -182,21 +184,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeResponse update(UpdateEmployeeRequest request) {
 
-        Employee employee = employeeRepository.findById(getCurrentEmployee().getId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Employee not found.",
-                                ErrorCode.RESOURCE_NOT_FOUND
-                        ));
+        Employee employee = getCurrentEmployee();
 
-        if (!employee.getEmail().equalsIgnoreCase(request.getEmail())
-                && employeeRepository.existsByEmail(request.getEmail())) {
-
-            throw new ValidationException(
-                    "Email already exists.",
-                    ErrorCode.VALIDATION_FAILED
-            );
-        }
+//        if (!employee.getEmail().equalsIgnoreCase(request.getEmail())
+//                && employeeRepository.existsByEmail(request.getEmail())) {
+//
+//            throw new ValidationException(
+//                    "Email already exists.",
+//                    ErrorCode.VALIDATION_FAILED
+//            );
+//        }
 
         validateHierarchy(
                 request.getDepartmentId(),
@@ -345,5 +342,72 @@ public class EmployeeServiceImpl implements EmployeeService {
                                 ErrorCode.RESOURCE_NOT_FOUND
                         ));
     }
+
+
+    @Override
+    public EmployeeResponse uploadProfilePhoto(
+            MultipartFile file
+    ) {
+
+        Employee employee =  getCurrentEmployee();
+
+        validateProfilePhoto(file);
+
+        try {
+
+            // Replace old image with new one
+            employee.setProfilePhoto(file.getBytes());
+            employee.setProfilePhotoName(file.getOriginalFilename());
+            employee.setProfilePhotoType(file.getContentType());
+
+        } catch (IOException e) {
+
+            throw new ValidationException(
+                    "Unable to upload profile photo.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        Employee savedEmployee = employeeRepository.save(employee);
+
+        return employeeMapper.toResponse(savedEmployee);
+    }
+
+
+    private void validateProfilePhoto(MultipartFile file) {
+
+        if (file == null || file.isEmpty()) {
+
+            throw new ValidationException(
+                    "Profile photo is required.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        List<String> allowedTypes = List.of(
+                "image/jpeg",
+                "image/jpg",
+                "image/png"
+        );
+
+        if (!allowedTypes.contains(file.getContentType())) {
+
+            throw new ValidationException(
+                    "Only JPG, JPEG and PNG images are allowed.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        long maxSize = 2 * 1024 * 1024;
+
+        if (file.getSize() > maxSize) {
+
+            throw new ValidationException(
+                    "Profile photo size cannot exceed 2 MB.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+    }
+
 }
 

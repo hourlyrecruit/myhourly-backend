@@ -64,7 +64,15 @@ public class Employee extends BaseEntity {
     @JoinColumn(name = "reporting_manager_id")
     private Employee reportingManager;
 
-    private String profilePhoto;
+    @Lob
+    @Column(name = "profile_photo", columnDefinition = "LONGBLOB")
+    private byte[] profilePhoto;
+
+    @Column(name = "profile_photo_name")
+    private String profilePhotoName;
+
+    @Column(name = "profile_photo_type")
+    private String profilePhotoType;
 
     @Builder.Default
     private boolean active = true;

@@ -27,6 +27,7 @@ public class EmployeeMapper {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .user(user)
+                .email(user.getEmail())
                 .phoneNumber(request.getPhoneNumber())
                 .gender(request.getGender())
                 .dateOfBirth(request.getDateOfBirth())
@@ -36,7 +37,7 @@ public class EmployeeMapper {
                 .designation(designation)
                 .jobTitle(jobTitle)
                 .reportingManager(reportingManager)
-                .profilePhoto(request.getProfilePhoto())
+
                 .active(true)
                 .build();
 
@@ -53,7 +54,7 @@ public class EmployeeMapper {
 
         employee.setFirstName(request.getFirstName());
         employee.setLastName(request.getLastName());
-        employee.setEmail(request.getEmail());
+        //employee.setEmail(request.getEmail());
         employee.setPhoneNumber(request.getPhoneNumber());
         employee.setGender(request.getGender());
         employee.setDateOfBirth(request.getDateOfBirth());
@@ -63,8 +64,6 @@ public class EmployeeMapper {
         employee.setDesignation(designation);
         employee.setJobTitle(jobTitle);
         employee.setReportingManager(reportingManager);
-        employee.setProfilePhoto(request.getProfilePhoto());
-        employee.setActive(request.isActive());
 
     }
 
@@ -92,11 +91,11 @@ public class EmployeeMapper {
                 .jobTitleId(employee.getJobTitle().getId())
                 .jobTitle(employee.getJobTitle().getJobTitle())
 
-                .reportingManagerId(
-                        employee.getReportingManager() != null
-                                ? employee.getReportingManager().getId()
-                                : null
-                )
+//                .reportingManagerId(
+//                        employee.getReportingManager() != null
+//                                ? employee.getReportingManager().getId()
+//                                : null
+//                )
 
                 .reportingManagerName(
                         employee.getReportingManager() != null
@@ -106,7 +105,13 @@ public class EmployeeMapper {
                                 : null
                 )
 
-                .profilePhoto(employee.getProfilePhoto())
+                .hasProfilePhoto(employee.getProfilePhoto() != null)
+
+                .profilePhotoUrl(
+                        employee.getProfilePhoto() != null
+                                ? "/api/v1/employees/" + employee.getId() + "/profile-photo"
+                                : null
+                )
                 .active(employee.isActive())
                 .build();
 

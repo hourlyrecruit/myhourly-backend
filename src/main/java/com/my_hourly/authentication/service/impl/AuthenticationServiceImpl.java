@@ -17,7 +17,7 @@ import com.my_hourly.authentication.entity.RevokedToken;
 import com.my_hourly.authentication.repository.UserRepository;
 import com.my_hourly.authentication.service.AuthenticationService;
 import com.my_hourly.common.enums.ErrorCode;
-import com.my_hourly.common.enums.RoleName;
+import com.my_hourly.authentication.entity.RoleName;
 import com.my_hourly.common.exception.DuplicateResourceException;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.common.exception.UnauthorizedException;

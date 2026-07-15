@@ -2,7 +2,7 @@ package com.my_hourly.config;
 
 import com.my_hourly.authentication.entity.*;
 import com.my_hourly.authentication.repository.*;
-import com.my_hourly.common.enums.RoleName;
+import com.my_hourly.authentication.entity.RoleName;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,16 +30,50 @@ public class DataInitializer implements ApplicationRunner {
     @Value("${app.super-admin.password}")
     private String superAdminPassword;
 
+    @Value("${app.manager.username}")
+    private String managerUsername;
+
+    @Value("${app.manager.email}")
+    private String managerEmail;
+
+    @Value("${app.manager.password}")
+    private String managerPassword;
+
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
         seedSuperAdmin();
+        seedManager();
     }
 
-    /**
-     * Creates the initial SUPER_ADMIN user if one does not exist.
-     * Credentials are configured via application.properties.
-     */
+
+    private void seedManager() {
+
+        if (userRepository.existsByUsername(managerUsername)) {
+            log.info("[DataInitializer] MANAGER '{}' already exists — skipping.", managerUsername);
+            return;
+        }
+
+        User manager = User.builder()
+                .username(managerUsername)
+                .email(managerEmail)
+                .password(passwordEncoder.encode(managerPassword))
+                .userStatus(UserStatus.ACTIVE)
+                .role(RoleName.MANAGER)
+                .build();
+
+        userRepository.save(manager);
+
+        log.info("[DataInitializer] ================================================");
+        log.info("[DataInitializer]  SUPER_ADMIN created successfully!");
+        log.info("[DataInitializer]  Username : {}", managerUsername);
+        log.info("[DataInitializer]  Email    : {}", managerEmail);
+        log.info("[DataInitializer]  Password : {}", managerPassword);
+        log.info("[DataInitializer]  IMPORTANT: Change this password after first login!");
+        log.info("[DataInitializer] ================================================");
+    }
+
+
     private void seedSuperAdmin() {
 
         if (userRepository.existsByUsername(superAdminUsername)) {

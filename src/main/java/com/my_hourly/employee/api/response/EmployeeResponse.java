@@ -51,11 +51,13 @@ public class EmployeeResponse {
 
     private String jobTitle;
 
-    private Long reportingManagerId;
+//    private Long reportingManagerId;
 
     private String reportingManagerName;
 
-    private String profilePhoto;
+    private boolean hasProfilePhoto;
+
+    private String profilePhotoUrl;
 
     private boolean active;
 
