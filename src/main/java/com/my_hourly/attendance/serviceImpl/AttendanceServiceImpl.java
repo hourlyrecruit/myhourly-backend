@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.my_hourly.attendance.dto.AttendanceBreakRequest;
 import com.my_hourly.attendance.dto.AttendanceBreakResponse;
 import com.my_hourly.attendance.dto.AttendanceCalendarResponse;
+import com.my_hourly.attendance.dto.AttendanceDashboardResponse;
 import com.my_hourly.attendance.dto.AttendanceResponse;
 import com.my_hourly.attendance.dto.CheckInRequest;
 import com.my_hourly.attendance.dto.CheckOutRequest;
@@ -256,6 +257,33 @@ public class AttendanceServiceImpl implements AttendanceService {
 
 	    return mapAttendance(attendance);
 	}
+//	@Override
+//	public AttendanceDashboardResponse getDashboardAttendance() {
+//
+//	    LocalDate today = LocalDate.now();
+//
+//	    AttendanceDashboardResponse response =
+//	            new AttendanceDashboardResponse();
+//
+//	    response.setTotalEmployees(employeeRepository.count());
+//	    response.setPresentEmployees(
+//	            attendanceRepository.countByAttendanceDateAndAttendanceStatus(
+//	                    today,
+//	                    AttendanceStatus.PRESENT));
+//	    response.setAbsentEmployees(
+//	            attendanceRepository.countByAttendanceDateAndAttendanceStatus(
+//	                    today,
+//	                    AttendanceStatus.ABSENT));
+//	    response.setLeaveEmployees(
+//	            attendanceRepository.countByAttendanceDateAndAttendanceStatus(
+//	                    today,
+//	                    AttendanceStatus.ON_LEAVE));
+//	    response.setHalfDayEmployees(
+//	            attendanceRepository.countByAttendanceDateAndAttendanceStatus(
+//	                    today,
+//	                    AttendanceStatus.HALF_DAY));
+//	    return response;
+//	}
 
 
 }
