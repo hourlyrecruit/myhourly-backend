@@ -12,19 +12,15 @@ import jakarta.persistence.*;
 public class Leave {
 
     
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-   
 
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
     
-
     @Column(name = "employee_code", nullable = false)
     private String employeeCode;
 
@@ -41,8 +37,6 @@ public class Leave {
 
     @Column(name = "total_days", nullable = false)
     private Integer totalDays;
-
-    
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
