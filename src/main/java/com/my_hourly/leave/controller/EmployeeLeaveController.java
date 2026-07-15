@@ -3,47 +3,46 @@ package com.my_hourly.leave.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.my_hourly.leave.dto.request.LeaveRequest;
+import com.my_hourly.leave.dto.response.LeaveBalanceResponse;
 import com.my_hourly.leave.dto.response.LeaveResponse;
+import com.my_hourly.leave.service.LeaveBalanceService;
 import com.my_hourly.leave.service.LeaveService;
 
 @RestController
 @RequestMapping("/api/employee/leaves")
-@CrossOrigin(origins = "*")
 public class EmployeeLeaveController {
 
     @Autowired
     private LeaveService leaveService;
 
+    @Autowired
+    private LeaveBalanceService leaveBalanceService;
+
     // =====================================================
     // Employee - Apply Leave
     // =====================================================
 
-    @PostMapping
-    public ResponseEntity<LeaveResponse> applyLeave(
+    @PostMapping("/apply")
+    public LeaveResponse applyLeave(
             @RequestBody LeaveRequest request) {
 
-        LeaveResponse response = leaveService.applyLeave(request);
+        return leaveService.applyLeave(request);
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     // =====================================================
-    // Employee - View Own Leave History
+    // Employee - View Leave History
     // =====================================================
 
-    @GetMapping("/{employeeCode}")
-    public ResponseEntity<List<LeaveResponse>> getEmployeeLeaves(
+    @GetMapping("/history/{employeeCode}")
+    public List<LeaveResponse> getLeaveHistory(
             @PathVariable String employeeCode) {
 
-        List<LeaveResponse> response =
-                leaveService.getEmployeeLeaves(employeeCode);
+        return leaveService.getEmployeeLeaves(employeeCode);
 
-        return ResponseEntity.ok(response);
     }
 
     // =====================================================
@@ -51,13 +50,11 @@ public class EmployeeLeaveController {
     // =====================================================
 
     @GetMapping("/status/{employeeCode}")
-    public ResponseEntity<List<LeaveResponse>> getLeaveStatus(
+    public List<LeaveResponse> getLeaveStatus(
             @PathVariable String employeeCode) {
 
-        List<LeaveResponse> response =
-                leaveService.getLeaveStatus(employeeCode);
+        return leaveService.getLeaveStatus(employeeCode);
 
-        return ResponseEntity.ok(response);
     }
 
     // =====================================================
@@ -65,13 +62,11 @@ public class EmployeeLeaveController {
     // =====================================================
 
     @GetMapping("/balance/{employeeCode}")
-    public ResponseEntity<Integer> getLeaveBalance(
+    public LeaveBalanceResponse getLeaveBalance(
             @PathVariable String employeeCode) {
 
-        Integer balance =
-                leaveService.getLeaveBalance(employeeCode);
+        return leaveBalanceService.getLeaveBalance(employeeCode);
 
-        return ResponseEntity.ok(balance);
     }
 
 }

@@ -3,6 +3,7 @@ package com.my_hourly.leave.dto.response;
 import java.time.LocalDate;
 
 import com.my_hourly.leave.enums.LeaveStatus;
+import com.my_hourly.leave.enums.LeaveType;
 
 public class LeaveResponse {
 
@@ -18,34 +19,27 @@ public class LeaveResponse {
 
     private String employeeCode;
 
-    private String employeeName;
+    private String employeeFirstName;
+
+    private String employeeLastName;
 
     // =====================================================
     // Leave Details
     // =====================================================
 
+    private LeaveType leaveType;
+
     private LocalDate fromDate;
 
     private LocalDate toDate;
 
-    private Integer totalDays;
+    private String reason;
 
     // =====================================================
     // Leave Status
     // =====================================================
 
     private LeaveStatus status;
-
-    // Null while pending
-    private String managerRemarks;
-
-    // =====================================================
-    // Dates
-    // =====================================================
-
-    private LocalDate appliedDate;
-
-    private LocalDate approvedDate;
 
     // =====================================================
     // Default Constructor
@@ -60,26 +54,28 @@ public class LeaveResponse {
 
     public LeaveResponse(Long id,
                          String employeeCode,
-                         String employeeName,
+                         String employeeFirstName,
+                         String employeeLastName,
+                         LeaveType leaveType,
                          LocalDate fromDate,
                          LocalDate toDate,
-                         Integer totalDays,
-                         LeaveStatus status,
-                         String managerRemarks,
-                         LocalDate appliedDate,
-                         LocalDate approvedDate) {
+                         String reason,
+                         LeaveStatus status) {
 
         this.id = id;
         this.employeeCode = employeeCode;
-        this.employeeName = employeeName;
+        this.employeeFirstName = employeeFirstName;
+        this.employeeLastName = employeeLastName;
+        this.leaveType = leaveType;
         this.fromDate = fromDate;
         this.toDate = toDate;
-        this.totalDays = totalDays;
+        this.reason = reason;
         this.status = status;
-        this.managerRemarks = managerRemarks;
-        this.appliedDate = appliedDate;
-        this.approvedDate = approvedDate;
     }
+
+    // =====================================================
+    // Getters & Setters
+    // =====================================================
 
     public Long getId() {
         return id;
@@ -97,12 +93,28 @@ public class LeaveResponse {
         this.employeeCode = employeeCode;
     }
 
-    public String getEmployeeName() {
-        return employeeName;
+    public String getEmployeeFirstName() {
+        return employeeFirstName;
     }
 
-    public void setEmployeeName(String employeeName) {
-        this.employeeName = employeeName;
+    public void setEmployeeFirstName(String employeeFirstName) {
+        this.employeeFirstName = employeeFirstName;
+    }
+
+    public String getEmployeeLastName() {
+        return employeeLastName;
+    }
+
+    public void setEmployeeLastName(String employeeLastName) {
+        this.employeeLastName = employeeLastName;
+    }
+
+    public LeaveType getLeaveType() {
+        return leaveType;
+    }
+
+    public void setLeaveType(LeaveType leaveType) {
+        this.leaveType = leaveType;
     }
 
     public LocalDate getFromDate() {
@@ -121,12 +133,12 @@ public class LeaveResponse {
         this.toDate = toDate;
     }
 
-    public Integer getTotalDays() {
-        return totalDays;
+    public String getReason() {
+        return reason;
     }
 
-    public void setTotalDays(Integer totalDays) {
-        this.totalDays = totalDays;
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
     public LeaveStatus getStatus() {
@@ -137,27 +149,4 @@ public class LeaveResponse {
         this.status = status;
     }
 
-    public String getManagerRemarks() {
-        return managerRemarks;
-    }
-
-    public void setManagerRemarks(String managerRemarks) {
-        this.managerRemarks = managerRemarks;
-    }
-
-    public LocalDate getAppliedDate() {
-        return appliedDate;
-    }
-
-    public void setAppliedDate(LocalDate appliedDate) {
-        this.appliedDate = appliedDate;
-    }
-
-    public LocalDate getApprovedDate() {
-        return approvedDate;
-    }
-
-    public void setApprovedDate(LocalDate approvedDate) {
-        this.approvedDate = approvedDate;
-    }
 }

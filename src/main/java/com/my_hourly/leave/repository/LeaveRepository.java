@@ -13,30 +13,22 @@ import com.my_hourly.leave.enums.LeaveStatus;
 public interface LeaveRepository extends JpaRepository<Leave, Long> {
 
     // =====================================================
-    // Get All Leaves By Employee Code
+    // Employee - View Own Leave History
     // =====================================================
 
     List<Leave> findByEmployeeCode(String employeeCode);
 
     // =====================================================
-    // Get All Leaves By Status
+    // Manager / HR - View Leaves By Status
     // =====================================================
 
     List<Leave> findByStatus(LeaveStatus status);
 
     // =====================================================
-    // Get Employee Leaves By Status
+    // Employee - View Leave By Status
     // =====================================================
 
     List<Leave> findByEmployeeCodeAndStatus(
-            String employeeCode,
-            LeaveStatus status);
-
-    // =====================================================
-    // Count Approved Leaves
-    // =====================================================
-
-    long countByEmployeeCodeAndStatus(
             String employeeCode,
             LeaveStatus status);
 
@@ -48,5 +40,15 @@ public interface LeaveRepository extends JpaRepository<Leave, Long> {
             String employeeCode,
             LocalDate fromDate,
             LocalDate toDate);
+
+    // =====================================================
+    // Current Month Approved Leaves
+    // =====================================================
+
+    List<Leave> findByEmployeeCodeAndStatusAndFromDateBetween(
+            String employeeCode,
+            LeaveStatus status,
+            LocalDate startDate,
+            LocalDate endDate);
 
 }

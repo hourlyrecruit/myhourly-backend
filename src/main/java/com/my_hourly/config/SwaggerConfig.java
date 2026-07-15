@@ -19,9 +19,9 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(
                         new Info()
-                                .title("VERIFY-X")
+                                .title("My_Hourly")
                                 .version("1.0")
-                                .description("Resume Upload & Offer Letter Verification System")
+                                .description("HOURLY RECRUIT SYSTEM")
                 );
     }
 }

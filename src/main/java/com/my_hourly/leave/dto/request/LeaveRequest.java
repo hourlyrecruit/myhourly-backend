@@ -2,6 +2,8 @@ package com.my_hourly.leave.dto.request;
 
 import java.time.LocalDate;
 
+import com.my_hourly.leave.enums.LeaveType;
+
 public class LeaveRequest {
 
     // =====================================================
@@ -14,9 +16,13 @@ public class LeaveRequest {
     // Leave Details
     // =====================================================
 
+    private LeaveType leaveType;
+
     private LocalDate fromDate;
 
     private LocalDate toDate;
+
+    private String reason;
 
     // =====================================================
     // Default Constructor
@@ -30,12 +36,15 @@ public class LeaveRequest {
     // =====================================================
 
     public LeaveRequest(String employeeCode,
+                        LeaveType leaveType,
                         LocalDate fromDate,
-                        LocalDate toDate) {
-
+                        LocalDate toDate,
+                        String reason) {
         this.employeeCode = employeeCode;
+        this.leaveType = leaveType;
         this.fromDate = fromDate;
         this.toDate = toDate;
+        this.reason = reason;
     }
 
     // =====================================================
@@ -48,6 +57,14 @@ public class LeaveRequest {
 
     public void setEmployeeCode(String employeeCode) {
         this.employeeCode = employeeCode;
+    }
+
+    public LeaveType getLeaveType() {
+        return leaveType;
+    }
+
+    public void setLeaveType(LeaveType leaveType) {
+        this.leaveType = leaveType;
     }
 
     public LocalDate getFromDate() {
@@ -64,6 +81,14 @@ public class LeaveRequest {
 
     public void setToDate(LocalDate toDate) {
         this.toDate = toDate;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
 }

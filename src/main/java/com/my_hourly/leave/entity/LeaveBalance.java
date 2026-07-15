@@ -1,16 +1,12 @@
 package com.my_hourly.leave.entity;
 
-import java.time.LocalDate;
-
 import com.my_hourly.employee.entity.Employee;
-import com.my_hourly.leave.enums.LeaveStatus;
-import com.my_hourly.leave.enums.LeaveType;
 
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "employee_leaves")
-public class Leave {
+@Table(name = "leave_balances")
+public class LeaveBalance {
 
     // =====================================================
     // Primary Key
@@ -28,7 +24,7 @@ public class Leave {
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
-    @Column(name = "employee_code", nullable = false)
+    @Column(name = "employee_code", nullable = false, unique = true)
     private String employeeCode;
 
     @Column(name = "employee_first_name", nullable = false)
@@ -38,58 +34,57 @@ public class Leave {
     private String employeeLastName;
 
     // =====================================================
-    // Leave Details
+    // Leave Balance
     // =====================================================
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "leave_type", nullable = false)
-    private LeaveType leaveType;
+    @Column(name = "year", nullable = false)
+    private Integer year;
 
-    @Column(name = "from_date", nullable = false)
-    private LocalDate fromDate;
+    @Column(name = "month", nullable = false)
+    private Integer month;
 
-    @Column(name = "to_date", nullable = false)
-    private LocalDate toDate;
+    @Column(name = "monthly_leave", nullable = false)
+    private Integer monthlyLeave;
 
-    @Column(name = "reason", length = 500, nullable = false)
-    private String reason;
+    @Column(name = "used_leave", nullable = false)
+    private Integer usedLeave;
 
-    // =====================================================
-    // Leave Status
-    // =====================================================
+    @Column(name = "available_leave", nullable = false)
+    private Integer availableLeave;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private LeaveStatus status;
+    @Column(name = "expired_leave", nullable = false)
+    private Integer expiredLeave;
 
     // =====================================================
     // Constructors
     // =====================================================
 
-    public Leave() {
+    public LeaveBalance() {
     }
 
-    public Leave(Long id,
-                 Employee employee,
-                 String employeeCode,
-                 String employeeFirstName,
-                 String employeeLastName,
-                 LeaveType leaveType,
-                 LocalDate fromDate,
-                 LocalDate toDate,
-                 String reason,
-                 LeaveStatus status) {
+    public LeaveBalance(Long id,
+                        Employee employee,
+                        String employeeCode,
+                        String employeeFirstName,
+                        String employeeLastName,
+                        Integer year,
+                        Integer month,
+                        Integer monthlyLeave,
+                        Integer usedLeave,
+                        Integer availableLeave,
+                        Integer expiredLeave) {
 
         this.id = id;
         this.employee = employee;
         this.employeeCode = employeeCode;
         this.employeeFirstName = employeeFirstName;
         this.employeeLastName = employeeLastName;
-        this.leaveType = leaveType;
-        this.fromDate = fromDate;
-        this.toDate = toDate;
-        this.reason = reason;
-        this.status = status;
+        this.year = year;
+        this.month = month;
+        this.monthlyLeave = monthlyLeave;
+        this.usedLeave = usedLeave;
+        this.availableLeave = availableLeave;
+        this.expiredLeave = expiredLeave;
     }
 
     // =====================================================
@@ -136,43 +131,51 @@ public class Leave {
         this.employeeLastName = employeeLastName;
     }
 
-    public LeaveType getLeaveType() {
-        return leaveType;
+    public Integer getYear() {
+        return year;
     }
 
-    public void setLeaveType(LeaveType leaveType) {
-        this.leaveType = leaveType;
+    public void setYear(Integer year) {
+        this.year = year;
     }
 
-    public LocalDate getFromDate() {
-        return fromDate;
+    public Integer getMonth() {
+        return month;
     }
 
-    public void setFromDate(LocalDate fromDate) {
-        this.fromDate = fromDate;
+    public void setMonth(Integer month) {
+        this.month = month;
     }
 
-    public LocalDate getToDate() {
-        return toDate;
+    public Integer getMonthlyLeave() {
+        return monthlyLeave;
     }
 
-    public void setToDate(LocalDate toDate) {
-        this.toDate = toDate;
+    public void setMonthlyLeave(Integer monthlyLeave) {
+        this.monthlyLeave = monthlyLeave;
     }
 
-    public String getReason() {
-        return reason;
+    public Integer getUsedLeave() {
+        return usedLeave;
     }
 
-    public void setReason(String reason) {
-        this.reason = reason;
+    public void setUsedLeave(Integer usedLeave) {
+        this.usedLeave = usedLeave;
     }
 
-    public LeaveStatus getStatus() {
-        return status;
+    public Integer getAvailableLeave() {
+        return availableLeave;
     }
 
-    public void setStatus(LeaveStatus status) {
-        this.status = status;
+    public void setAvailableLeave(Integer availableLeave) {
+        this.availableLeave = availableLeave;
+    }
+
+    public Integer getExpiredLeave() {
+        return expiredLeave;
+    }
+
+    public void setExpiredLeave(Integer expiredLeave) {
+        this.expiredLeave = expiredLeave;
     }
 }
