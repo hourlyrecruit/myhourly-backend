@@ -1,4 +1,517 @@
-package com.my_hourly.attendence.service.impl;
+package com.my_hourly.attendance.service.impl;
 
-public class AttendanceServiceImpl {
+import com.my_hourly.attendance.api.request.BreakStartRequest;
+import com.my_hourly.attendance.api.request.CheckInRequest;
+import com.my_hourly.attendance.api.request.CheckOutRequest;
+import com.my_hourly.attendance.api.response.AttendanceCalendarResponse;
+import com.my_hourly.attendance.api.response.AttendanceDashboardResponse;
+import com.my_hourly.attendance.api.response.AttendanceMonthlySummaryResponse;
+import com.my_hourly.attendance.api.response.AttendanceResponse;
+import com.my_hourly.attendance.entity.*;
+import com.my_hourly.attendance.mapper.AttendanceMapper;
+import com.my_hourly.attendance.repository.AttendanceBreakRepository;
+import com.my_hourly.attendance.repository.AttendanceRepository;
+import com.my_hourly.attendance.service.AttendanceService;
+import com.my_hourly.attendance.util.TimeUtil;
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ValidationException;
+import com.my_hourly.employee.entity.Employee;
+import com.my_hourly.employee.service.EmployeeService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import com.my_hourly.common.response.PageResponse;
+import com.my_hourly.attendance.specification.AttendanceSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class AttendanceServiceImpl implements AttendanceService {
+    private final EmployeeService employeeService;
+    private final AttendanceRepository attendanceRepository;
+    private final AttendanceMapper attendanceMapper;
+    private final AttendanceBreakRepository attendanceBreakRepository;
+
+
+    @Override
+    public AttendanceResponse checkIn(
+            CheckInRequest request
+    ) {
+
+        Employee employee = employeeService.getCurrentEmployee();
+
+        LocalDate today = LocalDate.now();
+
+        if (attendanceRepository.existsByEmployeeAndAttendanceDate(
+                employee,
+                today
+        )) {
+
+            throw new ValidationException(
+                    "You have already checked in today.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        Attendance attendance = Attendance.builder()
+                .employee(employee)
+                .attendanceDate(today)
+                .checkInTime(LocalDateTime.now())
+                .attendanceStatus(AttendanceStatus.PRESENT)
+                .employeeStatus(EmployeeStatus.WORKING)
+                .workingMinutes(0)
+                .totalBreakMinutes(0)
+                .checkInLatitude(request.getLatitude())
+                .checkInLongitude(request.getLongitude())
+                .checkInAddress(request.getAddress())
+                .build();
+
+        Attendance savedAttendance =
+                attendanceRepository.save(attendance);
+
+        return attendanceMapper.toResponse(savedAttendance);
+
+    }
+
+    @Override
+    public AttendanceResponse checkOut(CheckOutRequest request) {
+
+        Employee employee = employeeService.getCurrentEmployee();
+
+        Attendance attendance = attendanceRepository
+                .findByEmployeeAndAttendanceDate(employee, LocalDate.now())
+                .orElseThrow(() ->
+                        new ValidationException(
+                                "You have not checked in today.",
+                                ErrorCode.VALIDATION_FAILED
+                        ));
+
+        if (attendance.getCheckOutTime() != null) {
+
+            throw new ValidationException(
+                    "You have already checked out today.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        boolean activeBreak = attendanceBreakRepository
+                .findFirstByAttendanceAndBreakEndTimeIsNullOrderByBreakStartTimeDesc(attendance)
+                .isPresent();
+
+        if (activeBreak) {
+
+            throw new ValidationException(
+                    "Please end your break before checking out.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        LocalDateTime checkOutTime = LocalDateTime.now();
+
+        attendance.setCheckOutTime(checkOutTime);
+
+        attendance.setEmployeeStatus(EmployeeStatus.CHECKED_OUT);
+
+        attendance.setCheckOutLatitude(request.getLatitude());
+
+        attendance.setCheckOutLongitude(request.getLongitude());
+
+        attendance.setCheckOutAddress(request.getAddress());
+
+        attendance.setWorkingMinutes(
+                calculateWorkingMinutes(attendance)
+        );
+
+        Attendance savedAttendance = attendanceRepository.save(attendance);
+
+        return attendanceMapper.toResponse(savedAttendance);
+    }
+
+    private int calculateWorkingMinutes(Attendance attendance) {
+
+        LocalDateTime endTime = attendance.getCheckOutTime();
+
+        if (endTime == null) {
+            endTime = LocalDateTime.now();
+        }
+
+        int totalMinutes = (int) Duration.between(
+                attendance.getCheckInTime(),
+                endTime
+        ).toMinutes();
+
+        int breakMinutes = attendance.getTotalBreakMinutes() == null
+                ? 0
+                : attendance.getTotalBreakMinutes();
+
+        return Math.max(totalMinutes - breakMinutes, 0);
+    }
+
+    private Attendance getTodayAttendance(Employee employee) {
+
+        return attendanceRepository
+                .findByEmployeeAndAttendanceDate(
+                        employee,
+                        LocalDate.now()
+                )
+                .orElseThrow(() ->
+                        new ValidationException(
+                                "You have not checked in today.",
+                                ErrorCode.VALIDATION_FAILED
+                        ));
+    }
+
+    private AttendanceBreak getActiveBreak(
+            Attendance attendance
+    ) {
+
+        return attendanceBreakRepository
+                .findFirstByAttendanceAndBreakEndTimeIsNullOrderByBreakStartTimeDesc(
+                        attendance
+                )
+                .orElse(null);
+    }
+
+    @Override
+    public AttendanceResponse startBreak(
+            BreakStartRequest request
+    ) {
+
+        Employee employee = employeeService.getCurrentEmployee();
+
+        Attendance attendance = getTodayAttendance(employee);
+
+        if (attendance.getCheckOutTime() != null) {
+
+            throw new ValidationException(
+                    "You have already checked out.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        if (getActiveBreak(attendance) != null) {
+
+            throw new ValidationException(
+                    "A break is already in progress.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        AttendanceBreak attendanceBreak =
+                AttendanceBreak.builder()
+                        .attendance(attendance)
+                        .breakType(request.getBreakType())
+                        .breakStartTime(LocalDateTime.now())
+                        .build();
+
+        attendanceBreakRepository.save(attendanceBreak);
+
+        attendance.setEmployeeStatus(EmployeeStatus.ON_BREAK);
+
+        attendanceRepository.save(attendance);
+
+        return attendanceMapper.toResponse(attendance,  getCurrentBreakType(attendance));
+    }
+
+    @Override
+    public AttendanceResponse endBreak() {
+
+        Employee employee = employeeService.getCurrentEmployee();
+
+        Attendance attendance = getTodayAttendance(employee);
+
+        AttendanceBreak attendanceBreak =
+                getActiveBreak(attendance);
+
+        if (attendanceBreak == null) {
+
+            throw new ValidationException(
+                    "No active break found.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        LocalDateTime breakEnd = LocalDateTime.now();
+
+        attendanceBreak.setBreakEndTime(breakEnd);
+
+        int breakMinutes = (int) Duration.between(
+                attendanceBreak.getBreakStartTime(),
+                breakEnd
+        ).toMinutes();
+
+        attendanceBreak.setBreakMinutes(breakMinutes);
+
+        attendanceBreakRepository.save(attendanceBreak);
+
+        attendance.setTotalBreakMinutes(
+                attendance.getTotalBreakMinutes() + breakMinutes
+        );
+
+        attendance.setEmployeeStatus(EmployeeStatus.WORKING);
+
+        attendanceRepository.save(attendance);
+
+        return attendanceMapper.toResponse(attendance, getCurrentBreakType(attendance));
+    }
+
+    private BreakType getCurrentBreakType(
+            Attendance attendance
+    ) {
+
+        AttendanceBreak activeBreak =
+                getActiveBreak(attendance);
+
+        return activeBreak == null
+                ? null
+                : activeBreak.getBreakType();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AttendanceResponse getTodayAttendance() {
+
+        Employee employee = employeeService.getCurrentEmployee();
+
+        Attendance attendance = getTodayAttendance(employee);
+
+        attendance.setWorkingMinutes(
+                calculateWorkingMinutes(attendance)
+        );
+
+        BreakType currentBreakType =
+                getCurrentBreakType(attendance);
+
+        return attendanceMapper.toResponse(
+                attendance,
+                currentBreakType
+        );
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<AttendanceResponse> getAttendanceHistory(
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection,
+            LocalDate fromDate,
+            LocalDate toDate,
+            AttendanceStatus status
+    ) {
+
+        Employee employee = employeeService.getCurrentEmployee();
+
+        Sort sort = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<Attendance> specification =
+                Specification.where(
+                                AttendanceSpecification.hasEmployee(employee))
+                        .and(
+                                AttendanceSpecification.fromDate(fromDate))
+                        .and(
+                                AttendanceSpecification.toDate(toDate))
+                        .and(
+                                AttendanceSpecification.hasStatus(status));
+
+        Page<Attendance> attendancePage =
+                attendanceRepository.findAll(
+                        specification,
+                        pageable
+                );
+
+        List<AttendanceResponse> responses =
+                attendancePage.getContent()
+                        .stream()
+                        .map(attendance -> {
+
+                            attendance.setWorkingMinutes(
+                                    calculateWorkingMinutes(attendance)
+                            );
+
+                            return attendanceMapper.toResponse(
+                                    attendance,
+                                    getCurrentBreakType(attendance)
+                            );
+
+                        })
+                        .toList();
+
+        return PageResponse.<AttendanceResponse>builder()
+                .content(responses)
+                .page(attendancePage.getNumber())
+                .size(attendancePage.getSize())
+                .totalElements(attendancePage.getTotalElements())
+                .totalPages(attendancePage.getTotalPages())
+                .last(attendancePage.isLast())
+                .build();
+
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public AttendanceMonthlySummaryResponse getMonthlySummary(
+            Integer month,
+            Integer year
+    ) {
+
+        Employee employee = employeeService.getCurrentEmployee();
+
+        LocalDate startDate = LocalDate.of(year, month, 1);
+
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        List<Attendance> attendances =
+                attendanceRepository.findByEmployeeAndAttendanceDateBetween(
+                        employee,
+                        startDate,
+                        endDate
+                );
+
+        long presentDays = attendances.stream()
+                .filter(a -> a.getAttendanceStatus() == AttendanceStatus.PRESENT)
+                .count();
+
+        long lateDays = attendances.stream()
+                .filter(a -> a.getAttendanceStatus() == AttendanceStatus.LATE)
+                .count();
+
+        long halfDays = attendances.stream()
+                .filter(a -> a.getAttendanceStatus() == AttendanceStatus.HALF_DAY)
+                .count();
+
+        long absentDays = attendances.stream()
+                .filter(a -> a.getAttendanceStatus() == AttendanceStatus.ABSENT)
+                .count();
+
+        long leaveDays = attendances.stream()
+                .filter(a -> a.getAttendanceStatus() == AttendanceStatus.LEAVE)
+                .count();
+
+        long holidayDays = attendances.stream()
+                .filter(a -> a.getAttendanceStatus() == AttendanceStatus.HOLIDAY)
+                .count();
+
+        long weekendDays = attendances.stream()
+                .filter(a -> a.getAttendanceStatus() == AttendanceStatus.WEEKEND)
+                .count();
+
+        int totalWorkingMinutes = attendances.stream()
+                .mapToInt(a -> a.getWorkingMinutes() == null ? 0 : a.getWorkingMinutes())
+                .sum();
+
+        int averageWorkingMinutes =
+                attendances.isEmpty()
+                        ? 0
+                        : totalWorkingMinutes / attendances.size();
+
+        return AttendanceMonthlySummaryResponse.builder()
+                .month(month)
+                .year(year)
+                .totalAttendanceDays((long) attendances.size())
+                .presentDays(presentDays)
+                .lateDays(lateDays)
+                .halfDays(halfDays)
+                .absentDays(absentDays)
+                .leaveDays(leaveDays)
+                .holidayDays(holidayDays)
+                .weekendDays(weekendDays)
+                .totalWorkingMinutes(totalWorkingMinutes)
+                .totalWorkingHours(TimeUtil.formatMinutes(totalWorkingMinutes))
+                .averageWorkingMinutes(averageWorkingMinutes)
+                .averageWorkingHours(TimeUtil.formatMinutes(averageWorkingMinutes))
+                .build();
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttendanceCalendarResponse> getAttendanceCalendar(
+            Integer month,
+            Integer year
+    ) {
+
+        Employee employee = employeeService.getCurrentEmployee();
+
+        LocalDate today = LocalDate.now();
+
+        if (month == null) {
+            month = today.getMonthValue();
+        }
+
+        if (year == null) {
+            year = today.getYear();
+        }
+
+        LocalDate startDate = LocalDate.of(year, month, 1);
+
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        List<Attendance> attendances =
+                attendanceRepository.findByEmployeeAndAttendanceDateBetween(
+                        employee,
+                        startDate,
+                        endDate
+                );
+
+        return attendances.stream()
+                .map(attendanceMapper::toCalendarResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AttendanceDashboardResponse getAttendanceDashboard() {
+
+        Employee employee = employeeService.getCurrentEmployee();
+
+        Optional<Attendance> optionalAttendance =
+                attendanceRepository.findByEmployeeAndAttendanceDate(
+                        employee,
+                        LocalDate.now()
+                );
+
+        if (optionalAttendance.isEmpty()) {
+
+            return AttendanceDashboardResponse.builder()
+                    .checkedIn(false)
+                    .checkedOut(false)
+                    .workingMinutes(0)
+                    .workingHours("0m")
+                    .breakMinutes(0)
+                    .breakHours("0m")
+                    .build();
+        }
+
+        Attendance attendance = optionalAttendance.get();
+
+        attendance.setWorkingMinutes(
+                calculateWorkingMinutes(attendance)
+        );
+
+        return attendanceMapper.toDashboardResponse(
+                attendance,
+                getCurrentBreakType(attendance)
+        );
+    }
+
 }

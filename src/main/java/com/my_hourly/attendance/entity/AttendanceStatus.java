@@ -1,4 +1,4 @@
-package com.my_hourly.attendence.entity;
+package com.my_hourly.attendance.entity;
 
 public enum AttendanceStatus {
 
@@ -8,6 +8,6 @@ public enum AttendanceStatus {
     ABSENT,
     LEAVE,
     HOLIDAY,
-    WEEKEND
-
+    WEEKEND,
+    MISSED_CHECKOUT
 }

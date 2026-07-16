@@ -1,10 +1,11 @@
-package com.my_hourly.attendence.entity;
+package com.my_hourly.attendance.entity;
 
 import com.my_hourly.common.entity.BaseEntity;
 import com.my_hourly.employee.entity.Employee;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,10 +19,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Attendance extends BaseEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)
@@ -44,15 +41,19 @@ public class Attendance extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private EmployeeStatus employeeStatus;
 
-    private Double checkInLatitude;
+    @Column(precision = 10, scale = 7)
+    private BigDecimal checkInLatitude;
 
-    private Double checkInLongitude;
+    @Column(precision = 10, scale = 7)
+    private BigDecimal checkInLongitude;
 
     private String checkInAddress;
 
-    private Double checkOutLatitude;
+    @Column(precision = 10, scale = 7)
+    private BigDecimal checkOutLatitude;
 
-    private Double checkOutLongitude;
+    @Column(precision = 10, scale = 7)
+    private BigDecimal checkOutLongitude;
 
     private String checkOutAddress;
 

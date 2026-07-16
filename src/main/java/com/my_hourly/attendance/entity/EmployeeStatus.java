@@ -1,4 +1,4 @@
-package com.my_hourly.attendence.entity;
+package com.my_hourly.attendance.entity;
 
 public enum EmployeeStatus {
 
