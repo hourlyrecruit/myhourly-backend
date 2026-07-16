@@ -1,4 +1,4 @@
-package com.my_hourly.attendance.entity;
+package com.my_hourly.attendence.entity;
 
-public class AttendanceBreak {
+public enum AttendanceBreak {
 }
