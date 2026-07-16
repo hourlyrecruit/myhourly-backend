@@ -80,6 +80,8 @@ public class CustomUserDetailsService
                     authorities.add(new SimpleGrantedAuthority("employee:viewMe"));
                     authorities.add(new SimpleGrantedAuthority("employee:update"));
                     //authorities.add(new SimpleGrantedAuthority("employee:updatePhoto"));
+                    authorities.add(new SimpleGrantedAuthority("attendance:create"));
+                    authorities.add(new SimpleGrantedAuthority("attendance:view"));
                     break;
                 default:
                     break;
