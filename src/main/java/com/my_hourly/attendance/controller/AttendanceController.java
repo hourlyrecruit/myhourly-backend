@@ -3,10 +3,7 @@ package com.my_hourly.attendance.controller;
 import com.my_hourly.attendance.api.request.BreakStartRequest;
 import com.my_hourly.attendance.api.request.CheckInRequest;
 import com.my_hourly.attendance.api.request.CheckOutRequest;
-import com.my_hourly.attendance.api.response.AttendanceCalendarResponse;
-import com.my_hourly.attendance.api.response.AttendanceDashboardResponse;
-import com.my_hourly.attendance.api.response.AttendanceMonthlySummaryResponse;
-import com.my_hourly.attendance.api.response.AttendanceResponse;
+import com.my_hourly.attendance.api.response.*;
 import com.my_hourly.attendance.entity.AttendanceStatus;
 import com.my_hourly.attendance.service.AttendanceService;
 import com.my_hourly.common.response.ApiResponse;
@@ -32,13 +29,13 @@ public class AttendanceController {
 
     @PostMapping("/check-in")
     @PreAuthorize("hasAuthority('attendance:create')")
-    public ResponseEntity<ApiResponse<AttendanceResponse>> checkIn(
+    public ResponseEntity<ApiResponse<CheckInResponse>> checkIn(
             @Valid @RequestBody CheckInRequest request) {
 
-        AttendanceResponse response = attendanceService.checkIn(request);
+        CheckInResponse response = attendanceService.checkIn(request);
 
         return ResponseEntity.ok(
-                ApiResponse.<AttendanceResponse>builder()
+                ApiResponse.<CheckInResponse>builder()
                         .success(true)
                         .message("Checked in successfully.")
                         .data(response)
@@ -48,13 +45,13 @@ public class AttendanceController {
 
     @PostMapping("/break-start")
     @PreAuthorize("hasAuthority('attendance:create')")
-    public ResponseEntity<ApiResponse<AttendanceResponse>> startBreak(
+    public ResponseEntity<ApiResponse<BreakStartResponse>> startBreak(
             @Valid @RequestBody BreakStartRequest request) {
 
-        AttendanceResponse response = attendanceService.startBreak(request);
+        BreakStartResponse response = attendanceService.startBreak(request);
 
         return ResponseEntity.ok(
-                ApiResponse.<AttendanceResponse>builder()
+                ApiResponse.<BreakStartResponse>builder()
                         .success(true)
                         .message("Break started successfully.")
                         .data(response)
@@ -64,12 +61,12 @@ public class AttendanceController {
 
     @PostMapping("/break-end")
     @PreAuthorize("hasAuthority('attendance:create')")
-    public ResponseEntity<ApiResponse<AttendanceResponse>> endBreak() {
+    public ResponseEntity<ApiResponse<BreakEndResponse>> endBreak() {
 
-        AttendanceResponse response = attendanceService.endBreak();
+        BreakEndResponse response = attendanceService.endBreak();
 
         return ResponseEntity.ok(
-                ApiResponse.<AttendanceResponse>builder()
+                ApiResponse.<BreakEndResponse>builder()
                         .success(true)
                         .message("Break ended successfully.")
                         .data(response)
@@ -79,13 +76,13 @@ public class AttendanceController {
 
     @PostMapping("/check-out")
     @PreAuthorize("hasAuthority('attendance:create')")
-    public ResponseEntity<ApiResponse<AttendanceResponse>> checkOut(
+    public ResponseEntity<ApiResponse<CheckOutResponse>> checkOut(
             @Valid @RequestBody CheckOutRequest request) {
 
-        AttendanceResponse response = attendanceService.checkOut(request);
+        CheckOutResponse response = attendanceService.checkOut(request);
 
         return ResponseEntity.ok(
-                ApiResponse.<AttendanceResponse>builder()
+                ApiResponse.<CheckOutResponse>builder()
                         .success(true)
                         .message("Checked out successfully.")
                         .data(response)

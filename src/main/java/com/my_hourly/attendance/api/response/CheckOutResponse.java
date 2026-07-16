@@ -1,6 +1,7 @@
 package com.my_hourly.attendance.api.response;
 
 import com.my_hourly.attendance.entity.AttendanceStatus;
+import com.my_hourly.attendance.entity.BreakType;
 import com.my_hourly.attendance.entity.EmployeeStatus;
 import lombok.*;
 
@@ -12,17 +13,16 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CheckInResponse {
+public class CheckOutResponse {
     private Long id;
 
     private LocalDate attendanceDate;
 
-    private LocalDateTime checkInTime;
+    private LocalDateTime checkOutTime;
 
-    private String formattedCheckInTime;
+    private String formattedCheckOutTime;
 
     private AttendanceStatus attendanceStatus;
 
     private EmployeeStatus employeeStatus;
-
 }

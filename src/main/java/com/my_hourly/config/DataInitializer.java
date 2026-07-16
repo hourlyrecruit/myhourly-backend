@@ -170,9 +170,9 @@ public class DataInitializer implements ApplicationRunner {
 
     private void seedDepartmentDesignationJobTitle(){
         if (departmentRepository.existsByDepartmentName(departmentName)
-                && designationRepository.existsByDesignationName(departmentName)
+                && designationRepository.existsByDesignationName(designationName)
                 && jobTitleRepository.existsByJobTitle(jobTitle)) {
-            log.info("[DataInitializer] departmentName,departmentName,jobTitle '{}' already exists — skipping.", managerUsername);
+            log.info("[DataInitializer] departmentName,departmentName,jobTitle '{}' already exists — skipping.", departmentName);
             return;
         }
 
