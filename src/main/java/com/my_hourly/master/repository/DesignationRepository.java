@@ -29,4 +29,6 @@ public interface DesignationRepository extends JpaRepository<Designation, Long> 
     List<Designation> findByDepartmentIdAndActiveTrueOrderByDesignationNameAsc(
             Long departmentId
     );
+
+    boolean existsByDesignationName(String designationName);
 }

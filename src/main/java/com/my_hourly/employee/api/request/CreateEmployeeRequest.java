@@ -25,9 +25,6 @@ public class CreateEmployeeRequest {
 
     private String lastName;
 
-//    @NotNull(message = "User is required.")
-//    private Long userId;
-
     @NotBlank(message = "Phone number is required.")
     private String phoneNumber;
 

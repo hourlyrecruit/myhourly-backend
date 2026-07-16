@@ -28,6 +28,8 @@ public class AttendanceMapper {
                 .id(attendance.getId())
                 .attendanceDate(attendance.getAttendanceDate())
                 .checkInTime(attendance.getCheckInTime())
+                .formattedCheckInTime(DateTimeUtil.formatTime(attendance.getCheckInTime()))
+                .formattedCheckOutTime(DateTimeUtil.formatTime(attendance.getCheckOutTime()))
                 .checkOutTime(attendance.getCheckOutTime())
                 .workingMinutes(attendance.getWorkingMinutes())
                 .workingHours(TimeUtil.formatMinutes(attendance.getWorkingMinutes()))
@@ -62,6 +64,7 @@ public class AttendanceMapper {
     ) {
 
         return AttendanceDashboardResponse.builder()
+                .attendanceDate(attendance.getAttendanceDate())
                 .checkedIn(attendance.getCheckInTime() != null)
                 .checkedOut(attendance.getCheckOutTime() != null)
                 .attendanceStatus(attendance.getAttendanceStatus())

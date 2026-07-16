@@ -47,15 +47,11 @@ public class Attendance extends BaseEntity {
     @Column(precision = 10, scale = 7)
     private BigDecimal checkInLongitude;
 
-    private String checkInAddress;
-
     @Column(precision = 10, scale = 7)
     private BigDecimal checkOutLatitude;
 
     @Column(precision = 10, scale = 7)
     private BigDecimal checkOutLongitude;
-
-    private String checkOutAddress;
 
     @Builder.Default
     @OneToMany(

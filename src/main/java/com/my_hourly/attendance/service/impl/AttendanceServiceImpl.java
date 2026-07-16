@@ -76,7 +76,6 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .totalBreakMinutes(0)
                 .checkInLatitude(request.getLatitude())
                 .checkInLongitude(request.getLongitude())
-                .checkInAddress(request.getAddress())
                 .build();
 
         Attendance savedAttendance =
@@ -128,8 +127,6 @@ public class AttendanceServiceImpl implements AttendanceService {
         attendance.setCheckOutLatitude(request.getLatitude());
 
         attendance.setCheckOutLongitude(request.getLongitude());
-
-        attendance.setCheckOutAddress(request.getAddress());
 
         attendance.setWorkingMinutes(
                 calculateWorkingMinutes(attendance)

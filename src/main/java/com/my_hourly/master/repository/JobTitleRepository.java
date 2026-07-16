@@ -26,4 +26,6 @@ public interface JobTitleRepository extends JpaRepository<JobTitle, Long> {
     List<JobTitle> findByDesignationIdAndActiveTrueOrderByJobTitleAsc(
             Long designationId
     );
+
+    boolean existsByJobTitle(String jobTitle);
 }
