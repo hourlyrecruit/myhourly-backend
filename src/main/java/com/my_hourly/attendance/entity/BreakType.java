@@ -6,6 +6,7 @@ public enum BreakType {
     TEA,
     PERSONAL,
     MEETING,
+    NO_ACTIVE_BREAK,
     OTHER
 
 }

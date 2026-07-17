@@ -23,11 +23,11 @@ public class AttendanceMonthlySummaryResponse {
 
     private Long absentDays;
 
-    private Integer totalWorkingMinutes;
+   // private Integer totalWorkingMinutes;
 
     private String totalWorkingHours;
 
-    private Integer averageWorkingMinutes;
+  //  private Integer averageWorkingMinutes;
 
     private String averageWorkingHours;
 

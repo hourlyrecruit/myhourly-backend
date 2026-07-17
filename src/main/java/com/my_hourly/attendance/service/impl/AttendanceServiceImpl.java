@@ -270,7 +270,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 getActiveBreak(attendance);
 
         return activeBreak == null
-                ? null
+                ? BreakType.NO_ACTIVE_BREAK
                 : activeBreak.getBreakType();
     }
 
@@ -429,9 +429,9 @@ public class AttendanceServiceImpl implements AttendanceService {
                 //.leaveDays(leaveDays)
                // .holidayDays(holidayDays)
               //  .weekendDays(weekendDays)
-                .totalWorkingMinutes(totalWorkingMinutes)
+                //.totalWorkingMinutes(totalWorkingMinutes)
                 .totalWorkingHours(TimeUtil.formatMinutes(totalWorkingMinutes))
-                .averageWorkingMinutes(averageWorkingMinutes)
+               // .averageWorkingMinutes(averageWorkingMinutes)
                 .averageWorkingHours(TimeUtil.formatMinutes(averageWorkingMinutes))
                 .build();
 

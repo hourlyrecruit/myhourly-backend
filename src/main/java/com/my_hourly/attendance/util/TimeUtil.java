@@ -7,20 +7,12 @@ public final class TimeUtil {
 
     public static String formatMinutes(Integer minutes) {
 
-        if (minutes == null || minutes <= 0) {
-            return "0m";
+        if (minutes <= 0) {
+            return "0h 0m";
         }
 
         int hours = minutes / 60;
         int mins = minutes % 60;
-
-        if (hours == 0) {
-            return mins + "m";
-        }
-
-        if (mins == 0) {
-            return hours + "h";
-        }
 
         return hours + "h " + mins + "m";
     }

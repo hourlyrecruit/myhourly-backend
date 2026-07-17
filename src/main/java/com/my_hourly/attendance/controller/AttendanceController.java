@@ -90,6 +90,21 @@ public class AttendanceController {
         );
     }
 
+//    @GetMapping("/todayBreak")
+//    @PreAuthorize("hasAuthority('attendance:view')")
+//    public ResponseEntity<ApiResponse<AttendanceResponse>> getTodayAttendance() {
+//
+//        AttendanceResponse response = attendanceService.getTodayAttendance();
+//
+//        return ResponseEntity.ok(
+//                ApiResponse.<AttendanceResponse>builder()
+//                        .success(true)
+//                        .message("Today's attendance fetched successfully.")
+//                        .data(response)
+//                        .build()
+//        );
+//    }
+
     @GetMapping("/today")
     @PreAuthorize("hasAuthority('attendance:view')")
     public ResponseEntity<ApiResponse<AttendanceResponse>> getTodayAttendance() {

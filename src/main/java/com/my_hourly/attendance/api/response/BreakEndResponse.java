@@ -19,8 +19,6 @@ public class BreakEndResponse {
 
     private String breakEndTime;
 
-    private BreakType currentBreakType;
-
     private Integer breakMinutes;
 
     private EmployeeStatus employeeStatus;
