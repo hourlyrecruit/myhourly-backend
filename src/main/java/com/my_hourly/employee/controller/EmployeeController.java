@@ -58,6 +58,26 @@ public class EmployeeController {
                         .build());
     }
 
+    @PutMapping(
+            value = "/profile-photo",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    @PreAuthorize("hasAuthority('employee:update')")
+    @Operation(summary = "Change Profile Photo: image/jpeg, image/jpg, image/png, Only Access by Employee", description = "Only Access by Employee")
+    public ResponseEntity<ApiResponse<EmployeeResponse>> uploadProfilePhoto(
+            @RequestParam("file") MultipartFile file) {
+
+        EmployeeResponse response = employeeService.uploadProfilePhoto(file);
+
+        return ResponseEntity.ok(
+                ApiResponse.<EmployeeResponse>builder()
+                        .success(true)
+                        .message("Profile photo uploaded successfully.")
+                        .data(response)
+                        .build()
+        );
+    }
+
     @PutMapping
     @PreAuthorize("hasAuthority('employee:update')")
     @Operation(summary = "Update employee, Only Access by Employee", description = "Only Access by Employee")
@@ -160,25 +180,7 @@ public class EmployeeController {
         );
     }
 
-    @PutMapping(
-            value = "/profile-photo",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @PreAuthorize("hasAuthority('employee:update')")
-    @Operation(summary = "Upload Profile Photo: image/jpeg, image/jpg, image/png, Only Access by Employee", description = "Only Access by Employee")
-    public ResponseEntity<ApiResponse<EmployeeResponse>> uploadProfilePhoto(
-            @RequestParam("file") MultipartFile file) {
 
-        EmployeeResponse response = employeeService.uploadProfilePhoto(file);
-
-        return ResponseEntity.ok(
-                ApiResponse.<EmployeeResponse>builder()
-                        .success(true)
-                        .message("Profile photo uploaded successfully.")
-                        .data(response)
-                        .build()
-        );
-    }
 
 //    @GetMapping("/{id}/profile-photo")
 //    @PreAuthorize("isAuthenticated()")
