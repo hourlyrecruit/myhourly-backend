@@ -135,14 +135,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeResponse create(CreateEmployeeRequest request) {
+    public EmployeeResponse create(CreateEmployeeRequest request, MultipartFile file) {
 
         User user = SecurityUtils.getCurrentUser();
 
         if (employeeRepository.existsByEmail(user.getEmail())) {
 
             throw new ValidationException(
-                    "Email already exists.",
+                    "User Profile already exists. You can update it",
                     ErrorCode.VALIDATION_FAILED
             );
         }
@@ -165,6 +165,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee reportingManager =
                 getReportingManager(request.getReportingManagerId());
 
+
+
         Employee employee = employeeMapper.toEntity(
                 request,
                 user,
@@ -179,7 +181,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee savedEmployee =
                 employeeRepository.save(employee);
 
-        return employeeMapper.toResponse(savedEmployee);
+        //return employeeMapper.toResponse(savedEmployee);
+
+        if (file == null || file.isEmpty()) {
+            return employeeMapper.toResponse(savedEmployee);
+        }else {
+            return uploadProfilePhoto(file);
+        }
+
     }
 
     @Override
@@ -350,7 +359,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             MultipartFile file
     ) {
 
-        MultipartFileValidator.validate(file);
+       // MultipartFileValidator.validate(file);
         Employee employee =  getCurrentEmployee();
 
         validateProfilePhoto(file);

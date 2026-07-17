@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface EmployeeService {
 
-    EmployeeResponse create(CreateEmployeeRequest request);
+    EmployeeResponse create(CreateEmployeeRequest request, MultipartFile file);
 
     EmployeeResponse update(UpdateEmployeeRequest request);
 

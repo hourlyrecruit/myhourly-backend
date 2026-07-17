@@ -9,6 +9,8 @@ import com.my_hourly.employee.api.response.EmployeeResponse;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,13 +32,23 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('employee:create')")
-    @Operation(summary = "Create employees profile, Only Access by Employee", description = "Only Access by Employee")
+    @Operation(summary = "Create employees profile", description = "Access by Employee")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                    encoding = {
+                            @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE),
+                            @Encoding(name = "file", contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+                    }
+            )
+    )
     public ResponseEntity<ApiResponse<EmployeeResponse>> create(
-            @Valid @RequestBody CreateEmployeeRequest request) {
+            @Valid @RequestPart("request") CreateEmployeeRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
 
-        EmployeeResponse response = employeeService.create(request);
+        EmployeeResponse response = employeeService.create(request, file);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.<EmployeeResponse>builder()
@@ -148,7 +160,7 @@ public class EmployeeController {
         );
     }
 
-    @PostMapping(
+    @PutMapping(
             value = "/profile-photo",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
