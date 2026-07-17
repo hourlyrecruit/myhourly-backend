@@ -6,6 +6,7 @@ import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.common.exception.ValidationException;
 
 import com.my_hourly.common.response.PageResponse;
+import com.my_hourly.employee.FileValidator.MultipartFileValidator;
 import com.my_hourly.employee.api.request.CreateEmployeeRequest;
 import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
 import com.my_hourly.employee.api.response.EmployeeDropdownResponse;
@@ -349,6 +350,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             MultipartFile file
     ) {
 
+        MultipartFileValidator.validate(file);
         Employee employee =  getCurrentEmployee();
 
         validateProfilePhoto(file);
