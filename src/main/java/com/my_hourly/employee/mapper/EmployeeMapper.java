@@ -27,6 +27,7 @@ public class EmployeeMapper {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .user(user)
+                .roleName(user.getRole())
                 .email(user.getEmail())
                 .phoneNumber(request.getPhoneNumber())
                 .gender(request.getGender())

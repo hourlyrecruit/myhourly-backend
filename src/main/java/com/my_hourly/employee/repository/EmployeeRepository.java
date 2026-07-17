@@ -1,11 +1,13 @@
 package com.my_hourly.employee.repository;
 
+import com.my_hourly.authentication.entity.RoleName;
 import com.my_hourly.authentication.entity.User;
 import com.my_hourly.employee.entity.Employee;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,4 +34,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     boolean existsByUser(User user);
 
     boolean existsByPhoneNumber(String phoneNumber);
+
+    List<Employee> findByActiveTrueAndRoleNameOrderByFirstNameAsc(RoleName role);
 }
