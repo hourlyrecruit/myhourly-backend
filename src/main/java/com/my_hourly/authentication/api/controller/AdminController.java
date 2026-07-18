@@ -7,7 +7,7 @@ import com.my_hourly.authentication.api.response.RegisterResponse;
 import com.my_hourly.authentication.api.response.UserProfileResponse;
 import com.my_hourly.authentication.service.AdminService;
 import com.my_hourly.authentication.entity.RoleName;
-import com.my_hourly.common.response.ApiResponse;
+import com.my_hourly.common.payload.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

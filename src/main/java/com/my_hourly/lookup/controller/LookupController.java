@@ -1,6 +1,6 @@
 package com.my_hourly.lookup.controller;
 
-import com.my_hourly.common.response.ApiResponse;
+import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.lookup.api.response.LookupResponse;
 import com.my_hourly.lookup.api.response.ReportingManagerLookupResponse;
 import com.my_hourly.lookup.service.LookupService;

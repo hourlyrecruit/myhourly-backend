@@ -1,7 +1,7 @@
 package com.my_hourly.master.api.controller;
 
-import com.my_hourly.common.response.ApiResponse;
-import com.my_hourly.common.response.PageResponse;
+import com.my_hourly.common.payload.response.ApiResponse;
+import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.master.api.request.CreateDesignationRequest;
 import com.my_hourly.master.api.request.UpdateDesignationRequest;
 import com.my_hourly.master.api.response.DesignationResponse;
