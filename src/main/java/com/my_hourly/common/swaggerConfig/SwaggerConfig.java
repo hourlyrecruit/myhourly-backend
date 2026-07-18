@@ -1,4 +1,4 @@
-package com.my_hourly.config;
+package com.my_hourly.common.swaggerConfig;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

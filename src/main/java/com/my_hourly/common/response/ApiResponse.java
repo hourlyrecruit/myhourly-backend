@@ -1,12 +1,13 @@
 package com.my_hourly.common.response;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Setter
 @Getter
 @Builder
+@AllArgsConstructor
 public class ApiResponse<T> {
 
     private final boolean success;

@@ -1,23 +1,21 @@
-package com.my_hourly.config;
+package com.my_hourly.common.initializer;
 
 import com.my_hourly.authentication.entity.*;
 import com.my_hourly.authentication.repository.*;
 import com.my_hourly.authentication.entity.RoleName;
-import com.my_hourly.employee.api.request.CreateEmployeeRequest;
-import com.my_hourly.employee.entity.EmploymentType;
-import com.my_hourly.employee.entity.Gender;
-import com.my_hourly.employee.repository.EmployeeRepository;
-import com.my_hourly.employee.service.EmployeeService;
 import com.my_hourly.master.api.request.CreateDepartmentRequest;
 import com.my_hourly.master.api.request.CreateDesignationRequest;
 import com.my_hourly.master.api.request.CreateJobTitleRequest;
-import com.my_hourly.master.entity.Department;
 import com.my_hourly.master.repository.DepartmentRepository;
 import com.my_hourly.master.repository.DesignationRepository;
 import com.my_hourly.master.repository.JobTitleRepository;
 import com.my_hourly.master.service.DepartmentService;
 import com.my_hourly.master.service.DesignationService;
 import com.my_hourly.master.service.JobTitleService;
+import com.my_hourly.settings.attendance.entity.AttendanceSettings;
+import com.my_hourly.settings.company.entity.CompanySettings;
+import com.my_hourly.settings.attendance.repository.AttendanceSettingsRepository;
+import com.my_hourly.settings.company.repository.CompanySettingsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalTime;
 
 
 @Slf4j
@@ -43,8 +41,9 @@ public class DataInitializer implements ApplicationRunner {
     private final DepartmentService departmentService;
     private final DesignationService designationService;
     private final JobTitleService jobTitleService;
-//    private final EmployeeService employeeService;
-//    private final EmployeeRepository employeeRepository;
+    private final CompanySettingsRepository companySettingsRepository;
+    private final AttendanceSettingsRepository attendanceSettingsRepository;
+   // private final SuperAdminProperties superAdminProperties;
 
     @Value("${app.super-admin.username}")
     private String superAdminUsername;
@@ -101,6 +100,8 @@ public class DataInitializer implements ApplicationRunner {
         seedSuperAdmin();
         seedManager();
         seedDepartmentDesignationJobTitle();
+        seedCompanySettings();
+        seedAttendanceSettings();
     }
 
 
@@ -139,6 +140,7 @@ public class DataInitializer implements ApplicationRunner {
         }
 
         User superAdmin = User.builder()
+                //.username(superAdminProperties.getUsername();)
                 .username(superAdminUsername)
                 .email(superAdminEmail)
                 .password(passwordEncoder.encode(superAdminPassword))
@@ -194,62 +196,54 @@ public class DataInitializer implements ApplicationRunner {
 
     }
 
+    private void seedCompanySettings() {
 
-//    @Value("${default.employee.first-name}")
-//    private String firstName;
-//
-//    @Value("${default.employee.last-name}")
-//    private String lastName;
-//
-//    @Value("${default.employee.phone-number}")
-//    private String phoneNumber;
-//
-//    @Value("${default.employee.gender}")
-//    private Gender gender;
-//
-//    @Value("${default.employee.date-of-birth}")
-//    private LocalDate dateOfBirth;
-//
-//    @Value("${default.employee.date-of-joining}")
-//    private LocalDate dateOfJoining;
-//
-//    @Value("${default.employee.employment-type}")
-//    private EmploymentType employmentType;
-//
-//    @Value("${default.employee.department-id}")
-//    private Long departId;
-//
-//    @Value("${default.employee.designation-id}")
-//    private Long desiId;
-//
-//    @Value("${default.employee.job-title-id}")
-//    private Long jobId;
-//
-//    @Value("${default.employee.reporting-manager-id}")
-//    private Long reportingManagerId;
-//
-//    private void seedManagerEmployee(){
-//        if (employeeRepository.existsByPhoneNumber(phoneNumber)){
-//            log.info("[DataInitializer] departmentName,departmentName,jobTitle '{}' already exists — skipping.", managerUsername);
-//            return;
-//        }
-//
-//        CreateEmployeeRequest request = new CreateEmployeeRequest();
-//        request.setFirstName(firstName);
-//        request.setLastName(lastName);
-//        request.setPhoneNumber(phoneNumber);
-//        request.setGender(gender);
-//        request.setDateOfBirth(dateOfBirth);
-//        request.setDateOfJoining(dateOfJoining);
-//        request.setEmploymentType(employmentType);
-//        request.setDepartmentId(departId);
-//        request.setDesignationId(desiId);
-//        request.setJobTitleId(jobId);
-//        request.setReportingManagerId(reportingManagerId);
-//
-//        employeeService.create(request);
-//    }
+        if (companySettingsRepository.count() > 0) {
+            log.info("[DataInitializer] Company Settings already exist - skipping.");
+            return;
+        }
 
+        CompanySettings settings = CompanySettings.builder()
+                .companyName("MyHourly")
+                .companyCode("MHR")
+                .email(superAdminEmail)
+                .phoneNumber("9876543210")
+                .timeZone("Asia/Kolkata")
+                .currency("INR")
+                .workingDaysPerWeek(5)
+                .active(true)
+                .build();
+
+        companySettingsRepository.save(settings);
+
+        log.info("[DataInitializer] Company Settings created successfully.");
+    }
+
+    private void seedAttendanceSettings() {
+
+        if (attendanceSettingsRepository.count() > 0) {
+            log.info("[DataInitializer] Attendance Settings already exist - skipping.");
+            return;
+        }
+
+        AttendanceSettings settings = AttendanceSettings.builder()
+                .officeStartTime(LocalTime.of(9, 30))
+                .officeEndTime(LocalTime.of(18, 30))
+                .gracePeriodMinutes(45)
+                .minimumWorkingMinutes(480)
+                .halfDayWorkingMinutes(240)
+                .checkoutCutoffMinutes(180)
+                .overtimeEnabled(false)
+                .attendanceRegularizationEnabled(true)
+                .multipleBreaksAllowed(true)
+                .maximumBreakMinutes(60)
+                .active(true)
+                .build();
+
+        attendanceSettingsRepository.save(settings);
+
+        log.info("[DataInitializer] Attendance Settings created successfully.");
+    }
 
 
 }

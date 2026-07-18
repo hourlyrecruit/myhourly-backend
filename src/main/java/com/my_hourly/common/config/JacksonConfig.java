@@ -1,4 +1,4 @@
-package com.my_hourly.config;
+package com.my_hourly.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
