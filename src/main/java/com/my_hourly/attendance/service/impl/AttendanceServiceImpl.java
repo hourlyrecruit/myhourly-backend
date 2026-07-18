@@ -3,10 +3,7 @@ package com.my_hourly.attendance.service.impl;
 import com.my_hourly.attendance.api.request.BreakStartRequest;
 import com.my_hourly.attendance.api.request.CheckInRequest;
 import com.my_hourly.attendance.api.request.CheckOutRequest;
-import com.my_hourly.attendance.api.response.AttendanceCalendarResponse;
-import com.my_hourly.attendance.api.response.AttendanceDashboardResponse;
-import com.my_hourly.attendance.api.response.AttendanceMonthlySummaryResponse;
-import com.my_hourly.attendance.api.response.AttendanceResponse;
+import com.my_hourly.attendance.api.response.*;
 import com.my_hourly.attendance.entity.*;
 import com.my_hourly.attendance.mapper.AttendanceMapper;
 import com.my_hourly.attendance.repository.AttendanceBreakRepository;
@@ -17,6 +14,7 @@ import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.ValidationException;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.service.EmployeeService;
+import com.my_hourly.settings.attendance.service.AttendanceSettingsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +23,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.my_hourly.common.response.PageResponse;
+import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.attendance.specification.AttendanceSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,7 +31,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,7 +44,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
 
     @Override
-    public AttendanceResponse checkIn(
+    public CheckInResponse checkIn(
             CheckInRequest request
     ) {
 
@@ -76,18 +73,17 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .totalBreakMinutes(0)
                 .checkInLatitude(request.getLatitude())
                 .checkInLongitude(request.getLongitude())
-                .checkInAddress(request.getAddress())
                 .build();
 
         Attendance savedAttendance =
                 attendanceRepository.save(attendance);
 
-        return attendanceMapper.toResponse(savedAttendance);
+        return attendanceMapper.toCheckInResponse(savedAttendance);
 
     }
 
     @Override
-    public AttendanceResponse checkOut(CheckOutRequest request) {
+    public CheckOutResponse checkOut(CheckOutRequest request) {
 
         Employee employee = employeeService.getCurrentEmployee();
 
@@ -129,15 +125,13 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         attendance.setCheckOutLongitude(request.getLongitude());
 
-        attendance.setCheckOutAddress(request.getAddress());
-
         attendance.setWorkingMinutes(
                 calculateWorkingMinutes(attendance)
         );
 
         Attendance savedAttendance = attendanceRepository.save(attendance);
 
-        return attendanceMapper.toResponse(savedAttendance);
+        return attendanceMapper.toCheckOutResponse(savedAttendance);
     }
 
     private int calculateWorkingMinutes(Attendance attendance) {
@@ -186,7 +180,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public AttendanceResponse startBreak(
+    public BreakStartResponse startBreak(
             BreakStartRequest request
     ) {
 
@@ -217,17 +211,17 @@ public class AttendanceServiceImpl implements AttendanceService {
                         .breakStartTime(LocalDateTime.now())
                         .build();
 
-        attendanceBreakRepository.save(attendanceBreak);
+        AttendanceBreak attendanceBreak1 = attendanceBreakRepository.save(attendanceBreak);
 
         attendance.setEmployeeStatus(EmployeeStatus.ON_BREAK);
 
         attendanceRepository.save(attendance);
 
-        return attendanceMapper.toResponse(attendance,  getCurrentBreakType(attendance));
+        return attendanceMapper.toStartBreakResponse(attendanceBreak1);
     }
 
     @Override
-    public AttendanceResponse endBreak() {
+    public BreakEndResponse endBreak() {
 
         Employee employee = employeeService.getCurrentEmployee();
 
@@ -255,7 +249,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         attendanceBreak.setBreakMinutes(breakMinutes);
 
-        attendanceBreakRepository.save(attendanceBreak);
+        AttendanceBreak attendanceBreak1 = attendanceBreakRepository.save(attendanceBreak);
 
         attendance.setTotalBreakMinutes(
                 attendance.getTotalBreakMinutes() + breakMinutes
@@ -265,7 +259,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         attendanceRepository.save(attendance);
 
-        return attendanceMapper.toResponse(attendance, getCurrentBreakType(attendance));
+        return attendanceMapper.toEndBreakResponse(attendanceBreak1);
     }
 
     private BreakType getCurrentBreakType(
@@ -276,7 +270,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 getActiveBreak(attendance);
 
         return activeBreak == null
-                ? null
+                ? BreakType.NO_ACTIVE_BREAK
                 : activeBreak.getBreakType();
     }
 
@@ -435,9 +429,9 @@ public class AttendanceServiceImpl implements AttendanceService {
                 //.leaveDays(leaveDays)
                // .holidayDays(holidayDays)
               //  .weekendDays(weekendDays)
-                .totalWorkingMinutes(totalWorkingMinutes)
+                //.totalWorkingMinutes(totalWorkingMinutes)
                 .totalWorkingHours(TimeUtil.formatMinutes(totalWorkingMinutes))
-                .averageWorkingMinutes(averageWorkingMinutes)
+               // .averageWorkingMinutes(averageWorkingMinutes)
                 .averageWorkingHours(TimeUtil.formatMinutes(averageWorkingMinutes))
                 .build();
 

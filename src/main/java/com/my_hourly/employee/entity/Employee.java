@@ -1,5 +1,6 @@
 package com.my_hourly.employee.entity;
 
+import com.my_hourly.authentication.entity.RoleName;
 import com.my_hourly.authentication.entity.User;
 import com.my_hourly.common.entity.BaseEntity;
 import com.my_hourly.master.entity.Department;
@@ -80,5 +81,8 @@ public class Employee extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
+
+    @Column(nullable = false)
+    private RoleName roleName;
 
 }

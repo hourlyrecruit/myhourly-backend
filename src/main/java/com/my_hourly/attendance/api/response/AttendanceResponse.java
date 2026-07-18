@@ -19,25 +19,25 @@ public class AttendanceResponse {
 
     private LocalDate attendanceDate;
 
-    private LocalDateTime checkInTime;
+    //private LocalDateTime checkInTime;
 
-    private String formattedCheckInTime;
+    private String checkInTime;
 
-    private LocalDateTime checkOutTime;
+   // private LocalDateTime checkOutTime;
 
-    private String formattedCheckOutTime;
+    private String checkOutTime;
 
-    private Integer workingMinutes;
+//    private Integer workingMinutes;
 
-    private String workingHours;
+    private String todayWorkingHours;
 
-    private Integer totalBreakMinutes;
+ //   private Integer totalBreakMinutes;
 
-    private String breakHours;
+    private String todayBreakHours;
 
     private AttendanceStatus attendanceStatus;
 
-    private EmployeeStatus employeeStatus;
+    private EmployeeStatus workingStatus;
 
     private BreakType currentBreakType;
 

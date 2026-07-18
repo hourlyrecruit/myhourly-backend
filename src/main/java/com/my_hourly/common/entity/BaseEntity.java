@@ -37,13 +37,4 @@ public abstract class BaseEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "created_by")
-    private Long createdBy;
-
-    @Column(name = "updated_by")
-    private Long updatedBy;
-
-    @Version
-    @Column(name = "version")
-    private Long version;
 }

@@ -39,7 +39,7 @@ public class UserMapper {
 
         return UserProfileResponse.builder()
                 .id(user.getId())
-                .employeeId(user.getEmployeeId())
+               // .employeeId(user.getEmployeeId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .userStatus(user.getUserStatus())

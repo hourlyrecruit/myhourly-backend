@@ -2,7 +2,7 @@ package com.my_hourly.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.my_hourly.common.enums.ErrorCode;
-import com.my_hourly.common.response.ApiError;
+import com.my_hourly.common.payload.response.ApiError;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

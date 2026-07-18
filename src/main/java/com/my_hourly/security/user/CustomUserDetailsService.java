@@ -70,6 +70,14 @@ public class CustomUserDetailsService
                     authorities.add(new SimpleGrantedAuthority("employee:updateStatus"));
                     //authorities.add(new SimpleGrantedAuthority("employee:update"));
                     authorities.add(new SimpleGrantedAuthority("employee:viewDropDown"));
+                    authorities.add(new SimpleGrantedAuthority("employee:update"));
+                    authorities.add(new SimpleGrantedAuthority("employee:viewMe"));
+                    authorities.add(new SimpleGrantedAuthority("employee:create"));
+
+                    authorities.add(new SimpleGrantedAuthority("holiday:create"));
+                    authorities.add(new SimpleGrantedAuthority("holiday:update"));
+                    authorities.add(new SimpleGrantedAuthority("holiday:delete"));
+                    authorities.add(new SimpleGrantedAuthority("holiday:view"));
                     break;
                 case EMPLOYEE:
                     authorities.add(new SimpleGrantedAuthority("department:view"));

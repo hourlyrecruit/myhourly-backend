@@ -1,18 +1,18 @@
 package com.my_hourly.employee.controller;
 
-import com.my_hourly.common.response.ApiResponse;
-import com.my_hourly.common.response.PageResponse;
+import com.my_hourly.common.payload.response.ApiResponse;
+import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.employee.api.request.CreateEmployeeRequest;
 import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
 import com.my_hourly.employee.api.response.EmployeeDropdownResponse;
 import com.my_hourly.employee.api.response.EmployeeResponse;
-import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,13 +30,23 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('employee:create')")
-    @Operation(summary = "Create employees profile, Only Access by Employee", description = "Only Access by Employee")
+    @Operation(summary = "Create employees profile", description = "Access by Employee")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                    encoding = {
+                            @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE),
+                            @Encoding(name = "file", contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+                    }
+            )
+    )
     public ResponseEntity<ApiResponse<EmployeeResponse>> create(
-            @Valid @RequestBody CreateEmployeeRequest request) {
+            @Valid @RequestPart("request") CreateEmployeeRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
 
-        EmployeeResponse response = employeeService.create(request);
+        EmployeeResponse response = employeeService.create(request, file);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.<EmployeeResponse>builder()
@@ -44,6 +54,26 @@ public class EmployeeController {
                         .message("Employee created successfully.")
                         .data(response)
                         .build());
+    }
+
+    @PutMapping(
+            value = "/profile-photo",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    @PreAuthorize("hasAuthority('employee:update')")
+    @Operation(summary = "Change Profile Photo: image/jpeg, image/jpg, image/png, Only Access by Employee", description = "Only Access by Employee")
+    public ResponseEntity<ApiResponse<EmployeeResponse>> uploadProfilePhoto(
+            @RequestParam("file") MultipartFile file) {
+
+        EmployeeResponse response = employeeService.uploadProfilePhoto(file);
+
+        return ResponseEntity.ok(
+                ApiResponse.<EmployeeResponse>builder()
+                        .success(true)
+                        .message("Profile photo uploaded successfully.")
+                        .data(response)
+                        .build()
+        );
     }
 
     @PutMapping
@@ -148,25 +178,7 @@ public class EmployeeController {
         );
     }
 
-    @PostMapping(
-            value = "/profile-photo",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @PreAuthorize("hasAuthority('employee:update')")
-    @Operation(summary = "Upload Profile Photo: image/jpeg, image/jpg, image/png, Only Access by Employee", description = "Only Access by Employee")
-    public ResponseEntity<ApiResponse<EmployeeResponse>> uploadProfilePhoto(
-            @RequestParam("file") MultipartFile file) {
 
-        EmployeeResponse response = employeeService.uploadProfilePhoto(file);
-
-        return ResponseEntity.ok(
-                ApiResponse.<EmployeeResponse>builder()
-                        .success(true)
-                        .message("Profile photo uploaded successfully.")
-                        .data(response)
-                        .build()
-        );
-    }
 
 //    @GetMapping("/{id}/profile-photo")
 //    @PreAuthorize("isAuthenticated()")

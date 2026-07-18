@@ -1,5 +1,6 @@
 package com.my_hourly.lookup.service.impl;
 
+import com.my_hourly.authentication.entity.User;
 import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.lookup.api.response.LookupResponse;
 import com.my_hourly.lookup.api.response.ReportingManagerLookupResponse;
@@ -8,6 +9,7 @@ import com.my_hourly.lookup.service.LookupService;
 import com.my_hourly.master.repository.DepartmentRepository;
 import com.my_hourly.master.repository.DesignationRepository;
 import com.my_hourly.master.repository.JobTitleRepository;
+import com.my_hourly.security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +59,8 @@ public class LookupServiceImpl implements LookupService {
     @Override
     public List<ReportingManagerLookupResponse> getReportingManagers() {
 
-        return employeeRepository.findByActiveTrueOrderByFirstNameAsc()
+        User user = SecurityUtils.getCurrentUser();
+        return employeeRepository.findByActiveTrueAndRoleNameOrderByFirstNameAsc(user.getRole())
                 .stream()
                 .map(lookupMapper::toResponse)
                 .toList();

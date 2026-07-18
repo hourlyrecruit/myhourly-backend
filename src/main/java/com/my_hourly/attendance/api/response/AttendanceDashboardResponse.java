@@ -5,12 +5,16 @@ import com.my_hourly.attendance.entity.BreakType;
 import com.my_hourly.attendance.entity.EmployeeStatus;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class AttendanceDashboardResponse {
+
+    private LocalDate attendanceDate;
 
     private boolean checkedIn;
 

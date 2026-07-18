@@ -121,7 +121,7 @@ public class AuthenticationServiceImpl
         Map<String, Object> claims = new HashMap<>();
 
         claims.put("userId", user.getId());
-        claims.put("employeeId", user.getEmployeeId());
+        //claims.put("employeeId", user.getEmployeeId());
         claims.put("email", user.getEmail());
 
         return jwtService.generateAccessToken(

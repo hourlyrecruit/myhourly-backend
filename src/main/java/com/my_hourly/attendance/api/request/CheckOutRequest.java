@@ -18,6 +18,4 @@ public class CheckOutRequest {
     @NotNull(message = "Longitude is required.")
     private BigDecimal longitude;
 
-    private String address;
-
 }

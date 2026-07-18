@@ -3,14 +3,11 @@ package com.my_hourly.attendance.controller;
 import com.my_hourly.attendance.api.request.BreakStartRequest;
 import com.my_hourly.attendance.api.request.CheckInRequest;
 import com.my_hourly.attendance.api.request.CheckOutRequest;
-import com.my_hourly.attendance.api.response.AttendanceCalendarResponse;
-import com.my_hourly.attendance.api.response.AttendanceDashboardResponse;
-import com.my_hourly.attendance.api.response.AttendanceMonthlySummaryResponse;
-import com.my_hourly.attendance.api.response.AttendanceResponse;
+import com.my_hourly.attendance.api.response.*;
 import com.my_hourly.attendance.entity.AttendanceStatus;
 import com.my_hourly.attendance.service.AttendanceService;
-import com.my_hourly.common.response.ApiResponse;
-import com.my_hourly.common.response.PageResponse;
+import com.my_hourly.common.payload.response.ApiResponse;
+import com.my_hourly.common.payload.response.PageResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -32,66 +30,85 @@ public class AttendanceController {
 
     @PostMapping("/check-in")
     @PreAuthorize("hasAuthority('attendance:create')")
-    public ResponseEntity<ApiResponse<AttendanceResponse>> checkIn(
+    public ResponseEntity<ApiResponse<CheckInResponse>> checkIn(
             @Valid @RequestBody CheckInRequest request) {
 
-        AttendanceResponse response = attendanceService.checkIn(request);
+        CheckInResponse response = attendanceService.checkIn(request);
 
         return ResponseEntity.ok(
-                ApiResponse.<AttendanceResponse>builder()
+                ApiResponse.<CheckInResponse>builder()
                         .success(true)
                         .message("Checked in successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
 
     @PostMapping("/break-start")
     @PreAuthorize("hasAuthority('attendance:create')")
-    public ResponseEntity<ApiResponse<AttendanceResponse>> startBreak(
+    public ResponseEntity<ApiResponse<BreakStartResponse>> startBreak(
             @Valid @RequestBody BreakStartRequest request) {
 
-        AttendanceResponse response = attendanceService.startBreak(request);
+        BreakStartResponse response = attendanceService.startBreak(request);
 
         return ResponseEntity.ok(
-                ApiResponse.<AttendanceResponse>builder()
+                ApiResponse.<BreakStartResponse>builder()
                         .success(true)
                         .message("Break started successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
 
     @PostMapping("/break-end")
     @PreAuthorize("hasAuthority('attendance:create')")
-    public ResponseEntity<ApiResponse<AttendanceResponse>> endBreak() {
+    public ResponseEntity<ApiResponse<BreakEndResponse>> endBreak() {
 
-        AttendanceResponse response = attendanceService.endBreak();
+        BreakEndResponse response = attendanceService.endBreak();
 
         return ResponseEntity.ok(
-                ApiResponse.<AttendanceResponse>builder()
+                ApiResponse.<BreakEndResponse>builder()
                         .success(true)
                         .message("Break ended successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
 
     @PostMapping("/check-out")
     @PreAuthorize("hasAuthority('attendance:create')")
-    public ResponseEntity<ApiResponse<AttendanceResponse>> checkOut(
+    public ResponseEntity<ApiResponse<CheckOutResponse>> checkOut(
             @Valid @RequestBody CheckOutRequest request) {
 
-        AttendanceResponse response = attendanceService.checkOut(request);
+        CheckOutResponse response = attendanceService.checkOut(request);
 
         return ResponseEntity.ok(
-                ApiResponse.<AttendanceResponse>builder()
+                ApiResponse.<CheckOutResponse>builder()
                         .success(true)
                         .message("Checked out successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
+
+//    @GetMapping("/todayBreak")
+//    @PreAuthorize("hasAuthority('attendance:view')")
+//    public ResponseEntity<ApiResponse<AttendanceResponse>> getTodayAttendance() {
+//
+//        AttendanceResponse response = attendanceService.getTodayAttendance();
+//
+//        return ResponseEntity.ok(
+//                ApiResponse.<AttendanceResponse>builder()
+//                        .success(true)
+//                        .message("Today's attendance fetched successfully.")
+//                        .data(response)
+//                        .build()
+//        );
+//    }
 
     @GetMapping("/today")
     @PreAuthorize("hasAuthority('attendance:view')")
@@ -104,6 +121,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Today's attendance fetched successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -148,6 +166,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Attendance history fetched successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -169,6 +188,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Monthly attendance summary fetched successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -193,6 +213,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Attendance calendar fetched successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -209,6 +230,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Attendance dashboard fetched successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }

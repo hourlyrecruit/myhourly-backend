@@ -1,6 +1,6 @@
 package com.my_hourly.employee.service;
 
-import com.my_hourly.common.response.PageResponse;
+import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.employee.api.request.CreateEmployeeRequest;
 import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
 import com.my_hourly.employee.api.response.EmployeeDropdownResponse;
@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface EmployeeService {
 
-    EmployeeResponse create(CreateEmployeeRequest request);
+    EmployeeResponse create(CreateEmployeeRequest request, MultipartFile file);
 
     EmployeeResponse update(UpdateEmployeeRequest request);
 

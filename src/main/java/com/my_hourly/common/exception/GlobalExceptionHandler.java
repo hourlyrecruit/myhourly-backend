@@ -1,7 +1,7 @@
 package com.my_hourly.common.exception;
 
 import com.my_hourly.common.enums.ErrorCode;
-import com.my_hourly.common.response.ApiError;
+import com.my_hourly.common.payload.response.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
