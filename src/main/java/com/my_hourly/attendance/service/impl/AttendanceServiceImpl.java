@@ -22,7 +22,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.my_hourly.common.response.PageResponse;
+import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.attendance.specification.AttendanceSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,7 +30,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 

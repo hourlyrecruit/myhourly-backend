@@ -5,7 +5,7 @@ import com.my_hourly.attendance.api.request.CheckInRequest;
 import com.my_hourly.attendance.api.request.CheckOutRequest;
 import com.my_hourly.attendance.api.response.*;
 import com.my_hourly.attendance.entity.AttendanceStatus;
-import com.my_hourly.common.response.PageResponse;
+import com.my_hourly.common.payload.response.PageResponse;
 
 import java.time.LocalDate;
 import java.util.List;

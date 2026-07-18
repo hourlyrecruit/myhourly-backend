@@ -6,8 +6,8 @@ import com.my_hourly.attendance.api.request.CheckOutRequest;
 import com.my_hourly.attendance.api.response.*;
 import com.my_hourly.attendance.entity.AttendanceStatus;
 import com.my_hourly.attendance.service.AttendanceService;
-import com.my_hourly.common.response.ApiResponse;
-import com.my_hourly.common.response.PageResponse;
+import com.my_hourly.common.payload.response.ApiResponse;
+import com.my_hourly.common.payload.response.PageResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -39,6 +40,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Checked in successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -55,6 +57,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Break started successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -70,6 +73,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Break ended successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -86,6 +90,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Checked out successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -116,6 +121,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Today's attendance fetched successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -160,6 +166,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Attendance history fetched successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -181,6 +188,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Monthly attendance summary fetched successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -205,6 +213,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Attendance calendar fetched successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
@@ -221,6 +230,7 @@ public class AttendanceController {
                         .success(true)
                         .message("Attendance dashboard fetched successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }

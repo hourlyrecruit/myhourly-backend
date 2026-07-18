@@ -1,6 +1,6 @@
 package com.my_hourly.settings.company.controller;
 
-import com.my_hourly.common.response.ApiResponse;
+import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.settings.company.dto.request.CompanySettingsRequest;
 import com.my_hourly.settings.company.dto.response.CompanySettingsResponse;
 import com.my_hourly.settings.company.service.CompanySettingsService;

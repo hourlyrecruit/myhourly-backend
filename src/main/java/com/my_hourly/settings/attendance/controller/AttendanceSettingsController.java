@@ -1,6 +1,6 @@
 package com.my_hourly.settings.attendance.controller;
 
-import com.my_hourly.common.response.ApiResponse;
+import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.settings.attendance.dto.request.AttendanceSettingsRequest;
 import com.my_hourly.settings.attendance.dto.response.AttendanceSettingsResponse;
 import com.my_hourly.settings.attendance.service.AttendanceSettingsService;

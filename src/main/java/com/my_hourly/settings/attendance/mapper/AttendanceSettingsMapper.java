@@ -46,6 +46,5 @@ public class AttendanceSettingsMapper {
         entity.setMultipleBreaksAllowed(request.getMultipleBreaksAllowed());
         entity.setMaximumBreakMinutes(request.getMaximumBreakMinutes());
         entity.setMaximumBreaksPerDay(request.getMaximumBreaksPerDay());
-        entity.setActive(request.getActive());
     }
 }

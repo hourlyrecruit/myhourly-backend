@@ -33,5 +33,4 @@ public class AttendanceSettingsRequest {
 
     private Integer maximumBreaksPerDay;
 
-    private Boolean active;
 }
