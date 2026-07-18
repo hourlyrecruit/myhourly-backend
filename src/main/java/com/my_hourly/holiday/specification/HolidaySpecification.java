@@ -2,82 +2,82 @@ package com.my_hourly.holiday.specification;
 
 import com.my_hourly.holiday.entity.Holiday;
 import com.my_hourly.holiday.entity.HolidayType;
+import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
 
+@NoArgsConstructor
 public final class HolidaySpecification {
 
-    private HolidaySpecification() {
+
+    public static Specification<Holiday> isActive(Boolean active) {
+
+        return (root, query, cb) -> {
+
+            if (active == null) {
+                return cb.conjunction();
+            }
+
+            return cb.equal(root.get("active"), active);
+        };
     }
 
-    public static Specification<Holiday> hasType(
-            HolidayType type
-    ) {
+    public static Specification<Holiday> holidayNameContains(String holidayName) {
 
-        if (type == null) {
-            return null;
-        }
+        return (root, query, cb) -> {
 
-        return (root, query, cb) ->
-                cb.equal(root.get("holidayType"), type);
+            if (holidayName == null || holidayName.isBlank()) {
+                return cb.conjunction();
+            }
+
+            return cb.like(
+                    cb.lower(root.get("holidayName")),
+                    "%" + holidayName.toLowerCase() + "%"
+            );
+        };
     }
 
-    public static Specification<Holiday> isActive(
-            Boolean active
-    ) {
+    public static Specification<Holiday> hasType(HolidayType type) {
 
-        if (active == null) {
-            return null;
-        }
+        return (root, query, cb) -> {
 
-        return (root, query, cb) ->
-                cb.equal(root.get("active"), active);
+            if (type == null) {
+                return cb.conjunction();
+            }
+
+            return cb.equal(root.get("holidayType"), type);
+        };
     }
 
-    public static Specification<Holiday> fromDate(
-            LocalDate fromDate
-    ) {
+    public static Specification<Holiday> fromDate(LocalDate fromDate) {
 
-        if (fromDate == null) {
-            return null;
-        }
+        return (root, query, cb) -> {
 
-        return (root, query, cb) ->
-                cb.greaterThanOrEqualTo(
-                        root.get("holidayDate"),
-                        fromDate
-                );
+            if (fromDate == null) {
+                return cb.conjunction();
+            }
+
+            return cb.greaterThanOrEqualTo(
+                    root.get("holidayDate"),
+                    fromDate
+            );
+        };
     }
 
-    public static Specification<Holiday> toDate(
-            LocalDate toDate
-    ) {
+    public static Specification<Holiday> toDate(LocalDate toDate) {
 
-        if (toDate == null) {
-            return null;
-        }
+        return (root, query, cb) -> {
 
-        return (root, query, cb) ->
-                cb.lessThanOrEqualTo(
-                        root.get("holidayDate"),
-                        toDate
-                );
-    }
+            if (toDate == null) {
+                return cb.conjunction();
+            }
 
-    public static Specification<Holiday> holidayNameContains(
-            String holidayName
-    ) {
-
-        if (holidayName == null || holidayName.isBlank()) {
-            return null;
-        }
-
-        return (root, query, cb) ->
-                cb.like(
-                        cb.lower(root.get("holidayName")),
-                        "%" + holidayName.toLowerCase() + "%"
-                );
+            return cb.lessThanOrEqualTo(
+                    root.get("holidayDate"),
+                    toDate
+            );
+        };
     }
 
 }
