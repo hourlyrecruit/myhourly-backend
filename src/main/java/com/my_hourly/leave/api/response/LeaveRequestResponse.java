@@ -34,6 +34,6 @@ public class LeaveRequestResponse {
 
     private LeaveStatus status;
 
-    private String rejectionReason;
+//    private String rejectionReason;
 
 }

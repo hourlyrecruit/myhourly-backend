@@ -3,7 +3,8 @@ package com.my_hourly.holiday.service.impl;
 import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.common.exception.ValidationException;
-import com.my_hourly.common.response.PageResponse;
+
+import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.holiday.api.request.CreateHolidayRequest;
 import com.my_hourly.holiday.api.request.UpdateHolidayRequest;
 import com.my_hourly.holiday.api.response.HolidayCalendarResponse;

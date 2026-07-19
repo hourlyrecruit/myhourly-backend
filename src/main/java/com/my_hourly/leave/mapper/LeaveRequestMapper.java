@@ -36,7 +36,7 @@ public class LeaveRequestMapper {
 
                 .status(entity.getStatus())
 
-                .rejectionReason(entity.getRejectionReason())
+//                .rejectionReason(entity.getRejectionReason())
 
                 .build();
     }

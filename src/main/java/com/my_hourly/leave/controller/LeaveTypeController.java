@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -66,6 +67,7 @@ public class LeaveTypeController {
                         .success(true)
                         .message("Leave type fetched successfully.")
                         .data(response)
+                        .timestamp(LocalDateTime.now())
                         .build()
         );
     }
