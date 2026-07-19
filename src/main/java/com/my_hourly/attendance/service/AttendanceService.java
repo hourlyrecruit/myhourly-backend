@@ -6,6 +6,7 @@ import com.my_hourly.attendance.api.request.CheckOutRequest;
 import com.my_hourly.attendance.api.response.*;
 import com.my_hourly.attendance.entity.AttendanceStatus;
 import com.my_hourly.common.payload.response.PageResponse;
+import com.my_hourly.leave.entity.LeaveRequest;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -42,4 +43,7 @@ public interface AttendanceService {
     );
 
     AttendanceDashboardResponse getAttendanceDashboard();
+
+    void markLeaveAttendance(LeaveRequest leaveRequest);
+    void removeLeaveAttendance(LeaveRequest leaveRequest);
 }

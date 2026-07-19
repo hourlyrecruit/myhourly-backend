@@ -14,6 +14,7 @@ import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.ValidationException;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.service.EmployeeService;
+import com.my_hourly.leave.entity.LeaveRequest;
 import com.my_hourly.settings.attendance.service.AttendanceSettingsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -506,6 +507,20 @@ public class AttendanceServiceImpl implements AttendanceService {
                 attendance,
                 getCurrentBreakType(attendance)
         );
+    }
+
+    @Override
+    public void markLeaveAttendance(LeaveRequest leaveRequest) {
+
+        // TODO
+    }
+
+    @Override
+    public void removeLeaveAttendance(LeaveRequest leaveRequest) {
+
+        // TODO:
+        // Update attendance records from LEAVE to PRESENT/ABSENT
+        // according to company policy.
     }
 
 }
