@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -219,6 +220,23 @@ public class HolidayServiceImpl implements HolidayService {
                 .stream()
                 .map(holidayMapper::toResponse)
                 .toList();
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Holiday> getHolidayByDate(LocalDate holidayDate) {
+
+        return holidayRepository.findByHolidayDate(holidayDate)
+                .filter(Holiday::getActive);
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isHoliday(LocalDate holidayDate) {
+
+        return getHolidayByDate(holidayDate).isPresent();
 
     }
 }

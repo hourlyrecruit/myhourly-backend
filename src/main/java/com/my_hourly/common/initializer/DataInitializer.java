@@ -250,6 +250,11 @@ public class DataInitializer implements ApplicationRunner {
                 .attendanceRegularizationEnabled(true)
                 .multipleBreaksAllowed(true)
                 .maximumBreakMinutes(60)
+                .weekendAttendanceAllowed(false)
+                .holidayAttendanceAllowed(false)
+                .lateMarkEnabled(true)
+                .earlyExitEnabled(true)
+                .autoCheckoutEnabled(false)
                 .active(true)
                 .build();
 

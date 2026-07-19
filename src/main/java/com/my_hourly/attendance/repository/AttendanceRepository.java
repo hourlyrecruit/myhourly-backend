@@ -30,6 +30,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long>,
             LocalDate endDate
     );
 
+    List<Attendance> findByCheckOutTimeIsNull();
+
 
 
 }

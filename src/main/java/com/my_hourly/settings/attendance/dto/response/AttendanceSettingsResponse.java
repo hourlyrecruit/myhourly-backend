@@ -1,5 +1,6 @@
 package com.my_hourly.settings.attendance.dto.response;
 
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,6 +39,16 @@ public class AttendanceSettingsResponse {
     private Integer maximumBreakMinutes;
 
     private Integer maximumBreaksPerDay;
+
+    private Boolean weekendAttendanceAllowed;
+
+    private Boolean holidayAttendanceAllowed;
+
+    private Boolean lateMarkEnabled;
+
+    private Boolean earlyExitEnabled;
+
+    private Boolean autoCheckoutEnabled;
 
     private Boolean active;
 }

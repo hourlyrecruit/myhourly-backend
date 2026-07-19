@@ -46,4 +46,6 @@ public interface AttendanceService {
 
     void markLeaveAttendance(LeaveRequest leaveRequest);
     void removeLeaveAttendance(LeaveRequest leaveRequest);
+
+    //void autoCheckoutEmployees();
 }

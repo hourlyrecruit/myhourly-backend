@@ -53,6 +53,23 @@ public class Attendance extends BaseEntity {
     @Column(precision = 10, scale = 7)
     private BigDecimal checkOutLongitude;
 
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer lateMinutes = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer earlyExitMinutes = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer overtimeMinutes = 0;
+//
+//    @Column(nullable = false)
+//    @Builder.Default
+//    private Boolean autoCheckedOut = false;
+
     @Builder.Default
     @OneToMany(
             mappedBy = "attendance",

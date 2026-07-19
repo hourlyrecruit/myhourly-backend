@@ -25,4 +25,8 @@ public class CheckInResponse {
 
     private EmployeeStatus employeeStatus;
 
+    private Integer lateMinutes;
+
+
+
 }

@@ -21,6 +21,7 @@ public class AttendanceMapper {
                 .checkInTime(attendance.getCheckInTime())
                 .formattedCheckInTime(DateTimeUtil.formatTime(attendance.getCheckInTime()))
                 .attendanceStatus(attendance.getAttendanceStatus())
+                .lateMinutes(attendance.getLateMinutes())
                 .employeeStatus(attendance.getEmployeeStatus())
                 .build();
     }
@@ -32,6 +33,8 @@ public class AttendanceMapper {
                 .attendanceDate(attendance.getAttendanceDate())
                 .checkOutTime(attendance.getCheckOutTime())
                 .formattedCheckOutTime(DateTimeUtil.formatTime(attendance.getCheckInTime()))
+                .earlyExitMinutes(attendance.getEarlyExitMinutes())
+                .overtimeMinutes(attendance.getOvertimeMinutes())
                 .attendanceStatus(attendance.getAttendanceStatus())
                 .employeeStatus(attendance.getEmployeeStatus())
                 .build();

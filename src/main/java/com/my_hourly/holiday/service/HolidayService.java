@@ -5,11 +5,13 @@ import com.my_hourly.holiday.api.request.CreateHolidayRequest;
 import com.my_hourly.holiday.api.request.UpdateHolidayRequest;
 import com.my_hourly.holiday.api.response.HolidayCalendarResponse;
 import com.my_hourly.holiday.api.response.HolidayResponse;
+import com.my_hourly.holiday.entity.Holiday;
 import com.my_hourly.holiday.entity.HolidayType;
 
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface HolidayService {
 
@@ -48,5 +50,9 @@ public interface HolidayService {
     );
 
     List<HolidayResponse> getUpcomingHolidays();
+
+    Optional<Holiday> getHolidayByDate(LocalDate holidayDate);
+
+    boolean isHoliday(LocalDate holidayDate);
 
 }

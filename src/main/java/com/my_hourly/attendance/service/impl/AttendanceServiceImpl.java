@@ -9,12 +9,14 @@ import com.my_hourly.attendance.mapper.AttendanceMapper;
 import com.my_hourly.attendance.repository.AttendanceBreakRepository;
 import com.my_hourly.attendance.repository.AttendanceRepository;
 import com.my_hourly.attendance.service.AttendanceService;
+import com.my_hourly.attendance.service.AttendanceValidationService;
 import com.my_hourly.attendance.util.TimeUtil;
 import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.ValidationException;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.service.EmployeeService;
 import com.my_hourly.leave.entity.LeaveRequest;
+import com.my_hourly.settings.attendance.entity.AttendanceSettings;
 import com.my_hourly.settings.attendance.service.AttendanceSettingsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,7 +45,8 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final AttendanceMapper attendanceMapper;
     private final AttendanceBreakRepository attendanceBreakRepository;
-
+    private final AttendanceValidationService attendanceValidationService;
+    private final AttendanceSettingsService attendanceSettingsService;
 
     @Override
     public CheckInResponse checkIn(
@@ -50,25 +54,16 @@ public class AttendanceServiceImpl implements AttendanceService {
     ) {
 
         Employee employee = employeeService.getCurrentEmployee();
-
+        attendanceValidationService.validateCheckIn(employee);
         LocalDate today = LocalDate.now();
-
-        if (attendanceRepository.existsByEmployeeAndAttendanceDate(
-                employee,
-                today
-        )) {
-
-            throw new ValidationException(
-                    "You have already checked in today.",
-                    ErrorCode.VALIDATION_FAILED
-            );
-        }
+        LocalDateTime checkInTime = LocalDateTime.now();
 
         Attendance attendance = Attendance.builder()
                 .employee(employee)
                 .attendanceDate(today)
                 .checkInTime(LocalDateTime.now())
-                .attendanceStatus(AttendanceStatus.PRESENT)
+                .attendanceStatus(calculateAttendanceStatus(checkInTime))
+                .lateMinutes(calculateLateMinutes(checkInTime))
                 .employeeStatus(EmployeeStatus.WORKING)
                 .workingMinutes(0)
                 .totalBreakMinutes(0)
@@ -96,25 +91,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                                 ErrorCode.VALIDATION_FAILED
                         ));
 
-        if (attendance.getCheckOutTime() != null) {
-
-            throw new ValidationException(
-                    "You have already checked out today.",
-                    ErrorCode.VALIDATION_FAILED
-            );
-        }
-
-        boolean activeBreak = attendanceBreakRepository
-                .findFirstByAttendanceAndBreakEndTimeIsNullOrderByBreakStartTimeDesc(attendance)
-                .isPresent();
-
-        if (activeBreak) {
-
-            throw new ValidationException(
-                    "Please end your break before checking out.",
-                    ErrorCode.VALIDATION_FAILED
-            );
-        }
+        attendanceValidationService.validateCheckOut(attendance);
 
         LocalDateTime checkOutTime = LocalDateTime.now();
 
@@ -128,6 +105,18 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         attendance.setWorkingMinutes(
                 calculateWorkingMinutes(attendance)
+        );
+
+        attendance.setEarlyExitMinutes(
+                calculateEarlyExitMinutes(checkOutTime)
+        );
+
+        attendance.setOvertimeMinutes(
+                calculateOvertimeMinutes(checkOutTime)
+        );
+
+        attendance.setAttendanceStatus(
+                calculateFinalAttendanceStatus(attendance)
         );
 
         Attendance savedAttendance = attendanceRepository.save(attendance);
@@ -523,4 +512,117 @@ public class AttendanceServiceImpl implements AttendanceService {
         // according to company policy.
     }
 
+    private AttendanceStatus calculateAttendanceStatus(LocalDateTime checkInTime) {
+
+        AttendanceSettings settings =
+                attendanceSettingsService.getSettings();
+
+        LocalTime officeStartTime = settings.getOfficeStartTime();
+
+        LocalTime allowedTime = officeStartTime.plusMinutes(
+                settings.getGracePeriodMinutes()
+        );
+
+        LocalTime currentTime = checkInTime.toLocalTime();
+
+        if (currentTime.isAfter(allowedTime)) {
+            return AttendanceStatus.LATE;
+        }
+
+        return AttendanceStatus.PRESENT;
+    }
+
+    private AttendanceStatus calculateFinalAttendanceStatus(
+            Attendance attendance
+    ) {
+
+        AttendanceSettings settings =
+                attendanceSettingsService.getSettings();
+
+        int workingMinutes = attendance.getWorkingMinutes();
+
+        if (workingMinutes >= settings.getMinimumWorkingMinutes()) {
+
+            return attendance.getAttendanceStatus();
+
+        }
+
+        if (workingMinutes >= settings.getHalfDayWorkingMinutes()) {
+
+            return AttendanceStatus.HALF_DAY;
+
+        }
+
+        return AttendanceStatus.ABSENT;
+
+    }
+
+    private int calculateLateMinutes(LocalDateTime checkInTime) {
+
+        AttendanceSettings settings =
+                attendanceSettingsService.getSettings();
+
+        LocalTime officeStart =
+                settings.getOfficeStartTime();
+
+        LocalTime allowedTime =
+                officeStart.plusMinutes(
+                        settings.getGracePeriodMinutes()
+                );
+
+        LocalTime currentTime = checkInTime.toLocalTime();
+
+        if (!currentTime.isAfter(allowedTime)) {
+            return 0;
+        }
+
+        return (int) Duration.between(
+                allowedTime,
+                currentTime
+        ).toMinutes();
+    }
+
+
+    private int calculateEarlyExitMinutes(LocalDateTime checkOutTime) {
+
+        AttendanceSettings settings =
+                attendanceSettingsService.getSettings();
+
+        LocalTime officeEnd =
+                settings.getOfficeEndTime();
+
+        LocalTime checkout = checkOutTime.toLocalTime();
+
+        if (!checkout.isBefore(officeEnd)) {
+            return 0;
+        }
+
+        return (int) Duration.between(
+                checkout,
+                officeEnd
+        ).toMinutes();
+    }
+
+    private int calculateOvertimeMinutes(LocalDateTime checkOutTime) {
+
+        AttendanceSettings settings =
+                attendanceSettingsService.getSettings();
+
+        if (!Boolean.TRUE.equals(settings.getOvertimeEnabled())) {
+            return 0;
+        }
+
+        LocalTime officeEndTime = settings.getOfficeEndTime();
+
+        LocalTime checkoutTime = checkOutTime.toLocalTime();
+
+        if (!checkoutTime.isAfter(officeEndTime)) {
+            return 0;
+        }
+
+        return (int) Duration.between(
+                officeEndTime,
+                checkoutTime
+        ).toMinutes();
+    }
 }

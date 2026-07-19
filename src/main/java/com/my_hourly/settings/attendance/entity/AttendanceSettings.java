@@ -47,9 +47,26 @@ public class AttendanceSettings extends BaseSettings {
     @Column(nullable = false)
     private Integer maximumBreakMinutes;
 
+    private Integer maximumBreaksPerDay;
 
-    private Integer MaximumBreaksPerDay;
 
     @Column(nullable = false)
-    private boolean active;
+    private Boolean weekendAttendanceAllowed;
+
+    @Column(nullable = false)
+    private Boolean holidayAttendanceAllowed;
+
+    @Column(nullable = false)
+    private Boolean lateMarkEnabled;
+
+    @Column(nullable = false)
+    private Boolean earlyExitEnabled;
+
+    @Column(nullable = false)
+    private Boolean autoCheckoutEnabled;
+
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
 }

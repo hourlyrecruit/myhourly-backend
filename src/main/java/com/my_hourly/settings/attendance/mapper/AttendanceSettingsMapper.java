@@ -27,6 +27,11 @@ public class AttendanceSettingsMapper {
                 .multipleBreaksAllowed(entity.getMultipleBreaksAllowed())
                 .maximumBreakMinutes(entity.getMaximumBreakMinutes())
                 .maximumBreaksPerDay(entity.getMaximumBreaksPerDay())
+                .weekendAttendanceAllowed(entity.getWeekendAttendanceAllowed())
+                .holidayAttendanceAllowed(entity.getHolidayAttendanceAllowed())
+                .lateMarkEnabled(entity.getLateMarkEnabled())
+                .earlyExitEnabled(entity.getEarlyExitEnabled())
+                .autoCheckoutEnabled(entity.getAutoCheckoutEnabled())
                 .active(entity.getActive())
                 .build();
     }

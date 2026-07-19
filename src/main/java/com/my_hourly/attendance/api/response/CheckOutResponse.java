@@ -25,4 +25,8 @@ public class CheckOutResponse {
     private AttendanceStatus attendanceStatus;
 
     private EmployeeStatus employeeStatus;
+
+    private Integer overtimeMinutes;
+
+    private Integer earlyExitMinutes;
 }
