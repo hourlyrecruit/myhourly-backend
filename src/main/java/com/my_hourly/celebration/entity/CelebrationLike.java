@@ -1,7 +1,5 @@
 package com.my_hourly.celebration.entity;
-
 import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,8 +7,11 @@ import lombok.Setter;
 @Setter
 @Getter
 @Entity
-@Table(name="celebration_comments")
-public class CelebrationComment {
+@Table(name="celebration_likes",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"post_id","employeeId"})
+        })
+public class CelebrationLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,9 +20,6 @@ public class CelebrationComment {
     @JoinColumn(name="post_id")
     private CelebrationPost celebrationPost;
     private Long employeeId;
-    @Column(length = 1000)
-    private String comment;
-    private LocalDateTime commentedAt;
-
+    private LocalDateTime likedAt;
 
 }
