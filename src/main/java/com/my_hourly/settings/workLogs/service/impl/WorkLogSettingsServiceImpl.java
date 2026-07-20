@@ -4,6 +4,7 @@ package com.my_hourly.settings.workLogs.service.impl;
 import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.BadRequestException;
 import com.my_hourly.common.exception.ResourceNotFoundException;
+import com.my_hourly.common.exception.ValidationException;
 import com.my_hourly.settings.workLogs.dto.request.WorkLogSettingsRequest;
 import com.my_hourly.settings.workLogs.dto.response.WorkLogSettingsResponse;
 import com.my_hourly.settings.workLogs.entity.WorkLogSettings;
@@ -69,14 +70,14 @@ public class WorkLogSettingsServiceImpl implements WorkLogSettingsService {
         if (request.getWorkLogReminderEnabled()
                 && request.getReminderIntervalMinutes() <= 0) {
 
-            throw new BadRequestException(
+            throw new ValidationException(
                     "Reminder interval must be greater than zero.", ErrorCode.VALIDATION_FAILED);
         }
 
         if (!request.getWorkLogReminderEnabled()
                 && request.getReminderIntervalMinutes() > 0) {
 
-            throw new BadRequestException(
+            throw new ValidationException(
                     "Reminder interval must be zero when reminders are disabled.", ErrorCode.VALIDATION_FAILED);
         }
     }
@@ -87,7 +88,7 @@ public class WorkLogSettingsServiceImpl implements WorkLogSettingsService {
         if (!request.getWorkLogSubmissionRequired()
                 && request.getReportRequiredBeforeCheckout()) {
 
-            throw new BadRequestException(
+            throw new ValidationException(
                     "Report before checkout cannot be enabled when work log submission is disabled.", ErrorCode.VALIDATION_FAILED);
         }
 
