@@ -60,7 +60,7 @@ public class LeaveRequestController {
     }
 
     @PutMapping("/{leaveRequestId}/manager-action")
-    @PreAuthorize("hasRole('MANAGER', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'SUPER_ADMIN', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> managerAction(
             @PathVariable Long leaveRequestId,
             @Valid @RequestBody LeaveActionRequest request) {
@@ -81,7 +81,7 @@ public class LeaveRequestController {
     }
 
     @PutMapping("/{leaveRequestId}/hr-action")
-    @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPERADMIN)")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> hrAction(
             @PathVariable Long leaveRequestId,
             @Valid @RequestBody LeaveActionRequest request) {

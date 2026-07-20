@@ -59,7 +59,7 @@ public class LeaveBalanceController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('HR_ADMIN','SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN','SUPER_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<List<LeaveBalanceResponse>>> getAllLeaveBalances() {
 
         return ResponseEntity.ok(
