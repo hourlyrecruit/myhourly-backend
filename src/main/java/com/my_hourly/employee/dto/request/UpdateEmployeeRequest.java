@@ -16,9 +16,7 @@ public class UpdateEmployeeRequest {
 
     private String officeEmail;
 
-    // =====================================================
-    // Employment Details
-    // =====================================================
+    
 
     private String departmentName;
 
