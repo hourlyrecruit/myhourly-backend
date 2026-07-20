@@ -145,9 +145,9 @@ public class LeaveRequestServiceImpl
         }
 
         // Validate reporting manager
-        leaveAuthorizationService.validateManagerApproval(
-                manager,
-                leaveRequest);
+//        leaveAuthorizationService.validateManagerApproval(
+//                manager,
+//                leaveRequest);
 
         switch (request.getAction()) {
 

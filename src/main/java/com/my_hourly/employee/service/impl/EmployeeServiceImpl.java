@@ -182,7 +182,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee savedEmployee =
                 employeeRepository.save(employee);
 
-        leaveBalanceService.initializeEmployeeLeaveBalance(savedEmployee);
+        //leaveBalanceService.initializeEmployeeLeaveBalance(savedEmployee);
 
         if (file == null || file.isEmpty()) {
             return employeeMapper.toResponse(savedEmployee);

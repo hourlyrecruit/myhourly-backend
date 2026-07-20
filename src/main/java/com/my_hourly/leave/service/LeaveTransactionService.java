@@ -23,4 +23,9 @@ public interface LeaveTransactionService {
     List<LeaveTransactionResponse> getEmployeeTransactions(Long employeeId);
 
     List<LeaveTransactionResponse> getLeaveTransactions(Long leaveRequestId);
+
+    void createAllocationTransaction(
+            LeaveBalance leaveBalance,
+            Integer allocatedLeaves
+    );
 }

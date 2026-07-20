@@ -34,4 +34,5 @@ public interface LeaveBalanceRepository extends JpaRepository<LeaveBalance, Long
     List<LeaveBalance> findByYear(Integer year);
     boolean existsByEmployee(Employee employee);
 
+
 }

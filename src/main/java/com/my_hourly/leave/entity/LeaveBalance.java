@@ -55,4 +55,5 @@ public class LeaveBalance extends BaseEntity {
     @Column(nullable = false)
     private Integer remainingLeaves;
 
+
 }

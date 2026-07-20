@@ -109,4 +109,23 @@ public class LeaveTransactionServiceImpl
                         ));
     }
 
+
+    @Override
+    @Transactional
+    public void createAllocationTransaction(
+            LeaveBalance leaveBalance,
+            Integer allocatedLeaves) {
+
+        LeaveTransaction transaction = LeaveTransaction.builder()
+                .employee(leaveBalance.getEmployee())
+                .leaveType(leaveBalance.getLeaveType())
+                .transactionType(LeaveTransactionType.ALLOCATION)
+                .days(allocatedLeaves)
+                .balanceBefore(0)
+                .balanceAfter(allocatedLeaves)
+                .remarks("Initial leave allocation")
+                .build();
+
+        leaveTransactionRepository.save(transaction);
+    }
 }

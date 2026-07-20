@@ -60,8 +60,9 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
                         month)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Leave Balance employee ID: " + employee.getEmployeeCode()
-                                , ErrorCode.RESOURCE_NOT_FOUND));
+                                "Leave balance not allocated.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
     }
 
     @Override
@@ -169,45 +170,6 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
                 before,
                 leaveBalance.getRemainingLeaves(),
                 "Leave cancelled");
-    }
-
-    @Override
-    @Transactional
-    public void initializeEmployeeLeaveBalance(Employee employee) {
-
-        if (leaveBalanceRepository.existsByEmployee(employee)) {
-            log.warn("Leave balances already exist for employee {}", employee.getEmployeeCode());
-            return;
-        }
-
-        LocalDate joiningDate = employee.getDateOfJoining();
-
-        Integer year = joiningDate.getYear();
-
-        List<LeaveType> leaveTypes = leaveTypeRepository.findByActiveTrue();
-
-        List<LeaveBalance> balances = leaveTypes.stream()
-                .map(leaveType -> {
-
-                    MonthType month = leaveType.getAllocationType() == LeaveAllocationType.MONTHLY
-                            ? MonthType.valueOf(joiningDate.getMonth().name())
-                            : null;
-
-                    return LeaveBalance.builder()
-                            .employee(employee)
-                            .leaveType(leaveType)
-                            .year(year)
-                            .month(month)
-                            .allocatedLeaves(leaveType.getAllocatedDays())
-                            .carriedForwardLeaves(0)
-                            .usedLeaves(0)
-                            .expiredLeaves(0)
-                            .remainingLeaves(leaveType.getAllocatedDays())
-                            .build();
-                })
-                .toList();
-
-        leaveBalanceRepository.saveAll(balances);
     }
 
 }

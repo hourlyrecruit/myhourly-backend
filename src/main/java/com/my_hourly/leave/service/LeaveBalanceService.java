@@ -36,7 +36,4 @@ public interface LeaveBalanceService {
             LeaveBalance leaveBalance,
             LeaveRequest leaveRequest);
 
-
-    void initializeEmployeeLeaveBalance(Employee employee);
-
 }
