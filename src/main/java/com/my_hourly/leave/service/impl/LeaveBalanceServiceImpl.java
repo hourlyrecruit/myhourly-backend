@@ -53,7 +53,7 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
                         month)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Leave Balance employee ID: {employee.getEmployeeCode() }"
+                                "Leave Balance employee ID: " + employee.getEmployeeCode()
                                 , ErrorCode.RESOURCE_NOT_FOUND));
     }
 
@@ -65,7 +65,7 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
         LeaveBalance leaveBalance = leaveBalanceRepository.findById(leaveBalanceId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Leave Balance id: {leaveBalanceId}",
+                                "Leave Balance id: " + leaveBalanceId,
                                 ErrorCode.RESOURCE_NOT_FOUND
                                 ));
 
