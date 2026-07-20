@@ -17,9 +17,6 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 public class User extends BaseEntity {
 
-//    @Column(name = "employee_id")
-//    private Long employeeId;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 30)
     private RoleName role;

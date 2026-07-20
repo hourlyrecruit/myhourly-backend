@@ -33,7 +33,7 @@ public class LeaveTransactionController {
     }
 
     @GetMapping("/employee/{employeeId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<List<LeaveTransactionResponse>>> getEmployeeTransactions(
             @PathVariable Long employeeId) {
 

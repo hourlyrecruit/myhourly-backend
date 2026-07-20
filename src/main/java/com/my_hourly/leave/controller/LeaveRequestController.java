@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public class LeaveRequestController {
     private final LeaveRequestService leaveRequestService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('EMPLOYEE')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> applyLeave(
             @Valid @RequestBody LeaveRequestRequest request) {
 
@@ -40,6 +42,7 @@ public class LeaveRequestController {
     }
 
     @PutMapping("/{leaveRequestId}/cancel")
+    @PreAuthorize("hasAnyRole('EMPLOYEE')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> cancelLeave(
             @PathVariable Long leaveRequestId) {
 
@@ -57,6 +60,7 @@ public class LeaveRequestController {
     }
 
     @PutMapping("/{leaveRequestId}/manager-action")
+    @PreAuthorize("hasRole('MANAGER', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> managerAction(
             @PathVariable Long leaveRequestId,
             @Valid @RequestBody LeaveActionRequest request) {
@@ -77,6 +81,7 @@ public class LeaveRequestController {
     }
 
     @PutMapping("/{leaveRequestId}/hr-action")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPERADMIN)")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> hrAction(
             @PathVariable Long leaveRequestId,
             @Valid @RequestBody LeaveActionRequest request) {
@@ -97,6 +102,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/{leaveRequestId}")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', SUPER_ADMIN)")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> getLeaveRequest(
             @PathVariable Long leaveRequestId) {
 
@@ -114,6 +120,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/my")
+    @PreAuthorize("hasAnyRole('EMPLOYEE')")
     public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getMyLeaveRequests() {
 
         List<LeaveRequestResponse> response =
@@ -130,6 +137,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/team")
+    @PreAuthorize("hasAnyRole('MANAGER', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getTeamLeaveRequests() {
 
         List<LeaveRequestResponse> response =
@@ -146,6 +154,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getAllLeaveRequests() {
 
         List<LeaveRequestResponse> response =
