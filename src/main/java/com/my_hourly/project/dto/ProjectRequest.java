@@ -17,7 +17,6 @@ public class ProjectRequest {
     private String projectName;
     private String description;
     private Long clientId;
-    private Long managerId;
     private LocalDate startDate;
     private LocalDate endDate;
     private ProjectStatus status;

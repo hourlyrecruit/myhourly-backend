@@ -1,5 +1,6 @@
 package com.my_hourly.project.entity;
 
+import com.my_hourly.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,10 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name="clients")
-public class Client {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Client extends BaseEntity {
+
     @Column(unique = true,nullable = false)
     private String clientCode;
     @Column(nullable = false)
@@ -32,6 +31,4 @@ public class Client {
     private ClientStatus status;
     @OneToMany(mappedBy = "client")
     private List<Project> projects;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

@@ -3,20 +3,24 @@ package com.my_hourly.project.serviceImpl;
 import com.my_hourly.project.dto.ClientRequest;
 import com.my_hourly.project.dto.ClientResponse;
 import com.my_hourly.project.entity.Client;
+import com.my_hourly.project.entity.ClientStatus;
 import com.my_hourly.project.repository.ClientRepository;
 import com.my_hourly.project.service.ClientService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
+@RequiredArgsConstructor
 @Service
 public class ClientServiceImpl implements ClientService {
-    @Autowired
-    private ClientRepository clientRepository;
+
+    private final ClientRepository clientRepository;
+
+
     @Override
     public ClientResponse createClient(ClientRequest request) {
         if(clientRepository.existsByClientCode(request.getClientCode())){
@@ -25,6 +29,7 @@ public class ClientServiceImpl implements ClientService {
         if(request.getEmail() != null && clientRepository.existsByEmail(request.getEmail())){
             throw new RuntimeException("Email already exists.");
         }
+
         Client client = new Client();
         client.setClientCode(request.getClientCode());
         client.setCompanyName(request.getCompanyName());
@@ -41,37 +46,20 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public ClientResponse updateClient(Long clientId, ClientRequest request) {
-        Client client = clientRepository.findById(clientId).
-                orElseThrow(()->new RuntimeException("Client not found."));
-        if(!client.getClientCode().equals(request.getClientCode()) && clientRepository
-                .existsByClientCode(request.getClientCode())) {
-            throw new RuntimeException("Company Code already exists.");
-        }
-        if (request.getEmail() != null
-                    && !request.getEmail().equals(client.getEmail())
-                    && clientRepository.existsByEmail(request.getEmail())) {
-                throw new RuntimeException("Email already exists.");
+    public ClientResponse updateClientStatus(Long clientId, ClientStatus status) {
 
-        }
-        client.setClientCode(request.getClientCode());
-        client.setCompanyName(request.getCompanyName());
-        client.setContactPerson(request.getContactPerson());
-        client.setEmail(request.getEmail());
-        client.setPhone(request.getPhone());
-        client.setAddress(request.getAddress());
-        client.setStatus(request.getStatus());
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found."));
+
+        client.setStatus(status);
         client.setUpdatedAt(LocalDateTime.now());
 
-        Client updatedClient = clientRepository.save(client);
-
-        return mapToResponse(updatedClient);
+        return mapToResponse(clientRepository.save(client));
     }
-
     @Override
     public String deleteClient(Long clientId) {
        Client client =  clientRepository.findById(clientId)
-               .orElseThrow(()->new RuntimeException("Client not found."));
+               .orElseThrow(()->new EntityNotFoundException("Client not found."));
        clientRepository.delete(client);
         return "Deleted Successfully.";
     }
@@ -79,7 +67,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public ClientResponse getClientById(Long clientId) {
         Client client = clientRepository.findById(clientId)
-                .orElseThrow(()->new RuntimeException("Client not found."));
+                .orElseThrow(()->new EntityNotFoundException("Client not found."));
         return mapToResponse(client);
     }
 
@@ -91,7 +79,7 @@ public class ClientServiceImpl implements ClientService {
                 .collect(Collectors.toList());
     }
     @Override
-    public ClientResponse patchClient(Long clientId, ClientRequest request) {
+    public ClientResponse updateClient(Long clientId, ClientRequest request) {
 
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));

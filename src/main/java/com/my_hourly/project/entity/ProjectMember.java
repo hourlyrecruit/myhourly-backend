@@ -28,6 +28,7 @@ public class ProjectMember {
     private Employee employee;
     @Enumerated(EnumType.STRING)
     private ProjectRole projectRole;
+    private MemberStatus status;
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDateTime createdAt;

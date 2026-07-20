@@ -11,42 +11,32 @@ import com.my_hourly.project.repository.EmployeeAllocationRepository;
 import com.my_hourly.project.repository.ProjectMemberRepository;
 import com.my_hourly.project.repository.ProjectRepository;
 import com.my_hourly.project.service.ProjectService;
+import com.my_hourly.security.util.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
+@RequiredArgsConstructor
 @Service
 public class ProjectServiceImpl implements ProjectService {
-    @Autowired
-    private ProjectRepository projectRepository;
-    @Autowired
-    private ClientRepository clientRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private EmployeeRepository employeeRepository;
-    @Autowired
-    private EmployeeAllocationRepository employeeAllocationRepository;
-    @Autowired
-    private ProjectMemberRepository projectMemberRepository;
+    private final ProjectRepository projectRepository;
+    private final ClientRepository clientRepository;
+    private final EmployeeRepository employeeRepository;
+    private final EmployeeAllocationRepository employeeAllocationRepository;
+    private final ProjectMemberRepository projectMemberRepository;
 
 
     private Employee getLoggedInEmployee() {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = SecurityUtils.getCurrentUser();
 
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
         return employeeRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() ->
+                        new RuntimeException("Employee not found for user: " + user.getEmail()));
     }
 
     @Override
@@ -68,7 +58,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setEndDate(request.getEndDate());
         project.setStatus(request.getStatus());
         project.setCreatedAt(LocalDateTime.now());
-        project.setCreatedAt(LocalDateTime.now());
+        project.setUpdatedAt(LocalDateTime.now());
 
         Project savedProject = projectRepository.save(project);
         return mapProjectResponse(savedProject);
@@ -77,8 +67,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectResponse updateProject(Long projectId, ProjectRequest request) {
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(()->new EntityNotFoundException("Project not found."));
+
         if(request.getProjectCode() != null &&
         !request.getProjectCode().equals(project.getProjectCode()) &&
         projectRepository.existsByProjectCode(request.getProjectCode())){
@@ -116,6 +108,23 @@ public class ProjectServiceImpl implements ProjectService {
         Project updatedProject = projectRepository.save(project);
         return mapProjectResponse(updatedProject);
 
+    }
+    @Override
+    public ProjectResponse updateProjectStatus(Long projectId, ProjectStatus status) {
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found."));
+
+        Employee manager = getLoggedInEmployee();
+
+        if (!project.getManager().getId().equals(manager.getId())) {
+            throw new RuntimeException("Access denied.");
+        }
+
+        project.setStatus(status);
+        project.setUpdatedAt(LocalDateTime.now());
+
+        return mapProjectResponse(projectRepository.save(project));
     }
 
 
@@ -223,6 +232,26 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(()->new RuntimeException("Project member not found."));
 
         projectMemberRepository.delete(member);
+    }
+    @Override
+    public ProjectMemberResponse updateMemberStatus(
+            Long memberId,
+            MemberStatus status) {
+
+        ProjectMember member = projectMemberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found."));
+
+        Employee manager = getLoggedInEmployee();
+
+        if (!member.getProject().getManager().getId().equals(manager.getId())) {
+            throw new RuntimeException("Access denied.");
+        }
+
+        member.setStatus(status);
+        member.setUpdatedAt(LocalDateTime.now());
+
+        return mapProjectMemberResponse(
+                projectMemberRepository.save(member));
     }
 
     @Override

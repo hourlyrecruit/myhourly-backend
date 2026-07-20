@@ -17,7 +17,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     boolean existsByProjectCode(String projectCode);
     List<Project> findByClient(Client client);
     List<Project> findByManager(Employee manager);
-    List<ProjectMember> findByEmployee(Employee employee);
     List<Project> findByStatus(ProjectStatus status);
     List<Project> findByProjectNameContainingIgnoreCase(String projectName);
 

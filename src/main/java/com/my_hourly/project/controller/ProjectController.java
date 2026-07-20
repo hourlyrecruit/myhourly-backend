@@ -6,6 +6,8 @@ import com.my_hourly.project.dto.ProjectMemberRequest;
 import com.my_hourly.project.dto.ProjectMemberResponse;
 import com.my_hourly.project.dto.ProjectRequest;
 import com.my_hourly.project.dto.ProjectResponse;
+import com.my_hourly.project.entity.MemberStatus;
+import com.my_hourly.project.entity.ProjectStatus;
 import com.my_hourly.project.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProjectController {
 
-    @Autowired
-    private ProjectService projectService;
+    private final ProjectService projectService;
 
     @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
     @PostMapping
@@ -31,9 +32,14 @@ public class ProjectController {
     }
 
     @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
-    @PutMapping("/{projectId}")
+    @PatchMapping("/{projectId}")
     public ResponseEntity<ProjectResponse> updateProject(@PathVariable Long projectId, @RequestBody ProjectRequest request) {
         return ResponseEntity.ok(projectService.updateProject(projectId, request));
+    }
+    @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
+    @PatchMapping("/{projectId}/status")
+    public ResponseEntity<ProjectResponse> updateProjectStatus(@PathVariable Long projectId, @RequestParam ProjectStatus status) {
+        return ResponseEntity.ok(projectService.updateProjectStatus(projectId, status));
     }
 
     @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
@@ -73,6 +79,15 @@ public class ProjectController {
     public ResponseEntity<ProjectMemberResponse> addProjectMember(@RequestBody ProjectMemberRequest request) {
         return new ResponseEntity<>(projectService.addProjectMember(request), HttpStatus.CREATED);
     }
+    @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
+    @PatchMapping("/members/{memberId}/status")
+    public ResponseEntity<ProjectMemberResponse> updateMemberStatus(
+            @PathVariable Long memberId,
+            @RequestParam MemberStatus status) {
+
+        return ResponseEntity.ok(
+                projectService.updateMemberStatus(memberId, status));
+    }
 
     @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
     @DeleteMapping("/{projectId}/members/{employeeId}")
@@ -94,7 +109,7 @@ public class ProjectController {
     }
 
     @PreAuthorize("hasAnyRole('MANAGER','ADMIN')")
-    @PutMapping("/allocations/{allocationId}")
+    @PatchMapping("/allocations/{allocationId}")
     public ResponseEntity<EmployeeAllocationResponse> updateAllocation(@PathVariable Long allocationId, @RequestBody EmployeeAllocationRequest request) {
         return ResponseEntity.ok(projectService.updateAllocation(allocationId, request));
     }
