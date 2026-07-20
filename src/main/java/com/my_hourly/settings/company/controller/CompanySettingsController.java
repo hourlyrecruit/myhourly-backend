@@ -36,7 +36,7 @@ public class CompanySettingsController {
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<CompanySettingsResponse>> updateCompanySettings(
             @Valid @RequestBody CompanySettingsRequest request) {
 

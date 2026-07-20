@@ -20,7 +20,7 @@ public class LeaveSettingsController {
     private final LeaveSettingsService leaveSettingsService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveSettingsResponse>> getLeaveSettings() {
 
         LeaveSettingsResponse response = leaveSettingsService.getLeaveSettings();
@@ -37,7 +37,7 @@ public class LeaveSettingsController {
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveSettingsResponse>> updateLeaveSettings(
             @Valid @RequestBody LeaveSettingsRequest request) {
 
