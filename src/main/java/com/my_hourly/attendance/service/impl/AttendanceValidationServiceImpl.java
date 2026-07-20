@@ -1,6 +1,7 @@
 package com.my_hourly.attendance.service.impl;
 
 import com.my_hourly.attendance.entity.Attendance;
+import com.my_hourly.attendance.entity.AttendanceStatus;
 import com.my_hourly.attendance.repository.AttendanceBreakRepository;
 import com.my_hourly.attendance.repository.AttendanceRepository;
 import com.my_hourly.attendance.service.AttendanceValidationService;
@@ -9,6 +10,7 @@ import com.my_hourly.common.exception.BadRequestException;
 import com.my_hourly.common.exception.ValidationException;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.holiday.service.HolidayService;
+import com.my_hourly.leave.repository.LeaveRequestRepository;
 import com.my_hourly.settings.attendance.entity.AttendanceSettings;
 import com.my_hourly.settings.attendance.service.AttendanceSettingsService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class AttendanceValidationServiceImpl
     private final AttendanceSettingsService attendanceSettingsService;
     private final HolidayService holidayService;
     private final AttendanceBreakRepository attendanceBreakRepository;
+    private final LeaveRequestRepository leaveRequestRepository;
 
     @Override
     public void validateCheckIn(Employee employee) {
@@ -38,6 +41,8 @@ public class AttendanceValidationServiceImpl
         validateDuplicateAttendance(employee, today);
 
         validateWeekend(today, settings);
+
+        validateLeaveAttendance(employee, today);
 
         validateHoliday(today, settings);
 
@@ -77,6 +82,25 @@ public class AttendanceValidationServiceImpl
             );
 
         }
+
+    }
+
+    private void validateLeaveAttendance(Employee employee, LocalDate date) {
+
+        attendanceRepository
+                .findByEmployeeAndAttendanceDate(employee, date)
+                .ifPresent(attendance -> {
+
+                    if (attendance.getAttendanceStatus() == AttendanceStatus.LEAVE) {
+
+                        throw new ValidationException(
+                                "You are on approved leave today. Check-in is not allowed.",
+                                ErrorCode.VALIDATION_FAILED
+                        );
+
+                    }
+
+                });
 
     }
 

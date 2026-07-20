@@ -28,4 +28,9 @@ public interface LeaveTransactionService {
             LeaveBalance leaveBalance,
             Integer allocatedLeaves
     );
+
+    void createExpiryTransaction(
+            LeaveBalance leaveBalance,
+            Integer days
+    );
 }

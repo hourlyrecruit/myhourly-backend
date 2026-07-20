@@ -35,4 +35,5 @@ public interface LeaveBalanceRepository extends JpaRepository<LeaveBalance, Long
     boolean existsByEmployee(Employee employee);
 
 
+    List<LeaveBalance> findByRemainingLeavesGreaterThan(Integer remainingLeaves);
 }

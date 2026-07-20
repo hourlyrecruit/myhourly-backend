@@ -499,18 +499,46 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
+    @Transactional
     public void markLeaveAttendance(LeaveRequest leaveRequest) {
 
-        // TODO
-    }
+        Employee employee = leaveRequest.getEmployee();
 
+        LocalDate date = leaveRequest.getStartDate();
+
+        while (!date.isAfter(leaveRequest.getEndDate())) {
+
+            Attendance attendance = Attendance.builder()
+                    .employee(employee)
+                    .attendanceDate(date)
+                    .attendanceStatus(AttendanceStatus.LEAVE)
+                    .workingMinutes(0)
+                    .totalBreakMinutes(0)
+                    .build();
+
+            attendanceRepository.save(attendance);
+
+            date = date.plusDays(1);
+        }
+    }
     @Override
+    @Transactional
     public void removeLeaveAttendance(LeaveRequest leaveRequest) {
 
-        // TODO:
-        // Update attendance records from LEAVE to PRESENT/ABSENT
-        // according to company policy.
+        Employee employee = leaveRequest.getEmployee();
+
+        LocalDate date = leaveRequest.getStartDate();
+
+        while (!date.isAfter(leaveRequest.getEndDate())) {
+
+            attendanceRepository
+                    .findByEmployeeAndAttendanceDate(employee, date)
+                    .ifPresent(attendanceRepository::delete);
+
+            date = date.plusDays(1);
+        }
     }
+
 
     private AttendanceStatus calculateAttendanceStatus(LocalDateTime checkInTime) {
 

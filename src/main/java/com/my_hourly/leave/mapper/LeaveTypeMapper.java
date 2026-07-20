@@ -20,6 +20,9 @@ public class LeaveTypeMapper {
                 .paid(request.getPaid())
                 .allocatedDays(request.getAllocatedDays())
                 .allocationType(request.getAllocationType())
+                .carryForwardAllowed(request.isCarryForwardAllowed())
+                .maxCarryForwardDays(request.getMaxCarryForwardDays())
+                .expireUnusedLeaves(request.isExpireUnusedLeaves())
                 .active(true)
                 .build();
     }
@@ -37,6 +40,9 @@ public class LeaveTypeMapper {
                 .paid(entity.getPaid())
                 .allocatedDays(entity.getAllocatedDays())
                 .allocationType(entity.getAllocationType())
+                .carryForwardAllowed(entity.isCarryForwardAllowed())
+                .maxCarryForwardDays(entity.getMaxCarryForwardDays())
+                .expireUnusedLeaves(entity.isExpireUnusedLeaves())
                 .active(entity.getActive())
                 .build();
     }
@@ -50,5 +56,8 @@ public class LeaveTypeMapper {
         entity.setPaid(request.getPaid());
         entity.setAllocatedDays(request.getAllocatedDays());
         entity.setAllocationType(request.getAllocationType());
+        entity.setCarryForwardAllowed(request.isCarryForwardAllowed());
+        entity.setMaxCarryForwardDays(request.getMaxCarryForwardDays());
+        entity.setExpireUnusedLeaves(request.isExpireUnusedLeaves());
     }
 }

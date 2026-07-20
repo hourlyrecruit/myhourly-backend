@@ -128,4 +128,27 @@ public class LeaveTransactionServiceImpl
 
         leaveTransactionRepository.save(transaction);
     }
+
+    @Override
+    public void createExpiryTransaction(
+            LeaveBalance leaveBalance,
+            Integer days
+    ) {
+
+        LeaveTransaction transaction =
+                LeaveTransaction.builder()
+                        .employee(leaveBalance.getEmployee())
+                        .leaveType(leaveBalance.getLeaveType())
+                        .transactionType(
+                                LeaveTransactionType.EXPIRY
+                        )
+                        .days(days)
+                        .balanceBefore(days)
+                        .balanceAfter(0)
+                        .remarks("Unused leave expired")
+                        .build();
+
+        leaveTransactionRepository.save(transaction);
+
+    }
 }

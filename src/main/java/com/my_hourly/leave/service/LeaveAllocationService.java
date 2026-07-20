@@ -9,4 +9,6 @@ public interface LeaveAllocationService {
     void allocateMonthlyLeaves();
 
     void allocateYearlyLeaves();
+
+    void expireLeaves();
 }

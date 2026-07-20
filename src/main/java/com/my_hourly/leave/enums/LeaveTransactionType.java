@@ -12,6 +12,8 @@ public enum LeaveTransactionType {
 
     CARRY_FORWARD,
 
-    EXPIRED
+    EXPIRED,
+
+    EXPIRY
 
 }

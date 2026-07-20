@@ -22,5 +22,11 @@ public class LeaveTypeResponse {
 
     private LeaveAllocationType allocationType;
 
+    private boolean carryForwardAllowed;
+
+    private Integer maxCarryForwardDays;
+
+    private boolean expireUnusedLeaves;
+
     private Boolean active;
 }

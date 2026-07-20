@@ -36,5 +36,17 @@ public class LeaveType extends BaseEntity {
     private LeaveAllocationType allocationType;
 
     @Column(nullable = false)
+    @Builder.Default
+    private boolean carryForwardAllowed = false;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer maxCarryForwardDays = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean expireUnusedLeaves = true;
+
+    @Column(nullable = false)
     private Boolean active;
 }

@@ -56,6 +56,11 @@ public class LeaveAllocationServiceImpl implements LeaveAllocationService {
     @Override
     public void allocateForAllEmployees() {
 
+        List<Employee> employees = employeeRepository.findByActiveTrue();
+
+        for (Employee employee : employees) {
+            allocateForEmployee(employee.getId());
+        }
     }
 
     private void allocateMonthlyBalance(Employee employee,
@@ -138,12 +143,103 @@ public class LeaveAllocationServiceImpl implements LeaveAllocationService {
     }
 
     @Override
+    @Transactional
     public void allocateMonthlyLeaves() {
+
+        List<Employee> employees = employeeRepository.findByActiveTrue();
+
+        for (Employee employee : employees) {
+            allocateMonthlyLeaveForEmployee(employee);
+        }
+    }
+
+    private void allocateMonthlyLeaveForEmployee(Employee employee) {
+
+        List<LeaveType> leaveTypes =
+                leaveTypeRepository.findByActiveTrue();
+
+        for (LeaveType leaveType : leaveTypes) {
+
+            if (leaveType.getAllocationType() == LeaveAllocationType.MONTHLY) {
+
+                allocateMonthlyBalance(employee, leaveType);
+
+            }
+
+        }
 
     }
 
     @Override
     public void allocateYearlyLeaves() {
+
+        List<Employee> employees = employeeRepository.findByActiveTrue();
+
+        for (Employee employee : employees) {
+            allocateYearlyLeaveForEmployee(employee);
+        }
+
+    }
+
+    private void allocateYearlyLeaveForEmployee(Employee employee) {
+
+        List<LeaveType> leaveTypes =
+                leaveTypeRepository.findByActiveTrue();
+
+        for (LeaveType leaveType : leaveTypes) {
+
+            if (leaveType.getAllocationType() == LeaveAllocationType.YEARLY) {
+
+                allocateYearlyBalance(employee, leaveType);
+
+            }
+
+        }
+    }
+
+
+    @Override
+    @Transactional
+    public void expireLeaves() {
+
+        List<LeaveBalance> leaveBalances =
+                leaveBalanceRepository
+                        .findByRemainingLeavesGreaterThan(0);
+
+        for (LeaveBalance leaveBalance : leaveBalances) {
+
+            LeaveType leaveType = leaveBalance.getLeaveType();
+
+            if (!leaveType.isExpireUnusedLeaves()) {
+                continue;
+            }
+
+            expireLeaveBalance(leaveBalance);
+
+        }
+
+    }
+
+    private void expireLeaveBalance(LeaveBalance leaveBalance) {
+
+        if (leaveBalance.getRemainingLeaves() <= 0) {
+            return;
+        }
+
+        int remaining = leaveBalance.getRemainingLeaves();
+
+        leaveBalance.setExpiredLeaves(
+                leaveBalance.getExpiredLeaves() + remaining
+        );
+
+        leaveBalance.setRemainingLeaves(0);
+
+        leaveBalanceRepository.save(leaveBalance);
+
+        leaveTransactionService.createExpiryTransaction(
+                leaveBalance,
+                remaining
+        );
 
     }
 

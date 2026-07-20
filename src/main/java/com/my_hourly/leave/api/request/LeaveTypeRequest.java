@@ -27,4 +27,10 @@ public class LeaveTypeRequest {
 
     @NotNull(message = "Allocation type is required.")
     private LeaveAllocationType allocationType;
+
+    private boolean carryForwardAllowed;
+
+    private Integer maxCarryForwardDays;
+
+    private boolean expireUnusedLeaves;
 }

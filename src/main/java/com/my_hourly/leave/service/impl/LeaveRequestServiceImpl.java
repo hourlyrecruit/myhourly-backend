@@ -1,9 +1,11 @@
 package com.my_hourly.leave.service.impl;
 
+import com.my_hourly.attendance.repository.AttendanceRepository;
 import com.my_hourly.attendance.service.AttendanceService;
 import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.BadRequestException;
 import com.my_hourly.common.exception.ResourceNotFoundException;
+import com.my_hourly.common.exception.ValidationException;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.service.EmployeeService;
 import com.my_hourly.leave.api.request.LeaveActionRequest;
@@ -39,6 +41,7 @@ public class LeaveRequestServiceImpl
     private final LeaveBalanceService leaveBalanceService;
     private final AttendanceService attendanceService;
     private final LeaveApprovalService leaveApprovalService;
+    private final AttendanceRepository attendanceRepository;
 
 
 
@@ -205,6 +208,25 @@ public class LeaveRequestServiceImpl
         leaveAuthorizationService.validateHrApproval(hr);
 
         LeaveRequest leaveRequest = getLeaveRequestEntity(leaveRequestId);
+
+
+        LocalDate date = leaveRequest.getStartDate();
+
+        while (!date.isAfter(leaveRequest.getEndDate())) {
+
+            if (attendanceRepository.existsByEmployeeAndAttendanceDate(
+                    leaveRequest.getEmployee(),
+                    date)) {
+
+                throw new ValidationException(
+                        "Attendance already exists on " + date +
+                                ". Leave cannot be approved.",
+                        ErrorCode.VALIDATION_FAILED
+                );
+            }
+
+            date = date.plusDays(1);
+        }
 
         // Only manager approved leave can be processed by HR
         if (leaveRequest.getStatus() != LeaveStatus.MANAGER_APPROVED) {
