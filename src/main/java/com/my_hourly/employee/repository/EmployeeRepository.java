@@ -36,4 +36,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     boolean existsByPhoneNumber(String phoneNumber);
 
     List<Employee> findByActiveTrueAndRoleNameOrderByFirstNameAsc(RoleName role);
+
+
 }

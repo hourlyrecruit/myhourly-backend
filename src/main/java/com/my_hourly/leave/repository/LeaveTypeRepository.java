@@ -18,4 +18,6 @@ public interface LeaveTypeRepository extends JpaRepository<LeaveType, Long> {
 
     List<LeaveType> findByActiveTrue();
 
+
+
 }

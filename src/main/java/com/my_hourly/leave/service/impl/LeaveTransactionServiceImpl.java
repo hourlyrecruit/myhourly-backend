@@ -1,8 +1,10 @@
 package com.my_hourly.leave.service.impl;
 
+import com.my_hourly.authentication.entity.User;
 import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.employee.entity.Employee;
+import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.employee.service.EmployeeService;
 import com.my_hourly.leave.api.response.LeaveTransactionResponse;
 import com.my_hourly.leave.entity.LeaveBalance;
@@ -13,6 +15,7 @@ import com.my_hourly.leave.mapper.LeaveTransactionMapper;
 import com.my_hourly.leave.repository.LeaveRequestRepository;
 import com.my_hourly.leave.repository.LeaveTransactionRepository;
 import com.my_hourly.leave.service.LeaveTransactionService;
+import com.my_hourly.security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +30,7 @@ public class LeaveTransactionServiceImpl
 
     private final LeaveTransactionRepository leaveTransactionRepository;
     private final LeaveTransactionMapper mapper;
-    private final EmployeeService employeeService;
+    private final EmployeeRepository employeeRepository;
     private final LeaveRequestRepository leaveRequestRepository;
 
     @Override
@@ -59,7 +62,7 @@ public class LeaveTransactionServiceImpl
     @Transactional(readOnly = true)
     public List<LeaveTransactionResponse> getMyTransactions() {
 
-        Employee employee = employeeService.getCurrentEmployee();
+        Employee employee = getCurrentEmployee();
 
         return leaveTransactionRepository.findByEmployee(employee)
                 .stream()
@@ -92,6 +95,18 @@ public class LeaveTransactionServiceImpl
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    private Employee getCurrentEmployee() {
+
+        User user = SecurityUtils.getCurrentUser();
+
+        return employeeRepository.findByUser(user)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Employee not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
     }
 
 }
