@@ -1,7 +1,6 @@
 package com.my_hourly.leave.entity;
 
 import com.my_hourly.common.entity.BaseEntity;
-import com.my_hourly.leave.enums.LeaveAllocationType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,27 +24,33 @@ public class LeaveType extends BaseEntity {
     @Column(length = 255)
     private String description;
 
+    /**
+     * Whether this leave type is paid.
+     */
     @Column(nullable = false)
     private Boolean paid;
 
+    /**
+     * Total annual days allocated for this leave type (e.g. 24).
+     */
     @Column(nullable = false)
     private Integer allocatedDays;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private LeaveAllocationType allocationType;
+    /**
+     * Recommended leave days per month for expiry calculation (e.g. 2).
+     * Only used by the month-end scheduler when carryForwardAllowed = false.
+     */
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer monthlyGuideline = 2;
 
+    /**
+     * When true, unused monthly guideline does NOT expire at month-end.
+     * When false, (monthlyGuideline - usedThisMonth) is deducted from the balance.
+     */
     @Column(nullable = false)
     @Builder.Default
     private boolean carryForwardAllowed = false;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer maxCarryForwardDays = 0;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private boolean expireUnusedLeaves = true;
 
     @Column(nullable = false)
     private Boolean active;

@@ -7,8 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class LeaveBalanceMapper {
 
-    public LeaveBalanceResponse toResponse(
-            LeaveBalance entity) {
+    public LeaveBalanceResponse toResponse(LeaveBalance entity) {
 
         if (entity == null) {
             return null;
@@ -28,10 +27,8 @@ public class LeaveBalanceMapper {
                 .leaveType(entity.getLeaveType().getName())
 
                 .year(entity.getYear())
-                .month(entity.getMonth())
 
                 .allocatedLeaves(entity.getAllocatedLeaves())
-                .carriedForwardLeaves(entity.getCarriedForwardLeaves())
                 .usedLeaves(entity.getUsedLeaves())
                 .expiredLeaves(entity.getExpiredLeaves())
                 .remainingLeaves(entity.getRemainingLeaves())

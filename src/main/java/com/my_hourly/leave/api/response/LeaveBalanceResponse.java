@@ -1,6 +1,5 @@
 package com.my_hourly.leave.api.response;
 
-import com.my_hourly.leave.enums.MonthType;
 import lombok.*;
 
 @Getter
@@ -24,11 +23,7 @@ public class LeaveBalanceResponse {
 
     private Integer year;
 
-    private MonthType month;
-
     private Integer allocatedLeaves;
-
-    private Integer carriedForwardLeaves;
 
     private Integer usedLeaves;
 

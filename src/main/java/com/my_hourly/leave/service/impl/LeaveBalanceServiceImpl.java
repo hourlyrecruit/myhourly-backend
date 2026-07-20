@@ -5,17 +5,13 @@ import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.repository.EmployeeRepository;
-import com.my_hourly.employee.service.EmployeeService;
 import com.my_hourly.leave.api.response.LeaveBalanceResponse;
 import com.my_hourly.leave.entity.LeaveBalance;
 import com.my_hourly.leave.entity.LeaveRequest;
 import com.my_hourly.leave.entity.LeaveType;
-import com.my_hourly.leave.enums.LeaveAllocationType;
 import com.my_hourly.leave.enums.LeaveTransactionType;
-import com.my_hourly.leave.enums.MonthType;
 import com.my_hourly.leave.mapper.LeaveBalanceMapper;
 import com.my_hourly.leave.repository.LeaveBalanceRepository;
-import com.my_hourly.leave.repository.LeaveTypeRepository;
 import com.my_hourly.leave.service.LeaveBalanceService;
 import com.my_hourly.leave.service.LeaveTransactionService;
 import com.my_hourly.security.util.SecurityUtils;
@@ -37,7 +33,6 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
     private final LeaveBalanceMapper leaveBalanceMapper;
     private final EmployeeRepository employeeRepository;
     private final LeaveTransactionService leaveTransactionService;
-    private final LeaveTypeRepository leaveTypeRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -48,34 +43,31 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
 
         Integer year = date.getYear();
 
-        MonthType month = leaveType.getAllocationType() == LeaveAllocationType.MONTHLY
-                ? MonthType.valueOf(date.getMonth().name())
-                : null;
-
         return leaveBalanceRepository
-                .findByEmployeeAndLeaveTypeAndYearAndMonth(
+                .findByEmployeeAndLeaveTypeAndYear(
                         employee,
                         leaveType,
-                        year,
-                        month)
+                        year)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Leave balance not allocated.",
+                                "Leave balance not allocated for employee "
+                                        + employee.getId()
+                                        + ", leaveType " + leaveType.getName()
+                                        + ", year " + year + ".",
                                 ErrorCode.RESOURCE_NOT_FOUND
                         ));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public LeaveBalanceResponse getLeaveBalance(
-            Long leaveBalanceId) {
+    public LeaveBalanceResponse getLeaveBalance(Long leaveBalanceId) {
 
         LeaveBalance leaveBalance = leaveBalanceRepository.findById(leaveBalanceId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Leave Balance id: " + leaveBalanceId,
                                 ErrorCode.RESOURCE_NOT_FOUND
-                                ));
+                        ));
 
         return leaveBalanceMapper.toResponse(leaveBalance);
     }
@@ -101,8 +93,7 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LeaveBalanceResponse> getEmployeeLeaveBalances(
-            Long employeeId) {
+    public List<LeaveBalanceResponse> getEmployeeLeaveBalances(Long employeeId) {
 
         return leaveBalanceRepository.findByEmployeeId(employeeId)
                 .stream()
@@ -171,5 +162,4 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
                 leaveBalance.getRemainingLeaves(),
                 "Leave cancelled");
     }
-
 }

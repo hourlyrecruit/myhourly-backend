@@ -15,7 +15,9 @@ public class LeaveSettingsResponse {
 
     private Boolean carryForwardAllowed;
 
-    private Integer maximumCarryForwardDays;
+    private Integer monthlyGuideline;
+
+    private Integer annualPaidLeave;
 
     private Integer minimumAdvanceNoticeDays;
 

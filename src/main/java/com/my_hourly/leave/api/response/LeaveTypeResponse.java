@@ -1,6 +1,5 @@
 package com.my_hourly.leave.api.response;
 
-import com.my_hourly.leave.enums.LeaveAllocationType;
 import lombok.*;
 
 @Getter
@@ -20,13 +19,9 @@ public class LeaveTypeResponse {
 
     private Integer allocatedDays;
 
-    private LeaveAllocationType allocationType;
+    private Integer monthlyGuideline;
 
     private boolean carryForwardAllowed;
-
-    private Integer maxCarryForwardDays;
-
-    private boolean expireUnusedLeaves;
 
     private Boolean active;
 }

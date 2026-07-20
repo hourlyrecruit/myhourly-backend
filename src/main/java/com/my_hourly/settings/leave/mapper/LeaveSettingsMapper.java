@@ -18,7 +18,8 @@ public class LeaveSettingsMapper {
                 .id(entity.getId())
                 .halfDayLeaveAllowed(entity.getHalfDayLeaveAllowed())
                 .carryForwardAllowed(entity.getCarryForwardAllowed())
-                .maximumCarryForwardDays(entity.getMaximumCarryForwardDays())
+                .monthlyGuideline(entity.getMonthlyGuideline())
+                .annualPaidLeave(entity.getAnnualPaidLeave())
                 .minimumAdvanceNoticeDays(entity.getMinimumAdvanceNoticeDays())
                 .maximumAdvanceNoticeDays(entity.getMaximumAdvanceNoticeDays())
                 .maximumConsecutiveLeaveDays(entity.getMaximumConsecutiveLeaveDays())
@@ -39,7 +40,8 @@ public class LeaveSettingsMapper {
 
         entity.setHalfDayLeaveAllowed(request.getHalfDayLeaveAllowed());
         entity.setCarryForwardAllowed(request.getCarryForwardAllowed());
-        entity.setMaximumCarryForwardDays(request.getMaximumCarryForwardDays());
+        entity.setMonthlyGuideline(request.getMonthlyGuideline());
+        entity.setAnnualPaidLeave(request.getAnnualPaidLeave());
         entity.setMinimumAdvanceNoticeDays(request.getMinimumAdvanceNoticeDays());
         entity.setMaximumAdvanceNoticeDays(request.getMaximumAdvanceNoticeDays());
         entity.setMaximumConsecutiveLeaveDays(request.getMaximumConsecutiveLeaveDays());

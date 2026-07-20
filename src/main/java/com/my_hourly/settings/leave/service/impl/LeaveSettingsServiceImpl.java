@@ -63,21 +63,7 @@ public class LeaveSettingsServiceImpl implements LeaveSettingsService {
                     "Minimum advance notice cannot be greater than maximum advance notice.", ErrorCode.VALIDATION_FAILED);
         }
 
-        // Carry forward validations
-        if (request.getCarryForwardAllowed()) {
-
-            if (request.getMaximumCarryForwardDays() <= 0) {
-                throw new BadRequestException(
-                        "Maximum carry forward days must be greater than zero.",ErrorCode.VALIDATION_FAILED);
-            }
-
-        } else {
-
-            if (request.getMaximumCarryForwardDays() > 0) {
-                throw new BadRequestException(
-                        "Maximum carry forward days must be zero when carry forward is disabled.", ErrorCode.VALIDATION_FAILED);
-            }
-        }
+        // Carry forward validations removed because maxCarryForwardDays is replaced by monthlyGuideline.
 
         // Auto approval validation
         if (request.getAutoApproveLeave()

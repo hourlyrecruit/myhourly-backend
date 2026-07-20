@@ -1,6 +1,5 @@
 package com.my_hourly.leave.api.request;
 
-import com.my_hourly.leave.enums.LeaveAllocationType;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -25,12 +24,16 @@ public class LeaveTypeRequest {
     @Min(value = 0, message = "Allocated days cannot be negative.")
     private Integer allocatedDays;
 
-    @NotNull(message = "Allocation type is required.")
-    private LeaveAllocationType allocationType;
+    /**
+     * Recommended leave days per month.
+     * Used only by the month-end scheduler when carryForwardAllowed = false.
+     * Defaults to 2 if not provided.
+     */
+    @Min(value = 0, message = "Monthly guideline cannot be negative.")
+    private Integer monthlyGuideline;
 
+    /**
+     * When true, unused monthly guideline does NOT expire at month-end.
+     */
     private boolean carryForwardAllowed;
-
-    private Integer maxCarryForwardDays;
-
-    private boolean expireUnusedLeaves;
 }

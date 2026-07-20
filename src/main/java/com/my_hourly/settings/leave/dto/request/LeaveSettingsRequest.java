@@ -19,7 +19,11 @@ public class LeaveSettingsRequest {
 
     @NotNull
     @Min(0)
-    private Integer maximumCarryForwardDays;
+    private Integer monthlyGuideline;
+
+    @NotNull
+    @Min(0)
+    private Integer annualPaidLeave;
 
     @NotNull
     @Min(0)

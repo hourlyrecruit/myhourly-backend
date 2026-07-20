@@ -2,7 +2,6 @@ package com.my_hourly.leave.entity;
 
 import com.my_hourly.common.entity.BaseEntity;
 import com.my_hourly.employee.entity.Employee;
-import com.my_hourly.leave.enums.MonthType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,8 +12,7 @@ import lombok.*;
                 @UniqueConstraint(columnNames = {
                         "employee_id",
                         "leave_type_id",
-                        "year",
-                        "month"
+                        "year"
                 })
         }
 )
@@ -36,24 +34,28 @@ public class LeaveBalance extends BaseEntity {
     @Column(nullable = false)
     private Integer year;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private MonthType month;
-
+    /**
+     * Total annual leave allocation (e.g. 24 days).
+     */
     @Column(nullable = false)
     private Integer allocatedLeaves;
 
-    @Column(nullable = false)
-    private Integer carriedForwardLeaves;
-
+    /**
+     * Total approved leave days consumed so far.
+     */
     @Column(nullable = false)
     private Integer usedLeaves;
 
+    /**
+     * Cumulative days expired via month-end scheduler (carry-forward OFF only).
+     */
     @Column(nullable = false)
     private Integer expiredLeaves;
 
+    /**
+     * Available balance: allocatedLeaves - usedLeaves - expiredLeaves.
+     */
     @Column(nullable = false)
     private Integer remainingLeaves;
-
 
 }

@@ -18,11 +18,27 @@ public class LeaveSettings extends BaseSettings {
     @Column(nullable = false)
     private Boolean halfDayLeaveAllowed;
 
+    /**
+     * When true, unused monthly guideline days carry forward into the annual balance.
+     * When false, unused days expire at month-end.
+     */
     @Column(nullable = false)
     private Boolean carryForwardAllowed;
 
+    /**
+     * Recommended leave days per month used to calculate expiry when carryForwardAllowed = false.
+     * Default: 2 (i.e. 24 annual / 12 months).
+     */
     @Column(nullable = false)
-    private Integer maximumCarryForwardDays;
+    @Builder.Default
+    private Integer monthlyGuideline = 2;
+
+    /**
+     * Total annual paid leave days allocated to employees (e.g. 24).
+     */
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer annualPaidLeave = 24;
 
     @Column(nullable = false)
     private Integer minimumAdvanceNoticeDays;

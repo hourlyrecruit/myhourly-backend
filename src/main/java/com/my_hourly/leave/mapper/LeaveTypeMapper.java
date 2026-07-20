@@ -19,10 +19,11 @@ public class LeaveTypeMapper {
                 .description(request.getDescription())
                 .paid(request.getPaid())
                 .allocatedDays(request.getAllocatedDays())
-                .allocationType(request.getAllocationType())
+                .monthlyGuideline(
+                        request.getMonthlyGuideline() != null
+                                ? request.getMonthlyGuideline()
+                                : 2)
                 .carryForwardAllowed(request.isCarryForwardAllowed())
-                .maxCarryForwardDays(request.getMaxCarryForwardDays())
-                .expireUnusedLeaves(request.isExpireUnusedLeaves())
                 .active(true)
                 .build();
     }
@@ -39,25 +40,22 @@ public class LeaveTypeMapper {
                 .description(entity.getDescription())
                 .paid(entity.getPaid())
                 .allocatedDays(entity.getAllocatedDays())
-                .allocationType(entity.getAllocationType())
+                .monthlyGuideline(entity.getMonthlyGuideline())
                 .carryForwardAllowed(entity.isCarryForwardAllowed())
-                .maxCarryForwardDays(entity.getMaxCarryForwardDays())
-                .expireUnusedLeaves(entity.isExpireUnusedLeaves())
                 .active(entity.getActive())
                 .build();
     }
 
-    public void updateEntity(
-            LeaveTypeRequest request,
-            LeaveType entity) {
+    public void updateEntity(LeaveTypeRequest request, LeaveType entity) {
 
         entity.setName(request.getName().trim());
         entity.setDescription(request.getDescription());
         entity.setPaid(request.getPaid());
         entity.setAllocatedDays(request.getAllocatedDays());
-        entity.setAllocationType(request.getAllocationType());
+        entity.setMonthlyGuideline(
+                request.getMonthlyGuideline() != null
+                        ? request.getMonthlyGuideline()
+                        : entity.getMonthlyGuideline());
         entity.setCarryForwardAllowed(request.isCarryForwardAllowed());
-        entity.setMaxCarryForwardDays(request.getMaxCarryForwardDays());
-        entity.setExpireUnusedLeaves(request.isExpireUnusedLeaves());
     }
 }
