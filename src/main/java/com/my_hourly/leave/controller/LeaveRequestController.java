@@ -102,7 +102,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/{leaveRequestId}")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', SUPER_ADMIN)")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> getLeaveRequest(
             @PathVariable Long leaveRequestId) {
 

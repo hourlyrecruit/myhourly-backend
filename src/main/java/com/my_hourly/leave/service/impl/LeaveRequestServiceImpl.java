@@ -287,7 +287,7 @@ public class LeaveRequestServiceImpl
 
         return leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Leave Request id: {leaveRequestId}",
+                        "Leave Request id: " + leaveRequestId,
                         ErrorCode.RESOURCE_NOT_FOUND
                         ));
     }
