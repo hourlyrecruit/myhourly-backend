@@ -32,6 +32,27 @@ public interface AttendanceService {
             AttendanceStatus status
     );
 
+    PageResponse<AttendanceResponse> getAllAttendance(
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection,
+            LocalDate fromDate,
+            LocalDate toDate,
+            AttendanceStatus status
+    );
+
+    PageResponse<AttendanceResponse> getAttendanceByEmployeeId(
+            Long employeeId,
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection,
+            LocalDate fromDate,
+            LocalDate toDate,
+            AttendanceStatus status
+    );
+
     AttendanceMonthlySummaryResponse getMonthlySummary(
             Integer month,
             Integer year

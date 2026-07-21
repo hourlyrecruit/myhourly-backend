@@ -32,7 +32,7 @@ public class AttendanceMapper {
                 .id(attendance.getId())
                 .attendanceDate(attendance.getAttendanceDate())
                 .checkOutTime(attendance.getCheckOutTime())
-                .formattedCheckOutTime(DateTimeUtil.formatTime(attendance.getCheckInTime()))
+                .formattedCheckOutTime(DateTimeUtil.formatTime(attendance.getCheckOutTime()))
                 .earlyExitMinutes(attendance.getEarlyExitMinutes())
                 .overtimeMinutes(attendance.getOvertimeMinutes())
                 .attendanceStatus(attendance.getAttendanceStatus())

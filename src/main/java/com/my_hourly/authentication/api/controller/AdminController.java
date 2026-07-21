@@ -24,6 +24,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.my_hourly.attendance.service.AttendanceService;
+import com.my_hourly.attendance.api.response.AttendanceResponse;
+import com.my_hourly.attendance.entity.AttendanceStatus;
+import com.my_hourly.common.payload.response.PageResponse;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
 
 import java.util.List;
 
@@ -37,6 +43,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final EmployeeService employeeService;
+    private final AttendanceService attendanceService;
 
 
     @Operation(summary = "HR and manager can add any user", description = "super_admin and manager can add any user")
@@ -217,6 +224,82 @@ public class AdminController {
                         .build()
         );
 
+    }
+
+    @Operation(summary = "Get all attendance records for HR and Manager")
+    @GetMapping("/attendance")
+    public ResponseEntity<ApiResponse<PageResponse<AttendanceResponse>>> getAllAttendance(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "attendanceDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate fromDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate toDate,
+            @RequestParam(required = false)
+            AttendanceStatus status
+    ) {
+
+        PageResponse<AttendanceResponse> response =
+                attendanceService.getAllAttendance(
+                        page,
+                        size,
+                        sortBy,
+                        sortDirection,
+                        fromDate,
+                        toDate,
+                        status
+                );
+
+        return ResponseEntity.ok(
+                ApiResponse.<PageResponse<AttendanceResponse>>builder()
+                        .success(true)
+                        .message("All attendance records fetched successfully.")
+                        .data(response)
+                        .build()
+        );
+    }
+
+    @Operation(summary = "Get attendance records of a specific employee by ID for HR and Manager")
+    @GetMapping("/attendance/employee/{employeeId}")
+    public ResponseEntity<ApiResponse<PageResponse<AttendanceResponse>>> getAttendanceByEmployeeId(
+            @PathVariable Long employeeId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "attendanceDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate fromDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate toDate,
+            @RequestParam(required = false)
+            AttendanceStatus status
+    ) {
+
+        PageResponse<AttendanceResponse> response =
+                attendanceService.getAttendanceByEmployeeId(
+                        employeeId,
+                        page,
+                        size,
+                        sortBy,
+                        sortDirection,
+                        fromDate,
+                        toDate,
+                        status
+                );
+
+        return ResponseEntity.ok(
+                ApiResponse.<PageResponse<AttendanceResponse>>builder()
+                        .success(true)
+                        .message("Employee attendance records fetched successfully.")
+                        .data(response)
+                        .build()
+        );
     }
 
 }

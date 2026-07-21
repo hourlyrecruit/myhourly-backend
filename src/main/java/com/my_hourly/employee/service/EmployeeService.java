@@ -23,6 +23,8 @@ public interface EmployeeService {
 
     EmployeeResponse getById(Long id);
 
+    Employee getEmployeeEntityById(Long id);
+
     PageResponse<EmployeeResponse> getAll(
             int page,
             int size,

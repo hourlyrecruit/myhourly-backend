@@ -175,9 +175,9 @@ public class AttendanceController {
     @PreAuthorize("hasAuthority('attendance:view')")
     public ResponseEntity<ApiResponse<AttendanceMonthlySummaryResponse>> getMonthlySummary(
 
-            @RequestParam Integer month,
+            @RequestParam(required = false) Integer month,
 
-            @RequestParam Integer year
+            @RequestParam(required = false) Integer year
     ) {
 
         AttendanceMonthlySummaryResponse response =

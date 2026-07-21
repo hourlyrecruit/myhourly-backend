@@ -427,6 +427,18 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional(readOnly = true)
+    public Employee getEmployeeEntityById(Long id) {
+
+        return employeeRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Employee not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public PageResponse<EmployeeResponse> getAll(
             int page,
             int size,

@@ -41,6 +41,12 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class AttendanceServiceImpl implements AttendanceService {
+    private static final java.util.Set<String> ALLOWED_SORT_FIELDS = java.util.Set.of(
+            "id", "attendanceDate", "checkInTime", "checkOutTime", "workingMinutes",
+            "totalBreakMinutes", "attendanceStatus", "employeeStatus", "lateMinutes",
+            "earlyExitMinutes", "overtimeMinutes", "createdAt", "updatedAt"
+    );
+
     private final EmployeeService employeeService;
     private final AttendanceRepository attendanceRepository;
     private final AttendanceMapper attendanceMapper;
@@ -132,6 +138,10 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     private int calculateWorkingMinutes(Attendance attendance) {
 
+        if (attendance.getCheckInTime() == null) {
+            return 0;
+        }
+
         LocalDateTime endTime = attendance.getCheckOutTime();
 
         if (endTime == null) {
@@ -141,7 +151,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         int totalMinutes = (int) Duration.between(
                 attendance.getCheckInTime(),
                 endTime
-        ).toMinutes();
+            ).toMinutes();
 
         int breakMinutes = attendance.getTotalBreakMinutes() == null
                 ? 0
@@ -289,12 +299,13 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         Employee employee = employeeService.getCurrentEmployee();
 
-        Attendance attendance = getTodayAttendance(employee);
+        Optional<Attendance> optionalAttendance = attendanceRepository.findByEmployeeAndAttendanceDate(employee, LocalDate.now());
 
-
-        if(attendance.getAttendanceStatus()==AttendanceStatus.LEAVE){
-            throw new ValidationException("You are on leave today", ErrorCode.ON_LEAVE);
+        if (optionalAttendance.isEmpty()) {
+            return null;
         }
+
+        Attendance attendance = optionalAttendance.get();
 
         attendance.setWorkingMinutes(
                 calculateWorkingMinutes(attendance)
@@ -321,6 +332,30 @@ public class AttendanceServiceImpl implements AttendanceService {
             LocalDate toDate,
             AttendanceStatus status
     ) {
+
+        if (page < 0) {
+            throw new ValidationException("Page number cannot be negative.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (size <= 0) {
+            throw new ValidationException("Page size must be greater than zero.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (size > 100) {
+            size = 100;
+        }
+
+        if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
+            throw new ValidationException("From date cannot be after to date.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (sortBy == null || !ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new ValidationException("Invalid sort field: " + sortBy, ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (sortDirection == null || (!sortDirection.equalsIgnoreCase("asc") && !sortDirection.equalsIgnoreCase("desc"))) {
+            throw new ValidationException("Sort direction must be 'asc' or 'desc'.", ErrorCode.VALIDATION_FAILED);
+        }
 
         Employee employee = employeeService.getCurrentEmployee();
 
@@ -374,6 +409,181 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<AttendanceResponse> getAllAttendance(
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection,
+            LocalDate fromDate,
+            LocalDate toDate,
+            AttendanceStatus status
+    ) {
+
+        if (page < 0) {
+            throw new ValidationException("Page number cannot be negative.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (size <= 0) {
+            throw new ValidationException("Page size must be greater than zero.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (size > 100) {
+            size = 100;
+        }
+
+        if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
+            throw new ValidationException("From date cannot be after to date.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (sortBy == null || !ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new ValidationException("Invalid sort field: " + sortBy, ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (sortDirection == null || (!sortDirection.equalsIgnoreCase("asc") && !sortDirection.equalsIgnoreCase("desc"))) {
+            throw new ValidationException("Sort direction must be 'asc' or 'desc'.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        Sort sort = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<Attendance> specification =
+                Specification.where(
+                                AttendanceSpecification.fromDate(fromDate))
+                        .and(
+                                AttendanceSpecification.toDate(toDate))
+                        .and(
+                                AttendanceSpecification.hasStatus(status));
+
+        Page<Attendance> attendancePage =
+                attendanceRepository.findAll(
+                        specification,
+                        pageable
+                );
+
+        List<AttendanceResponse> responses =
+                attendancePage.getContent()
+                        .stream()
+                        .map(attendance -> {
+
+                            attendance.setWorkingMinutes(
+                                    calculateWorkingMinutes(attendance)
+                            );
+
+                            return attendanceMapper.toResponse(
+                                    attendance,
+                                    getCurrentBreakType(attendance)
+                            );
+
+                        })
+                        .toList();
+
+        return PageResponse.<AttendanceResponse>builder()
+                .content(responses)
+                .page(attendancePage.getNumber())
+                .size(attendancePage.getSize())
+                .totalElements(attendancePage.getTotalElements())
+                .totalPages(attendancePage.getTotalPages())
+                .last(attendancePage.isLast())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<AttendanceResponse> getAttendanceByEmployeeId(
+            Long employeeId,
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection,
+            LocalDate fromDate,
+            LocalDate toDate,
+            AttendanceStatus status
+    ) {
+
+        if (employeeId == null) {
+            throw new ValidationException("Employee ID is required.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        Employee employee = employeeService.getEmployeeEntityById(employeeId);
+
+        if (page < 0) {
+            throw new ValidationException("Page number cannot be negative.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (size <= 0) {
+            throw new ValidationException("Page size must be greater than zero.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (size > 100) {
+            size = 100;
+        }
+
+        if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
+            throw new ValidationException("From date cannot be after to date.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (sortBy == null || !ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new ValidationException("Invalid sort field: " + sortBy, ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (sortDirection == null || (!sortDirection.equalsIgnoreCase("asc") && !sortDirection.equalsIgnoreCase("desc"))) {
+            throw new ValidationException("Sort direction must be 'asc' or 'desc'.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        Sort sort = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<Attendance> specification =
+                Specification.where(
+                                AttendanceSpecification.hasEmployee(employee))
+                        .and(
+                                AttendanceSpecification.fromDate(fromDate))
+                        .and(
+                                AttendanceSpecification.toDate(toDate))
+                        .and(
+                                AttendanceSpecification.hasStatus(status));
+
+        Page<Attendance> attendancePage =
+                attendanceRepository.findAll(
+                        specification,
+                        pageable
+                );
+
+        List<AttendanceResponse> responses =
+                attendancePage.getContent()
+                        .stream()
+                        .map(attendance -> {
+
+                            attendance.setWorkingMinutes(
+                                    calculateWorkingMinutes(attendance)
+                            );
+
+                            return attendanceMapper.toResponse(
+                                    attendance,
+                                    getCurrentBreakType(attendance)
+                            );
+
+                        })
+                        .toList();
+
+        return PageResponse.<AttendanceResponse>builder()
+                .content(responses)
+                .page(attendancePage.getNumber())
+                .size(attendancePage.getSize())
+                .totalElements(attendancePage.getTotalElements())
+                .totalPages(attendancePage.getTotalPages())
+                .last(attendancePage.isLast())
+                .build();
+    }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -383,6 +593,24 @@ public class AttendanceServiceImpl implements AttendanceService {
     ) {
 
         Employee employee = employeeService.getCurrentEmployee();
+
+        LocalDate today = LocalDate.now();
+
+        if (month == null) {
+            month = today.getMonthValue();
+        }
+
+        if (year == null) {
+            year = today.getYear();
+        }
+
+        if (month < 1 || month > 12) {
+            throw new ValidationException("Month must be between 1 and 12.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (year < 1970 || year > 2100) {
+            throw new ValidationException("Year must be between 1970 and 2100.", ErrorCode.VALIDATION_FAILED);
+        }
 
         LocalDate startDate = LocalDate.of(year, month, 1);
 
@@ -468,6 +696,14 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         if (year == null) {
             year = today.getYear();
+        }
+
+        if (month < 1 || month > 12) {
+            throw new ValidationException("Month must be between 1 and 12.", ErrorCode.VALIDATION_FAILED);
+        }
+
+        if (year < 1970 || year > 2100) {
+            throw new ValidationException("Year must be between 1970 and 2100.", ErrorCode.VALIDATION_FAILED);
         }
 
         LocalDate startDate = LocalDate.of(year, month, 1);

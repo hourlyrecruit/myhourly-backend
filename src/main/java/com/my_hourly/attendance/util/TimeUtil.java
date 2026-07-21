@@ -7,7 +7,7 @@ public final class TimeUtil {
 
     public static String formatMinutes(Integer minutes) {
 
-        if (minutes <= 0) {
+        if (minutes == null || minutes <= 0) {
             return "0h 0m";
         }
 
