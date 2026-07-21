@@ -30,31 +30,31 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-//    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    @PreAuthorize("hasAuthority('employee:create')")
-//    @Operation(summary = "Create employees profile", description = "Access by Employee")
-//    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-//            content = @Content(
-//                    mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-//                    encoding = {
-//                            @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE),
-//                            @Encoding(name = "file", contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-//                    }
-//            )
-//    )
-//    public ResponseEntity<ApiResponse<EmployeeResponse>> create(
-//            @Valid @RequestPart("request") CreateEmployeeRequest request,
-//            @RequestPart(value = "file", required = false) MultipartFile file) {
-//
-//        EmployeeResponse response = employeeService.create(request, file);
-//
-//        return ResponseEntity.status(HttpStatus.CREATED)
-//                .body(ApiResponse.<EmployeeResponse>builder()
-//                        .success(true)
-//                        .message("Employee created successfully.")
-//                        .data(response)
-//                        .build());
-//    }
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('employee:create')")
+    @Operation(summary = "Create employees profile", description = "Access by Employee")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                    encoding = {
+                            @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE),
+                            @Encoding(name = "file", contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+                    }
+            )
+    )
+    public ResponseEntity<ApiResponse<EmployeeResponse>> create(
+            @Valid @RequestPart("request") CreateEmployeeRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+
+        EmployeeResponse response = employeeService.create(request, file);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.<EmployeeResponse>builder()
+                        .success(true)
+                        .message("Employee created successfully.")
+                        .data(response)
+                        .build());
+    }
 
     @PutMapping(
             value = "/profile-photo",
