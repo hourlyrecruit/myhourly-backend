@@ -1,6 +1,7 @@
 package com.my_hourly.employee.service.impl;
 
 import com.my_hourly.authentication.entity.User;
+import com.my_hourly.authentication.repository.UserRepository;
 import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.common.exception.ValidationException;
@@ -47,6 +48,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final JobTitleRepository jobTitleRepository;
     private final EmployeeMapper employeeMapper;
     private final LeaveBalanceService leaveBalanceService;
+    private final UserRepository userRepository;
 
     private String generateEmployeeCode() {
 
@@ -192,6 +194,115 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     }
 
+
+
+
+    //===================================================================================================
+
+
+    @Override
+    public EmployeeResponse createUserProfileByAdmin(Long userId, CreateEmployeeRequest request, MultipartFile file) {
+
+       // User user = SecurityUtils.getCurrentUser();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id :" + userId, ErrorCode.USER_NOT_FOUND));
+
+        if (employeeRepository.existsByEmail(user.getEmail())) {
+
+            throw new ValidationException(
+                    "User Profile already exists. You can update it",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        validateHierarchy(
+                request.getDepartmentId(),
+                request.getDesignationId(),
+                request.getJobTitleId()
+        );
+
+        Department department =
+                getDepartment(request.getDepartmentId());
+
+        Designation designation =
+                getDesignation(request.getDesignationId());
+
+        JobTitle jobTitle =
+                getJobTitle(request.getJobTitleId());
+
+        Employee reportingManager =
+                getReportingManager(request.getReportingManagerId());
+
+
+
+        Employee employee = employeeMapper.toEntity(
+                request,
+                user,
+                department,
+                designation,
+                jobTitle,
+                reportingManager
+        );
+
+        employee.setEmployeeCode(generateEmployeeCode());
+
+        Employee savedEmployee =
+                employeeRepository.save(employee);
+
+        //leaveBalanceService.initializeEmployeeLeaveBalance(savedEmployee);
+
+        if (file == null || file.isEmpty()) {
+            return employeeMapper.toResponse(savedEmployee);
+        }else {
+            return uploadProfilePhoto(file);
+        }
+
+    }
+
+
+    @Override
+    public EmployeeResponse updateUserProfileByAdmin(Long userId, UpdateEmployeeRequest request) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id :" + userId, ErrorCode.USER_NOT_FOUND));
+        Employee employee = employeeRepository.findByUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not create for user: " + user.getUsername(), ErrorCode.RESOURCE_NOT_FOUND));
+
+
+        validateHierarchy(
+                request.getDepartmentId(),
+                request.getDesignationId(),
+                request.getJobTitleId()
+        );
+
+        Department department = getDepartment(request.getDepartmentId());
+
+        Designation designation = getDesignation(request.getDesignationId());
+
+        JobTitle jobTitle = getJobTitle(request.getJobTitleId());
+
+        Employee reportingManager =
+                getReportingManager(request.getReportingManagerId());
+
+        employeeMapper.updateEntity(
+                employee,
+                request,
+                department,
+                designation,
+                jobTitle,
+                reportingManager
+        );
+
+        Employee updatedEmployee = employeeRepository.save(employee);
+
+        return employeeMapper.toResponse(updatedEmployee);
+    }
+
+
+    //============================================================================================
+
+
     @Override
     public EmployeeResponse update(UpdateEmployeeRequest request) {
 
@@ -333,7 +444,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.findByUser(user)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Employee not found.",
+                                "Employee Profile not found.",
                                 ErrorCode.RESOURCE_NOT_FOUND
                         ));
 
@@ -349,7 +460,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.findByUser(user)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Employee not found.",
+                                "Employee Profile not found.",
                                 ErrorCode.RESOURCE_NOT_FOUND
                         ));
     }

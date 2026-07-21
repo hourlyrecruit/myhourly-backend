@@ -30,38 +30,38 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAuthority('employee:create')")
-    @Operation(summary = "Create employees profile", description = "Access by Employee")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            content = @Content(
-                    mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                    encoding = {
-                            @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE),
-                            @Encoding(name = "file", contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-                    }
-            )
-    )
-    public ResponseEntity<ApiResponse<EmployeeResponse>> create(
-            @Valid @RequestPart("request") CreateEmployeeRequest request,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
-
-        EmployeeResponse response = employeeService.create(request, file);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.<EmployeeResponse>builder()
-                        .success(true)
-                        .message("Employee created successfully.")
-                        .data(response)
-                        .build());
-    }
+//    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    @PreAuthorize("hasAuthority('employee:create')")
+//    @Operation(summary = "Create employees profile", description = "Access by Employee")
+//    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+//            content = @Content(
+//                    mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+//                    encoding = {
+//                            @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE),
+//                            @Encoding(name = "file", contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+//                    }
+//            )
+//    )
+//    public ResponseEntity<ApiResponse<EmployeeResponse>> create(
+//            @Valid @RequestPart("request") CreateEmployeeRequest request,
+//            @RequestPart(value = "file", required = false) MultipartFile file) {
+//
+//        EmployeeResponse response = employeeService.create(request, file);
+//
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//                .body(ApiResponse.<EmployeeResponse>builder()
+//                        .success(true)
+//                        .message("Employee created successfully.")
+//                        .data(response)
+//                        .build());
+//    }
 
     @PutMapping(
             value = "/profile-photo",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     @PreAuthorize("hasAuthority('employee:update')")
-    @Operation(summary = "Change Profile Photo: image/jpeg, image/jpg, image/png, Only Access by Employee", description = "Only Access by Employee")
+    @Operation(summary = "Change Profile Photo: image/jpeg, image/jpg, image/png, Only Access by Loged In User")
     public ResponseEntity<ApiResponse<EmployeeResponse>> uploadProfilePhoto(
             @RequestParam("file") MultipartFile file) {
 
@@ -76,21 +76,21 @@ public class EmployeeController {
         );
     }
 
-    @PutMapping
-    @PreAuthorize("hasAuthority('employee:update')")
-    @Operation(summary = "Update employee, Only Access by Employee", description = "Only Access by Employee")
-    public ResponseEntity<ApiResponse<EmployeeResponse>> update(
-            @Valid @RequestBody UpdateEmployeeRequest request) {
-
-        EmployeeResponse response = employeeService.update(request);
-
-        return ResponseEntity.ok(
-                ApiResponse.<EmployeeResponse>builder()
-                        .success(true)
-                        .message("Employee updated successfully.")
-                        .data(response)
-                        .build());
-    }
+//    @PutMapping
+//    @PreAuthorize("hasAuthority('employee:update')")
+//    @Operation(summary = "Update employee, Only Access by Employee", description = "Only Access by Employee")
+//    public ResponseEntity<ApiResponse<EmployeeResponse>> update(
+//            @Valid @RequestBody UpdateEmployeeRequest request) {
+//
+//        EmployeeResponse response = employeeService.update(request);
+//
+//        return ResponseEntity.ok(
+//                ApiResponse.<EmployeeResponse>builder()
+//                        .success(true)
+//                        .message("Employee updated successfully.")
+//                        .data(response)
+//                        .build());
+//    }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('employee:view')")
@@ -166,7 +166,7 @@ public class EmployeeController {
 
     @GetMapping("/me")
     @PreAuthorize("hasAuthority('employee:viewMe')")
-    @Operation(summary = "Get Login employees profile, Only Access by Employee", description = "Only Access by Employee")
+    @Operation(summary = "Get Login employees profile, Only Access by Logged In User")
     public ResponseEntity<ApiResponse<EmployeeResponse>> getMyProfile() {
 
         return ResponseEntity.ok(

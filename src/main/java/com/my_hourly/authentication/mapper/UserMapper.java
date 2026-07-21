@@ -22,13 +22,14 @@ public class UserMapper {
         if (user.getRole() != null) {
             switch (user.getRole()) {
                 case SUPER_ADMIN:
+                case MANAGER:
                 case HR_ADMIN:
                     permissions.addAll(List.of(
                             "department:create", "department:view", "department:update", "department:delete",
                             "designation:create", "designation:view", "designation:update", "designation:delete"
                     ));
                     break;
-                case MANAGER:
+
                 case EMPLOYEE:
                     permissions.addAll(List.of("department:view", "designation:view"));
                     break;

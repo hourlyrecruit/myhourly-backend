@@ -1,5 +1,6 @@
 package com.my_hourly.employee.service;
 
+import com.my_hourly.authentication.entity.User;
 import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.employee.api.request.CreateEmployeeRequest;
 import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
@@ -13,6 +14,10 @@ import java.util.List;
 public interface EmployeeService {
 
     EmployeeResponse create(CreateEmployeeRequest request, MultipartFile file);
+
+    EmployeeResponse createUserProfileByAdmin(Long userId, CreateEmployeeRequest request, MultipartFile file);
+
+    EmployeeResponse updateUserProfileByAdmin(Long userId, UpdateEmployeeRequest request);
 
     EmployeeResponse update(UpdateEmployeeRequest request);
 

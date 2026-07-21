@@ -53,7 +53,17 @@ public class DataInitializer implements ApplicationRunner {
     private final WorkLogSettingsRepository workLogSettingsRepository;
     private final NotificationSettingsRepository notificationSettingsRepository;
    // private final SuperAdminProperties superAdminProperties;
+//==================================================
 
+    @Value("${app.hr.username}")
+    private String hrUsername;
+
+    @Value("${app.hr.email}")
+    private String hrEmail;
+
+    @Value("${app.hr.password}")
+    private String hrPassword;
+//====================================================
     @Value("${app.super-admin.username}")
     private String superAdminUsername;
 
@@ -114,9 +124,28 @@ public class DataInitializer implements ApplicationRunner {
         seedLeaveSettings();
         seedWorkLogSettings();
         seedNotificationSettings();
+        seedHr();
 
     }
 
+
+    private void seedHr() {
+
+        if (userRepository.existsByUsername(hrUsername)) {
+            log.info("[DataInitializer] HR '{}' already exists — skipping.", hrUsername);
+            return;
+        }
+
+        User hr = User.builder()
+                .username(hrUsername)
+                .email(hrEmail)
+                .password(passwordEncoder.encode(hrPassword))
+                .userStatus(UserStatus.ACTIVE)
+                .role(RoleName.HR_ADMIN)
+                .build();
+
+        userRepository.save(hr);
+    }
 
     private void seedManager() {
 
