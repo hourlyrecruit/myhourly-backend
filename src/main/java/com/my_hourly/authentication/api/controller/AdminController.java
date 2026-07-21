@@ -129,24 +129,24 @@ public class AdminController {
 
     }
 
-
-    @Operation(summary = "Change/Grant a role to an existing user.")
-    @DeleteMapping("/users/{userId}/roles/{roleName}")
-    public ResponseEntity<ApiResponse<Void>> revokeRole(
-            @PathVariable Long userId,
-            @PathVariable RoleName roleName
-    ) {
-
-        adminService.revokeRole(userId, roleName);
-
-        return ResponseEntity.ok(
-                ApiResponse.<Void>builder()
-                        .success(true)
-                        .message("Role '" + roleName + "' revoked successfully.")
-                        .build()
-        );
-
-    }
+//
+//    @Operation(summary = "Change/Grant a role to an existing user.")
+//    @DeleteMapping("/users/{userId}/roles/{roleName}")
+//    public ResponseEntity<ApiResponse<Void>> revokeRole(
+//            @PathVariable Long userId,
+//            @PathVariable RoleName roleName
+//    ) {
+//
+//        adminService.revokeRole(userId, roleName);
+//
+//        return ResponseEntity.ok(
+//                ApiResponse.<Void>builder()
+//                        .success(true)
+//                        .message("Role '" + roleName + "' revoked successfully.")
+//                        .build()
+//        );
+//
+//    }
 
 
     @Operation(summary = "List all users with their roles and permissions.")
@@ -183,22 +183,22 @@ public class AdminController {
 
     }
 
-    @Operation(summary = "Delete a user by ID.")
-    @DeleteMapping("/users/{userId}")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(
-            @PathVariable Long userId
-    ) {
-
-        adminService.deleteUser(userId);
-
-        return ResponseEntity.ok(
-                ApiResponse.<Void>builder()
-                        .success(true)
-                        .message("User deleted successfully.")
-                        .build()
-        );
-
-    }
+//    @Operation(summary = "Delete a user by ID.")
+//    @DeleteMapping("/users/{userId}")
+//    public ResponseEntity<ApiResponse<Void>> deleteUser(
+//            @PathVariable Long userId
+//    ) {
+//
+//        adminService.deleteUser(userId);
+//
+//        return ResponseEntity.ok(
+//                ApiResponse.<Void>builder()
+//                        .success(true)
+//                        .message("User deleted successfully.")
+//                        .build()
+//        );
+//
+//    }
 
 
     @Operation(summary = "Update the status of an existing user (ACTIVE, INACTIVE, LOCKED, DISABLED, PASSWORD_EXPIRED).")

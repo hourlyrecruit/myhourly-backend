@@ -46,6 +46,7 @@ public class AttendanceValidationServiceImpl
 
         validateHoliday(today, settings);
 
+
     }
 
     private void validateDuplicateAttendance(
@@ -137,7 +138,10 @@ public class AttendanceValidationServiceImpl
 
         validateActiveBreak(attendance);
 
+
     }
+
+
 
     private void validateAlreadyCheckedOut(
             Attendance attendance

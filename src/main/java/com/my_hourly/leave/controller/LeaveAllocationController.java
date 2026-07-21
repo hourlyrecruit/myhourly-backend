@@ -32,4 +32,18 @@ public class LeaveAllocationController {
         );
     }
 
+    @PostMapping("/employee")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<Void>> allocateForAllEmployee() {
+
+        leaveAllocationService.allocateForAllEmployees();
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Leave allocated successfully to all Employee.")
+                        .build()
+        );
+    }
+
 }

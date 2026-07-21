@@ -59,26 +59,26 @@ public class LeaveRequestController {
         );
     }
 
-    @PutMapping("/{leaveRequestId}/manager-action")
-    @PreAuthorize("hasAnyRole('MANAGER', 'SUPER_ADMIN', 'HR_ADMIN')")
-    public ResponseEntity<ApiResponse<LeaveRequestResponse>> managerAction(
-            @PathVariable Long leaveRequestId,
-            @Valid @RequestBody LeaveActionRequest request) {
-
-        LeaveRequestResponse response =
-                leaveRequestService.managerAction(
-                        leaveRequestId,
-                        request);
-
-        return ResponseEntity.ok(
-                ApiResponse.<LeaveRequestResponse>builder()
-                        .success(true)
-                        .message("Manager action completed successfully.")
-                        .data(response)
-                        .timestamp(LocalDateTime.now())
-                        .build()
-        );
-    }
+//    @PutMapping("/{leaveRequestId}/leave-approval-by-manager")
+//    @PreAuthorize("hasAnyRole('MANAGER', 'SUPER_ADMIN', 'HR_ADMIN')")
+//    public ResponseEntity<ApiResponse<LeaveRequestResponse>> managerAction(
+//            @PathVariable Long leaveRequestId,
+//            @Valid @RequestBody LeaveActionRequest request) {
+//
+//        LeaveRequestResponse response =
+//                leaveRequestService.managerAction(
+//                        leaveRequestId,
+//                        request);
+//
+//        return ResponseEntity.ok(
+//                ApiResponse.<LeaveRequestResponse>builder()
+//                        .success(true)
+//                        .message("Manager action completed successfully.")
+//                        .data(response)
+//                        .timestamp(LocalDateTime.now())
+//                        .build()
+//        );
+//    }
 
 //    @PutMapping("/{leaveRequestId}/hr-action")
 //    @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN', 'MANAGER')")
