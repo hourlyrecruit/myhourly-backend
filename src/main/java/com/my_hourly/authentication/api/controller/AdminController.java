@@ -31,7 +31,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'HR')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'HR_ADMIN')")
 @Tag(name = "Admin Controller", description = "Only SUPER_ADMIN and MANAGER can access these endpoint.")
 public class AdminController {
 

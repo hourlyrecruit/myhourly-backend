@@ -255,9 +255,40 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (file == null || file.isEmpty()) {
             return employeeMapper.toResponse(savedEmployee);
         }else {
-            return uploadProfilePhoto(file);
+            return uploadProfilePhoto(file, savedEmployee);
         }
 
+    }
+
+
+    @Override
+    public EmployeeResponse uploadProfilePhoto(
+            MultipartFile file, Employee employee
+    ) {
+
+        // MultipartFileValidator.validate(file);
+        //Employee employee =  getCurrentEmployee();
+
+        validateProfilePhoto(file);
+
+        try {
+
+            // Replace old image with new one
+            employee.setProfilePhoto(file.getBytes());
+            employee.setProfilePhotoName(file.getOriginalFilename());
+            employee.setProfilePhotoType(file.getContentType());
+
+        } catch (IOException e) {
+
+            throw new ValidationException(
+                    "Unable to upload profile photo.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        Employee savedEmployee = employeeRepository.save(employee);
+
+        return employeeMapper.toResponse(savedEmployee);
     }
 
 
@@ -298,6 +329,38 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return employeeMapper.toResponse(updatedEmployee);
     }
+
+
+    @Override
+    public EmployeeResponse updateProfilePhoto(
+            MultipartFile file
+    ) {
+
+        // MultipartFileValidator.validate(file);
+        Employee employee =  getCurrentEmployee();
+
+        validateProfilePhoto(file);
+
+        try {
+
+            // Replace old image with new one
+            employee.setProfilePhoto(file.getBytes());
+            employee.setProfilePhotoName(file.getOriginalFilename());
+            employee.setProfilePhotoType(file.getContentType());
+
+        } catch (IOException e) {
+
+            throw new ValidationException(
+                    "Unable to upload profile photo.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        Employee savedEmployee = employeeRepository.save(employee);
+
+        return employeeMapper.toResponse(savedEmployee);
+    }
+
 
 
     //============================================================================================
@@ -466,35 +529,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
 
-    @Override
-    public EmployeeResponse uploadProfilePhoto(
-            MultipartFile file
-    ) {
 
-       // MultipartFileValidator.validate(file);
-        Employee employee =  getCurrentEmployee();
-
-        validateProfilePhoto(file);
-
-        try {
-
-            // Replace old image with new one
-            employee.setProfilePhoto(file.getBytes());
-            employee.setProfilePhotoName(file.getOriginalFilename());
-            employee.setProfilePhotoType(file.getContentType());
-
-        } catch (IOException e) {
-
-            throw new ValidationException(
-                    "Unable to upload profile photo.",
-                    ErrorCode.VALIDATION_FAILED
-            );
-        }
-
-        Employee savedEmployee = employeeRepository.save(employee);
-
-        return employeeMapper.toResponse(savedEmployee);
-    }
 
 
     private void validateProfilePhoto(MultipartFile file) {

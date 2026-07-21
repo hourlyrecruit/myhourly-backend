@@ -65,7 +65,7 @@ public class EmployeeController {
     public ResponseEntity<ApiResponse<EmployeeResponse>> uploadProfilePhoto(
             @RequestParam("file") MultipartFile file) {
 
-        EmployeeResponse response = employeeService.uploadProfilePhoto(file);
+        EmployeeResponse response = employeeService.updateProfilePhoto(file);
 
         return ResponseEntity.ok(
                 ApiResponse.<EmployeeResponse>builder()

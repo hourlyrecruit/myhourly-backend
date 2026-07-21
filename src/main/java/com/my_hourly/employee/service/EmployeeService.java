@@ -42,7 +42,9 @@ public interface EmployeeService {
     Employee getCurrentEmployee();
 
 
-    EmployeeResponse uploadProfilePhoto(MultipartFile file);
+    EmployeeResponse uploadProfilePhoto(MultipartFile file, Employee employee);
+
+    EmployeeResponse updateProfilePhoto(MultipartFile file);
 
     //byte[] getProfilePhoto(Long employeeId);
 }
