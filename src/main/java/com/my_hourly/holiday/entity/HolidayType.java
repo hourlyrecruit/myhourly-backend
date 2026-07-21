@@ -4,6 +4,6 @@ public enum HolidayType {
 
     HOLIDAY,
 
-    WEEKEND
+    PUBLIC_HOLIDAY, WEEKEND
 
 }

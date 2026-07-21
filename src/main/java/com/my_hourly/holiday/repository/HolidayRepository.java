@@ -33,4 +33,5 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long>,
             LocalDate holidayDate
     );
 
+    boolean existsByHolidayName(String independenceDay);
 }

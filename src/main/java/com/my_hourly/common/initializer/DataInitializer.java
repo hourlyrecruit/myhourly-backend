@@ -3,6 +3,9 @@ package com.my_hourly.common.initializer;
 import com.my_hourly.authentication.entity.*;
 import com.my_hourly.authentication.repository.*;
 import com.my_hourly.authentication.entity.RoleName;
+import com.my_hourly.holiday.entity.Holiday;
+import com.my_hourly.holiday.entity.HolidayType;
+import com.my_hourly.holiday.repository.HolidayRepository;
 import com.my_hourly.master.api.request.CreateDepartmentRequest;
 import com.my_hourly.master.api.request.CreateDesignationRequest;
 import com.my_hourly.master.api.request.CreateJobTitleRequest;
@@ -31,6 +34,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 
@@ -52,6 +56,7 @@ public class DataInitializer implements ApplicationRunner {
     private final LeaveSettingsRepository leaveSettingsRepository;
     private final WorkLogSettingsRepository workLogSettingsRepository;
     private final NotificationSettingsRepository notificationSettingsRepository;
+    private final HolidayRepository holidayRepository;
    // private final SuperAdminProperties superAdminProperties;
 //==================================================
 
@@ -125,6 +130,7 @@ public class DataInitializer implements ApplicationRunner {
         seedWorkLogSettings();
         seedNotificationSettings();
         seedHr();
+        initializeHoliday();
 
     }
 
@@ -163,14 +169,6 @@ public class DataInitializer implements ApplicationRunner {
                 .build();
 
         userRepository.save(manager);
-
-        log.info("[DataInitializer] ================================================");
-        log.info("[DataInitializer]  SUPER_ADMIN created successfully!");
-        log.info("[DataInitializer]  Username : {}", managerUsername);
-        log.info("[DataInitializer]  Email    : {}", managerEmail);
-        log.info("[DataInitializer]  Password : {}", managerPassword);
-        log.info("[DataInitializer]  IMPORTANT: Change this password after first login!");
-        log.info("[DataInitializer] ================================================");
     }
 
 
@@ -192,25 +190,8 @@ public class DataInitializer implements ApplicationRunner {
 
         userRepository.save(superAdmin);
 
-        log.info("[DataInitializer] ================================================");
-        log.info("[DataInitializer]  SUPER_ADMIN created successfully!");
-        log.info("[DataInitializer]  Username : {}", superAdminUsername);
-        log.info("[DataInitializer]  Email    : {}", superAdminEmail);
-        log.info("[DataInitializer]  Password : {}", superAdminPassword);
-        log.info("[DataInitializer]  IMPORTANT: Change this password after first login!");
-        log.info("[DataInitializer] ================================================");
     }
 
-    private String getDefaultDescription(RoleName roleName) {
-        return switch (roleName) {
-            case SUPER_ADMIN    -> "Full system access. Can manage all users and roles.";
-            case HR_ADMIN       -> "Human Resources administrator. Manages employees, leaves, and attendance.";
-            case MANAGER        -> "Team manager. Can approve timesheets and leave requests.";
-            case EMPLOYEE       -> "Standard employee. Can log time, apply for leave, and view own data.";
-            case PAYROLL_ADMIN  -> "Payroll administrator. Manages salary, deductions, and payroll runs.";
-            case CLIENT         -> "Client user. Read-only access to project reports.";
-        };
-    }
 
     private void seedDepartmentDesignationJobTitle(){
         if (departmentRepository.existsByDepartmentName(departmentName)
@@ -302,12 +283,12 @@ public class DataInitializer implements ApplicationRunner {
 
         LeaveSettings settings = LeaveSettings.builder()
                 .halfDayLeaveAllowed(true)
-                .carryForwardAllowed(true)
+                .carryForwardAllowed(false)
                 .monthlyGuideline(2)
                 .annualPaidLeave(24)
-                .minimumAdvanceNoticeDays(2)
-                .maximumAdvanceNoticeDays(90)
-                .maximumConsecutiveLeaveDays(15)
+                .minimumAdvanceNoticeDays(1)
+                .maximumAdvanceNoticeDays(30)
+                .maximumConsecutiveLeaveDays(10)
                 .managerApprovalRequired(true)
                 .hrApprovalRequired(true)
                 .allowLeaveOnHoliday(false)
@@ -315,7 +296,6 @@ public class DataInitializer implements ApplicationRunner {
                 .autoApproveLeave(false)
                 .allowNegativeLeaveBalance(false)
                 .allowBackdatedLeaveApplication(false)
-                .active(true)
                 .build();
 
         leaveSettingsRepository.save(settings);
@@ -377,4 +357,27 @@ public class DataInitializer implements ApplicationRunner {
 
         log.info("[DataInitializer] Notification Settings initialized successfully.");
     }
+
+
+    private void initializeHoliday() {
+
+        if (holidayRepository.existsByHolidayName("Independence Day")) {
+            log.info("Holiday already exists, skipping...");
+            return;
+        }
+
+        Holiday holiday = Holiday.builder()
+                .holidayDate(LocalDate.of(2026, 8, 15))
+                .holidayName("Independence Day")
+                .holidayType(HolidayType.PUBLIC_HOLIDAY)
+                .description("National holiday")
+                .attendanceAllowed(false)
+                .recurring(true)
+                .build();
+
+        holidayRepository.save(holiday);
+
+        log.info("Holiday initialized successfully.");
+    }
+
 }
