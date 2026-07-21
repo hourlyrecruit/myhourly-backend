@@ -37,7 +37,7 @@ public class LeaveAllocationController {
     }
 
     @PostMapping("/employee")
-    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER', 'SUPER_ADMIN')")
     @Operation(summary = "Allocation same leave policy to all employee at once")
     public ResponseEntity<ApiResponse<Void>> allocateForAllEmployee() {
 
@@ -52,7 +52,7 @@ public class LeaveAllocationController {
     }
 
     @PostMapping("/leave-type/{leaveTypeId}")
-    @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN', 'MANAGER')")
     @Operation(summary = "Sync leave balances for all employees after a leave type's allocated days changed")
     public ResponseEntity<ApiResponse<Void>> reallocateForLeaveType(
             @PathVariable Long leaveTypeId) {
