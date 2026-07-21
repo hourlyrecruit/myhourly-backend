@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/leave-transactions")
 @RequiredArgsConstructor
-@Tag(name="C9. Leave tracker", description = "Get Details of leaves applied")
+@Tag(name="09-Leave tracker", description = "Get Details of leaves applied")
 public class LeaveTransactionController {
 
     private final LeaveTransactionService leaveTransactionService;

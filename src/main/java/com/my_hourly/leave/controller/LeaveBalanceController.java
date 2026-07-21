@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/leave-balances")
 @RequiredArgsConstructor
-@Tag(name="C10. Leave Balance", description = "Details of remaining leave of employee")
+@Tag(name="10-Leave Balance", description = "Details of remaining leave of employee")
 public class LeaveBalanceController {
 
     private final LeaveBalanceService leaveBalanceService;

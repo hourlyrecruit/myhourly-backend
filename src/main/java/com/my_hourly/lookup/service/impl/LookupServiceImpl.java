@@ -1,5 +1,6 @@
 package com.my_hourly.lookup.service.impl;
 
+import com.my_hourly.authentication.entity.RoleName;
 import com.my_hourly.authentication.entity.User;
 import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.lookup.api.response.LookupResponse;
@@ -59,8 +60,8 @@ public class LookupServiceImpl implements LookupService {
     @Override
     public List<ReportingManagerLookupResponse> getReportingManagers() {
 
-        User user = SecurityUtils.getCurrentUser();
-        return employeeRepository.findByActiveTrueAndRoleNameOrderByFirstNameAsc(user.getRole())
+        //User user = SecurityUtils.getCurrentUser();
+        return employeeRepository.findByActiveTrueAndRoleNameOrderByFirstNameAsc(RoleName.MANAGER)
                 .stream()
                 .map(lookupMapper::toResponse)
                 .toList();

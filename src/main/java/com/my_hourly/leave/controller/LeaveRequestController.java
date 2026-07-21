@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/leave-requests")
 @RequiredArgsConstructor
-@Tag(name="C7. Leave Request Controller", description = "Employee can apply for leave")
+@Tag(name="07-Leave Request Controller", description = "Employee can apply for leave")
 public class LeaveRequestController {
 
     private final LeaveRequestService leaveRequestService;

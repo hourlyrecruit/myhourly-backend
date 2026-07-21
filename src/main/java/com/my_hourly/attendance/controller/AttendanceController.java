@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/attendance")
 @RequiredArgsConstructor
-@Tag(name = "C4. Attendance", description = "Attendance Management APIs")
+@Tag(name = "04-Attendance", description = "Attendance Management APIs")
 public class AttendanceController {
 
     private final AttendanceService attendanceService;

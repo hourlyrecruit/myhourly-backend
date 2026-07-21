@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/leave-types")
 @RequiredArgsConstructor
-@Tag(name="C5. Leave Type Controller (Leave Policy)", description = "Here needs to define what types of leave like: Sick leave = 12, Causal Leave=12 -> total 24/year")
+@Tag(name="05-Leave Type Controller (Leave Policy)", description = "Here needs to define what types of leave like: Sick leave = 12, Causal Leave=12 -> total 24/year")
 public class LeaveTypeController {
 
     private final LeaveTypeService leaveTypeService;

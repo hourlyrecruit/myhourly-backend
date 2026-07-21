@@ -32,7 +32,7 @@ import java.util.List;
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'HR_ADMIN')")
-@Tag(name = "C2. Admin Controller", description = "Only SUPER_ADMIN and MANAGER can access these endpoint.")
+@Tag(name = "02-Admin Controller", description = "Only SUPER_ADMIN and MANAGER can access these endpoint.")
 public class AdminController {
 
     private final AdminService adminService;

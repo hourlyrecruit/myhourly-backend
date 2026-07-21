@@ -22,30 +22,30 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Tag(name = "C1. Authentication Controller", description = "Public Endpoints: Registration, Login, Logout, Refresh Token, Change Password, CurrentUser")
+@Tag(name = "01-Authentication Controller", description = "Public Endpoints: Registration, Login, Logout, Refresh Token, Change Password, CurrentUser")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
 
-    @PostMapping("/register/employee")
-    @Operation(summary = "Public EndPoint any can register as Employee")
-    public ResponseEntity<ApiResponse<RegisterResponse>> registerEmployee(
-            @Valid @RequestBody EmployeeRegisterRequest request
-    ) {
-
-        RegisterResponse response =
-                authenticationService.registerEmployee(request);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                ApiResponse.<RegisterResponse>builder()
-                        .success(true)
-                        .message("Employee registered successfully.")
-                        .data(response)
-                        .build()
-        );
-
-    }
+//    @PostMapping("/register/employee")
+//    @Operation(summary = "Public EndPoint any can register as Employee")
+//    public ResponseEntity<ApiResponse<RegisterResponse>> registerEmployee(
+//            @Valid @RequestBody EmployeeRegisterRequest request
+//    ) {
+//
+//        RegisterResponse response =
+//                authenticationService.registerEmployee(request);
+//
+//        return ResponseEntity.status(HttpStatus.CREATED).body(
+//                ApiResponse.<RegisterResponse>builder()
+//                        .success(true)
+//                        .message("Employee registered successfully.")
+//                        .data(response)
+//                        .build()
+//        );
+//
+//    }
 
     @Operation(summary = "Common Login Endpoint for All Users ")
     @PostMapping("/login")

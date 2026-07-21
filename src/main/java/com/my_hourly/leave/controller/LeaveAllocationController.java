@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/leave-allocation")
 @RequiredArgsConstructor
-@Tag(name="C6. Leave Allocation Controller", description = "One time setup: HR can allocation total leave in year(leave policy). Guideline for month leave like 2 leave/month")
+@Tag(name="06-Leave Allocation Controller", description = "One time setup: HR can allocation total leave in year(leave policy). Guideline for month leave like 2 leave/month")
 public class LeaveAllocationController {
 
     private final LeaveAllocationService leaveAllocationService;
