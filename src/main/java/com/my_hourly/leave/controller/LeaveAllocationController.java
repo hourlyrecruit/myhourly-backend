@@ -51,4 +51,20 @@ public class LeaveAllocationController {
         );
     }
 
+    @PostMapping("/leave-type/{leaveTypeId}")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Sync leave balances for all employees after a leave type's allocated days changed")
+    public ResponseEntity<ApiResponse<Void>> reallocateForLeaveType(
+            @PathVariable Long leaveTypeId) {
+
+        leaveAllocationService.reallocateForLeaveType(leaveTypeId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Leave balances synced for all employees.")
+                        .build()
+        );
+    }
+
 }

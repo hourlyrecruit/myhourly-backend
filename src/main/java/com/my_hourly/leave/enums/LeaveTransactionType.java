@@ -14,6 +14,8 @@ public enum LeaveTransactionType {
 
     EXPIRED,
 
-    EXPIRY
+    EXPIRY,
+
+    ALLOCATION_ADJUSTED
 
 }

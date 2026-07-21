@@ -20,4 +20,5 @@ public interface LeaveAllocationService {
      */
     void allocateYearlyLeaves();
 
+    void reallocateForLeaveType(Long leaveTypeId);
 }

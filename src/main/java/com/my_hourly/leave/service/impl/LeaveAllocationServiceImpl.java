@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -69,6 +70,26 @@ public class LeaveAllocationServiceImpl implements LeaveAllocationService {
         }
     }
 
+    @Override
+    @Transactional
+    public void reallocateForLeaveType(Long leaveTypeId) {
+
+        LeaveType leaveType = leaveTypeRepository.findById(leaveTypeId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Leave Type id: " + leaveTypeId,
+                        ErrorCode.RESOURCE_NOT_FOUND
+                ));
+
+        List<Employee> employees = employeeRepository.findByActiveTrue();
+
+        for (Employee employee : employees) {
+            allocateAnnualBalance(employee, leaveType);
+        }
+
+        log.info("Reallocated leave type {} ({}) across {} employees",
+                leaveType.getId(), leaveType.getName(), employees.size());
+    }
+
     // -----------------------------------------------------------------------
     // Private helpers
     // -----------------------------------------------------------------------
@@ -83,36 +104,21 @@ public class LeaveAllocationServiceImpl implements LeaveAllocationService {
     }
 
     /**
-     * Creates a single annual LeaveBalance record for the given employee and leave type
-     * if one does not already exist for the current year.
+     * Creates a new annual LeaveBalance for the given employee/leaveType/year if none exists,
+     * or adjusts the existing one (allocatedLeaves + remainingLeaves) by the delta if the
+     * LeaveType's configured days have changed since it was last allocated.
      */
     private void allocateAnnualBalance(Employee employee, LeaveType leaveType) {
 
         int year = LocalDate.now().getYear();
+        int allocatedDays = resolveAllocatedDays(leaveType);
 
-        boolean exists = leaveBalanceRepository
-                .existsByEmployeeAndLeaveTypeAndYear(
-                        employee,
-                        leaveType,
-                        year
-                );
+        Optional<LeaveBalance> existingOpt = leaveBalanceRepository
+                .findByEmployeeAndLeaveTypeAndYear(employee, leaveType, year);
 
-        if (exists) {
-            log.debug("Annual leave balance already exists for employee {} leaveType {} year {}",
-                    employee.getId(), leaveType.getId(), year);
+        if (existingOpt.isPresent()) {
+            adjustExistingBalance(existingOpt.get(), allocatedDays);
             return;
-        }
-
-        int allocatedDays = leaveType.getAllocatedDays();
-        if (Boolean.TRUE.equals(leaveType.getPaid())) {
-            try {
-                LeaveSettings settings = leaveSettingsService.getSettings();
-                if (settings.getAnnualPaidLeave() != null) {
-                    allocatedDays = settings.getAnnualPaidLeave();
-                }
-            } catch (Exception e) {
-                log.warn("Could not retrieve LeaveSettings, falling back to LeaveType allocatedDays", e);
-            }
         }
 
         LeaveBalance leaveBalance = LeaveBalance.builder()
@@ -135,5 +141,61 @@ public class LeaveAllocationServiceImpl implements LeaveAllocationService {
         log.info("Allocated {} days of {} for employee {} for year {}",
                 allocatedDays, leaveType.getName(),
                 employee.getId(), year);
+    }
+
+    private int resolveAllocatedDays(LeaveType leaveType) {
+
+        int allocatedDays = leaveType.getAllocatedDays();
+
+        // LeaveSettings is only a fallback when the LeaveType itself doesn't specify a value —
+        // never override a LeaveType-specific value with the global setting.
+        if (Boolean.TRUE.equals(leaveType.getPaid()) && allocatedDays <= 0) {
+            try {
+                LeaveSettings settings = leaveSettingsService.getSettings();
+                if (settings.getAnnualPaidLeave() != null) {
+                    allocatedDays = settings.getAnnualPaidLeave();
+                }
+            } catch (Exception e) {
+                log.warn("Could not retrieve LeaveSettings, falling back to LeaveType allocatedDays", e);
+            }
+        }
+        return allocatedDays;
+    }
+
+    private void adjustExistingBalance(LeaveBalance leaveBalance, int newAllocatedDays) {
+
+        int oldAllocatedDays = leaveBalance.getAllocatedLeaves();
+        int diff = newAllocatedDays - oldAllocatedDays;
+
+        if (diff == 0) {
+            return;
+        }
+
+        int beforeRemaining = leaveBalance.getRemainingLeaves();
+        int afterRemaining = beforeRemaining + diff;
+
+        if (afterRemaining < 0) {
+            log.warn("Reducing allocation would push remaining leaves negative for employee {} leaveType {} " +
+                            "(remaining={}, diff={}). Clamping remaining to 0 — used leaves exceed new allocation.",
+                    leaveBalance.getEmployee().getId(), leaveBalance.getLeaveType().getId(), beforeRemaining, diff);
+            afterRemaining = 0;
+        }
+
+        leaveBalance.setAllocatedLeaves(newAllocatedDays);
+        leaveBalance.setRemainingLeaves(afterRemaining);
+
+        leaveBalanceRepository.save(leaveBalance);
+
+        leaveTransactionService.createAdjustmentTransaction(
+                leaveBalance,
+                diff,
+                beforeRemaining,
+                afterRemaining,
+                "Leave type allocation updated from " + oldAllocatedDays + " to " + newAllocatedDays
+        );
+
+        log.info("Adjusted allocation for employee {} leaveType {}: {} -> {} (remaining {} -> {})",
+                leaveBalance.getEmployee().getId(), leaveBalance.getLeaveType().getId(),
+                oldAllocatedDays, newAllocatedDays, beforeRemaining, afterRemaining);
     }
 }

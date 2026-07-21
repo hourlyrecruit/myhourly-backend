@@ -33,4 +33,12 @@ public interface LeaveTransactionService {
             LeaveBalance leaveBalance,
             Integer days
     );
+
+    void createAdjustmentTransaction(
+            LeaveBalance leaveBalance,
+            int diff,
+            int beforeRemaining,
+            int afterRemaining,
+            String reason
+    );
 }

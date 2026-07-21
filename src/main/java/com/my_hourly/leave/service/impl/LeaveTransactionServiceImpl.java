@@ -151,4 +151,27 @@ public class LeaveTransactionServiceImpl
         leaveTransactionRepository.save(transaction);
 
     }
+
+
+    @Override
+    public void createAdjustmentTransaction(
+            LeaveBalance leaveBalance,
+            int diff,
+            int beforeRemaining,
+            int afterRemaining,
+            String reason) {
+
+        LeaveTransaction transaction = LeaveTransaction.builder()
+                .employee(leaveBalance.getEmployee())
+                .leaveType(leaveBalance.getLeaveType())
+                .leaveRequest(null)
+                .transactionType(LeaveTransactionType.ALLOCATION_ADJUSTED)
+                .days(diff)
+                .balanceBefore(beforeRemaining)
+                .balanceAfter(afterRemaining)
+                .remarks(reason)
+                .build();
+
+        leaveTransactionRepository.save(transaction);
+    }
 }
