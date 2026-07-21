@@ -96,7 +96,7 @@ public class HolidayController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('holiday:view')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PageResponse<HolidayResponse>>> getAllHolidays(
 
             @RequestParam(defaultValue = "0") int page,
@@ -145,7 +145,7 @@ public class HolidayController {
     }
 
     @GetMapping("/calendar")
-    @PreAuthorize("hasAuthority('holiday:view')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<HolidayCalendarResponse>>> getHolidayCalendar(
 
             @RequestParam(required = false) Integer month,
@@ -166,7 +166,7 @@ public class HolidayController {
     }
 
     @GetMapping("/upcoming")
-    @PreAuthorize("hasAuthority('holiday:view')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<HolidayResponse>>> getUpcomingHolidays() {
 
         List<HolidayResponse> response =
