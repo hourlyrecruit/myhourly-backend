@@ -54,7 +54,9 @@ public class AttendanceServiceImpl implements AttendanceService {
     ) {
 
         Employee employee = employeeService.getCurrentEmployee();
+
         attendanceValidationService.validateCheckIn(employee);
+
         LocalDate today = LocalDate.now();
         LocalDateTime checkInTime = LocalDateTime.now();
 
@@ -182,13 +184,20 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         Attendance attendance = getTodayAttendance(employee);
 
-        if (attendance.getCheckOutTime() != null) {
+//
+//        if(attendance.getAttendanceStatus()==AttendanceStatus.LEAVE){
+//            throw new ValidationException("You are on leave today", ErrorCode.ON_LEAVE);
+//        }
 
-            throw new ValidationException(
-                    "You have already checked out.",
-                    ErrorCode.VALIDATION_FAILED
-            );
-        }
+        attendanceValidationService.validateBreakStart(attendance);
+//
+//        if (attendance.getCheckOutTime() != null) {
+//
+//            throw new ValidationException(
+//                    "You have already checked out.",
+//                    ErrorCode.VALIDATION_FAILED
+//            );
+//        }
 
         if (getActiveBreak(attendance) != null) {
 
@@ -220,6 +229,12 @@ public class AttendanceServiceImpl implements AttendanceService {
         Employee employee = employeeService.getCurrentEmployee();
 
         Attendance attendance = getTodayAttendance(employee);
+
+//        if(attendance.getAttendanceStatus()==AttendanceStatus.LEAVE){
+//            throw new ValidationException("You are on leave today", ErrorCode.ON_LEAVE);
+//        }
+
+        attendanceValidationService.validateBreakEnd(attendance);
 
         AttendanceBreak attendanceBreak =
                 getActiveBreak(attendance);
@@ -275,6 +290,11 @@ public class AttendanceServiceImpl implements AttendanceService {
         Employee employee = employeeService.getCurrentEmployee();
 
         Attendance attendance = getTodayAttendance(employee);
+
+
+        if(attendance.getAttendanceStatus()==AttendanceStatus.LEAVE){
+            throw new ValidationException("You are on leave today", ErrorCode.ON_LEAVE);
+        }
 
         attendance.setWorkingMinutes(
                 calculateWorkingMinutes(attendance)

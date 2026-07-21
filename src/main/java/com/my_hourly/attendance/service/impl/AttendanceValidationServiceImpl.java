@@ -176,11 +176,78 @@ public class AttendanceValidationServiceImpl
 
     @Override
     public void validateBreakStart(Attendance attendance) {
-        // TODO: Implement later
+
+        validateNotOnLeave(attendance);
+        validateNotCheckedOut(attendance);
+        validateNoActiveBreak(attendance);
+
     }
 
     @Override
     public void validateBreakEnd(Attendance attendance) {
-        // TODO: Implement later
+
+        validateNotOnLeave(attendance);
+        validateActiveBreakExists(attendance);
+
+    }
+
+    private void validateNotOnLeave(Attendance attendance) {
+
+        if (attendance.getAttendanceStatus() == AttendanceStatus.LEAVE) {
+
+            throw new ValidationException(
+                    "You are on leave today",
+                    ErrorCode.ON_LEAVE
+            );
+
+        }
+
+    }
+
+    private void validateNotCheckedOut(Attendance attendance) {
+
+        if (attendance.getCheckOutTime() != null) {
+
+            throw new ValidationException(
+                    "You have already checked out.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+
+        }
+
+    }
+
+    private void validateNoActiveBreak(Attendance attendance) {
+
+        boolean activeBreak = attendanceBreakRepository
+                .findFirstByAttendanceAndBreakEndTimeIsNullOrderByBreakStartTimeDesc(attendance)
+                .isPresent();
+
+        if (activeBreak) {
+
+            throw new ValidationException(
+                    "A break is already in progress.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+
+        }
+
+    }
+
+    private void validateActiveBreakExists(Attendance attendance) {
+
+        boolean activeBreak = attendanceBreakRepository
+                .findFirstByAttendanceAndBreakEndTimeIsNullOrderByBreakStartTimeDesc(attendance)
+                .isPresent();
+
+        if (!activeBreak) {
+
+            throw new ValidationException(
+                    "No active break found.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+
+        }
+
     }
 }
