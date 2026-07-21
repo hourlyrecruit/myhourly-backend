@@ -27,10 +27,7 @@ public class UpdateEmployeeRequest {
     private String lastName;
 
     @NotBlank(message = "Phone number is required.")
-    @Pattern(
-            regexp = "^[0-9]{10}$",
-            message = "Phone number must be exactly 10 digits."
-    )
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Phone number must be a valid 10-digit Indian mobile number.")
     private String phoneNumber;
 
     @NotNull(message = "Gender is required.")

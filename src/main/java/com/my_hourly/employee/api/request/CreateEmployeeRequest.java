@@ -5,6 +5,7 @@ import com.my_hourly.employee.entity.Gender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,6 +27,7 @@ public class CreateEmployeeRequest {
     private String lastName;
 
     @NotBlank(message = "Phone number is required.")
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Phone number must be a valid 10-digit Indian mobile number.")
     private String phoneNumber;
 
     @NotNull(message = "Gender is required.")

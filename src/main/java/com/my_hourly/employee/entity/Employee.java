@@ -83,6 +83,7 @@ public class Employee extends BaseEntity {
     private User user;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private RoleName roleName;
 
 }
