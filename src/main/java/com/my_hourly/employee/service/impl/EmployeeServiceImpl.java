@@ -15,7 +15,7 @@ import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.mapper.EmployeeMapper;
 import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.employee.service.EmployeeService;
-
+import com.my_hourly.leave.service.LeaveAllocationService;
 import com.my_hourly.leave.service.LeaveBalanceService;
 import com.my_hourly.master.entity.Department;
 import com.my_hourly.master.entity.Designation;
@@ -49,6 +49,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final LeaveBalanceService leaveBalanceService;
     private final UserRepository userRepository;
+    private final LeaveAllocationService leaveAllocationService;
 
     private String generateEmployeeCode() {
 
@@ -251,6 +252,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Employee savedEmployee =
                 employeeRepository.save(employee);
+
+        leaveAllocationService.allocateForEmployee(savedEmployee.getId());
 
         //leaveBalanceService.initializeEmployeeLeaveBalance(savedEmployee);
 
