@@ -189,7 +189,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (file == null || file.isEmpty()) {
             return employeeMapper.toResponse(savedEmployee);
         }else {
-            return uploadProfilePhoto(file);
+            return updateProfilePhoto(file);
         }
 
     }
