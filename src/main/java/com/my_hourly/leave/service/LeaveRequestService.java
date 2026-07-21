@@ -32,8 +32,8 @@ public interface LeaveRequestService {
             Long leaveRequestId,
             LeaveActionRequest request);
 
-    LeaveRequestResponse hrAction(
-            Long leaveRequestId,
-            LeaveActionRequest request);
+//    LeaveRequestResponse hrAction(
+//            Long leaveRequestId,
+//            LeaveActionRequest request);
 
 }

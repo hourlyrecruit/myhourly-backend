@@ -36,7 +36,7 @@ public class LeaveRequestServiceImpl
     private final LeaveRequestRepository leaveRequestRepository;
     private final LeaveRequestMapper leaveRequestMapper;
     private final LeaveValidationService leaveValidationService;
-    private final LeaveAuthorizationService leaveAuthorizationService;
+    //private final LeaveAuthorizationService leaveAuthorizationService;
     private final EmployeeService employeeService;
     private final LeaveBalanceService leaveBalanceService;
     private final AttendanceService attendanceService;
@@ -124,6 +124,81 @@ public class LeaveRequestServiceImpl
         return leaveRequestMapper.toResponse(savedLeaveRequest);
     }
 
+//    @Override
+//    public LeaveRequestResponse managerAction(
+//            Long leaveRequestId,
+//            LeaveActionRequest request) {
+//
+//        Employee manager = employeeService.getCurrentEmployee();
+//
+//        LeaveRequest leaveRequest = getLeaveRequestEntity(leaveRequestId);
+//
+//        // Leave must be pending
+//        if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
+//            throw new BadRequestException(
+//                    "Leave request has already been processed.",
+//                    ErrorCode.LEAVE_ALREADY_PROCESSED);
+//        }
+//
+//        // Manager cannot approve own leave
+//        if (leaveRequest.getEmployee().getId().equals(manager.getId())) {
+//            throw new BadRequestException(
+//                    "You cannot approve your own leave.",
+//                    ErrorCode.NOT_ALLOWED);
+//        }
+
+        // Validate reporting manager
+//        leaveAuthorizationService.validateManagerApproval(
+//                manager,
+//                leaveRequest);
+
+//        switch (request.getAction()) {
+//
+//            case APPROVE -> {
+//
+//                leaveRequest.setStatus(LeaveStatus.MANAGER_APPROVED);
+//
+//                leaveApprovalService.createApproval(
+//                        leaveRequest,
+//                        manager,
+//                        ApprovalLevel.MANAGER,
+//                        LeaveAction.APPROVE,
+//                        request.getReason());
+//            }
+//
+//            case REJECT -> {
+//
+//                if (request.getReason() == null ||
+//                        request.getReason().isBlank()) {
+//
+//                    throw new BadRequestException(
+//                            "Rejection reason is required.",
+//                            ErrorCode.REASON_REQUIRED);
+//                }
+//
+//                leaveRequest.setStatus(LeaveStatus.REJECTED);
+//
+//                leaveApprovalService.createApproval(
+//                        leaveRequest,
+//                        manager,
+//                        ApprovalLevel.MANAGER,
+//                        LeaveAction.REJECT,
+//                        request.getReason());
+//            }
+//
+//            default -> throw new BadRequestException(
+//                    "Invalid leave action.",
+//                    ErrorCode.INVALID_REQUEST);
+//        }
+//
+//        LeaveRequest savedLeaveRequest =
+//                leaveRequestRepository.save(leaveRequest);
+//
+//        return leaveRequestMapper.toResponse(savedLeaveRequest);
+//    }
+
+
+
     @Override
     public LeaveRequestResponse managerAction(
             Long leaveRequestId,
@@ -147,68 +222,6 @@ public class LeaveRequestServiceImpl
                     ErrorCode.NOT_ALLOWED);
         }
 
-        // Validate reporting manager
-//        leaveAuthorizationService.validateManagerApproval(
-//                manager,
-//                leaveRequest);
-
-        switch (request.getAction()) {
-
-            case APPROVE -> {
-
-                leaveRequest.setStatus(LeaveStatus.MANAGER_APPROVED);
-
-                leaveApprovalService.createApproval(
-                        leaveRequest,
-                        manager,
-                        ApprovalLevel.MANAGER,
-                        LeaveAction.APPROVE,
-                        request.getReason());
-            }
-
-            case REJECT -> {
-
-                if (request.getReason() == null ||
-                        request.getReason().isBlank()) {
-
-                    throw new BadRequestException(
-                            "Rejection reason is required.",
-                            ErrorCode.REASON_REQUIRED);
-                }
-
-                leaveRequest.setStatus(LeaveStatus.REJECTED);
-
-                leaveApprovalService.createApproval(
-                        leaveRequest,
-                        manager,
-                        ApprovalLevel.MANAGER,
-                        LeaveAction.REJECT,
-                        request.getReason());
-            }
-
-            default -> throw new BadRequestException(
-                    "Invalid leave action.",
-                    ErrorCode.INVALID_REQUEST);
-        }
-
-        LeaveRequest savedLeaveRequest =
-                leaveRequestRepository.save(leaveRequest);
-
-        return leaveRequestMapper.toResponse(savedLeaveRequest);
-    }
-
-    @Override
-    public LeaveRequestResponse hrAction(
-            Long leaveRequestId,
-            LeaveActionRequest request) {
-
-        Employee hr = employeeService.getCurrentEmployee();
-
-        // Validate HR authorization
-        leaveAuthorizationService.validateHrApproval(hr);
-
-        LeaveRequest leaveRequest = getLeaveRequestEntity(leaveRequestId);
-
 
         LocalDate date = leaveRequest.getStartDate();
 
@@ -228,16 +241,6 @@ public class LeaveRequestServiceImpl
             date = date.plusDays(1);
         }
 
-        // Only manager approved leave can be processed by HR
-        if (leaveRequest.getStatus() != LeaveStatus.MANAGER_APPROVED) {
-            throw new BadRequestException(
-                    "Manager approval is required.",
-                    ErrorCode.APPROVAL_PENDING);
-        }
-
-        switch (request.getAction()) {
-
-            case APPROVE -> {
 
                 // Optional validation
                 if (leaveRequest.getStartDate().isBefore(LocalDate.now())) {
@@ -261,47 +264,134 @@ public class LeaveRequestServiceImpl
                 attendanceService.markLeaveAttendance(leaveRequest);
 
                 // Update leave status
-                leaveRequest.setStatus(LeaveStatus.HR_APPROVED);
+                leaveRequest.setStatus(LeaveStatus.MANAGER_APPROVED);
 
                 // Save approval history
                 leaveApprovalService.createApproval(
                         leaveRequest,
-                        hr,
-                        ApprovalLevel.HR,
+                        manager,
+                        ApprovalLevel.MANAGER,
                         LeaveAction.APPROVE,
                         request.getReason());
-            }
 
-            case REJECT -> {
 
-                if (request.getReason() == null ||
-                        request.getReason().isBlank()) {
-
-                    throw new BadRequestException(
-                            "Rejection reason is required.",
-                            ErrorCode.REASON_REQUIRED);
-                }
-
-                leaveRequest.setStatus(LeaveStatus.REJECTED);
-
-                leaveApprovalService.createApproval(
-                        leaveRequest,
-                        hr,
-                        ApprovalLevel.HR,
-                        LeaveAction.REJECT,
-                        request.getReason());
-            }
-
-            default -> throw new BadRequestException(
-                    "Invalid leave action.",
-                    ErrorCode.INVALID_REQUEST);
-        }
 
         LeaveRequest savedLeaveRequest =
                 leaveRequestRepository.save(leaveRequest);
 
         return leaveRequestMapper.toResponse(savedLeaveRequest);
     }
+
+
+
+
+
+
+//    @Override
+//    public LeaveRequestResponse hrAction(
+//            Long leaveRequestId,
+//            LeaveActionRequest request) {
+//
+//        Employee hr = employeeService.getCurrentEmployee();
+//
+//        // Validate HR authorization
+//        leaveAuthorizationService.validateHrApproval(hr);
+//
+//        LeaveRequest leaveRequest = getLeaveRequestEntity(leaveRequestId);
+//
+//
+//        LocalDate date = leaveRequest.getStartDate();
+//
+//        while (!date.isAfter(leaveRequest.getEndDate())) {
+//
+//            if (attendanceRepository.existsByEmployeeAndAttendanceDate(
+//                    leaveRequest.getEmployee(),
+//                    date)) {
+//
+//                throw new ValidationException(
+//                        "Attendance already exists on " + date +
+//                                ". Leave cannot be approved.",
+//                        ErrorCode.VALIDATION_FAILED
+//                );
+//            }
+//
+//            date = date.plusDays(1);
+//        }
+//
+//        // Only manager approved leave can be processed by HR
+//        if (leaveRequest.getStatus() != LeaveStatus.MANAGER_APPROVED) {
+//            throw new BadRequestException(
+//                    "Manager approval is required.",
+//                    ErrorCode.APPROVAL_PENDING);
+//        }
+//
+//        switch (request.getAction()) {
+//
+//            case APPROVE -> {
+//
+//                // Optional validation
+//                if (leaveRequest.getStartDate().isBefore(LocalDate.now())) {
+//                    throw new BadRequestException(
+//                            "Leave cannot be approved after its start date.",
+//                            ErrorCode.INVALID_DATE);
+//                }
+//
+//                LeaveBalance leaveBalance =
+//                        leaveBalanceService.getLeaveBalanceEntity(
+//                                leaveRequest.getEmployee(),
+//                                leaveRequest.getLeaveType(),
+//                                leaveRequest.getStartDate());
+//
+//                // Deduct leave balance (also creates leave transaction)
+//                leaveBalanceService.deductLeaveBalance(
+//                        leaveBalance,
+//                        leaveRequest);
+//
+//                // Mark attendance
+//                attendanceService.markLeaveAttendance(leaveRequest);
+//
+//                // Update leave status
+//                leaveRequest.setStatus(LeaveStatus.HR_APPROVED);
+//
+//                // Save approval history
+//                leaveApprovalService.createApproval(
+//                        leaveRequest,
+//                        hr,
+//                        ApprovalLevel.HR,
+//                        LeaveAction.APPROVE,
+//                        request.getReason());
+//            }
+//
+//            case REJECT -> {
+//
+//                if (request.getReason() == null ||
+//                        request.getReason().isBlank()) {
+//
+//                    throw new BadRequestException(
+//                            "Rejection reason is required.",
+//                            ErrorCode.REASON_REQUIRED);
+//                }
+//
+//                leaveRequest.setStatus(LeaveStatus.REJECTED);
+//
+//                leaveApprovalService.createApproval(
+//                        leaveRequest,
+//                        hr,
+//                        ApprovalLevel.HR,
+//                        LeaveAction.REJECT,
+//                        request.getReason());
+//            }
+//
+//            default -> throw new BadRequestException(
+//                    "Invalid leave action.",
+//                    ErrorCode.INVALID_REQUEST);
+//        }
+//
+//        LeaveRequest savedLeaveRequest =
+//                leaveRequestRepository.save(leaveRequest);
+//
+//        return leaveRequestMapper.toResponse(savedLeaveRequest);
+//    }
 
     @Override
     @Transactional(readOnly = true)
