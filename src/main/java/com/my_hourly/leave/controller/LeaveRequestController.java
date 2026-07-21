@@ -5,6 +5,7 @@ import com.my_hourly.leave.api.request.LeaveActionRequest;
 import com.my_hourly.leave.api.request.LeaveRequestRequest;
 import com.my_hourly.leave.api.response.LeaveRequestResponse;
 import com.my_hourly.leave.service.LeaveRequestService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/leave-requests")
 @RequiredArgsConstructor
+@Tag(name="C7. Leave Request Controller", description = "Employee can apply for leave")
 public class LeaveRequestController {
 
     private final LeaveRequestService leaveRequestService;

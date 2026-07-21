@@ -3,6 +3,7 @@ package com.my_hourly.leave.controller;
 import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.leave.api.response.LeaveBalanceResponse;
 import com.my_hourly.leave.service.LeaveBalanceService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/leave-balances")
 @RequiredArgsConstructor
+@Tag(name="C10. Leave Balance", description = "Details of remaining leave of employee")
 public class LeaveBalanceController {
 
     private final LeaveBalanceService leaveBalanceService;

@@ -2,6 +2,8 @@ package com.my_hourly.leave.controller;
 
 import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.leave.service.LeaveAllocationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,12 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/leave-allocation")
 @RequiredArgsConstructor
+@Tag(name="C6. Leave Allocation Controller", description = "One time setup: HR can allocation total leave in year(leave policy). Guideline for month leave like 2 leave/month")
 public class LeaveAllocationController {
 
     private final LeaveAllocationService leaveAllocationService;
 
     @PostMapping("/employee/{employeeId}")
     @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "HR can allocation the leave to individual employee like if emp joined a in mid of year")
     public ResponseEntity<ApiResponse<Void>> allocateForEmployee(
             @PathVariable Long employeeId) {
 
@@ -34,6 +38,7 @@ public class LeaveAllocationController {
 
     @PostMapping("/employee")
     @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Allocation same leave policy to all employee at once")
     public ResponseEntity<ApiResponse<Void>> allocateForAllEmployee() {
 
         leaveAllocationService.allocateForAllEmployees();

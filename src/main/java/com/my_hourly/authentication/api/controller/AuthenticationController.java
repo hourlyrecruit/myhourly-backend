@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication Controller", description = "Public Endpoints: Registration, Login, Logout, Refresh Token, Change Password, CurrentUser")
+@Tag(name = "C1. Authentication Controller", description = "Public Endpoints: Registration, Login, Logout, Refresh Token, Change Password, CurrentUser")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;

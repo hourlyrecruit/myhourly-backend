@@ -4,9 +4,11 @@ import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.leave.api.response.LeaveTransactionResponse;
 import com.my_hourly.leave.service.LeaveAllocationService;
 import com.my_hourly.leave.service.LeaveTransactionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/leave-transactions")
 @RequiredArgsConstructor
+@Tag(name="C9. Leave tracker", description = "Get Details of leaves applied")
 public class LeaveTransactionController {
 
     private final LeaveTransactionService leaveTransactionService;

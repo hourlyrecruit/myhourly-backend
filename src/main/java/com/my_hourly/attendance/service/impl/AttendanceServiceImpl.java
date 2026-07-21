@@ -91,6 +91,10 @@ public class AttendanceServiceImpl implements AttendanceService {
                                 ErrorCode.VALIDATION_FAILED
                         ));
 
+        if(attendance.getAttendanceStatus()==AttendanceStatus.LEAVE){
+            throw new ValidationException("You are on leave today", ErrorCode.ON_LEAVE);
+        }
+
         attendanceValidationService.validateCheckOut(attendance);
 
         LocalDateTime checkOutTime = LocalDateTime.now();

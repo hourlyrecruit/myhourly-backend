@@ -6,6 +6,7 @@ import com.my_hourly.leave.api.response.LeaveApprovalResponse;
 import com.my_hourly.leave.api.response.LeaveRequestResponse;
 import com.my_hourly.leave.service.LeaveApprovalService;
 import com.my_hourly.leave.service.LeaveRequestService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/leave-approvals")
 @RequiredArgsConstructor
+@Tag(name="C8. Leave Approval Controller", description = "Manger can approve the requested leave")
 public class LeaveApprovalController {
 
     private final LeaveApprovalService leaveApprovalService;

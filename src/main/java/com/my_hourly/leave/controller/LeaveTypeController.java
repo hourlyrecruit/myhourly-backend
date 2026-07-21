@@ -4,6 +4,7 @@ import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.leave.api.request.LeaveTypeRequest;
 import com.my_hourly.leave.api.response.LeaveTypeResponse;
 import com.my_hourly.leave.service.LeaveTypeService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/leave-types")
 @RequiredArgsConstructor
+@Tag(name="C5. Leave Type Controller (Leave Policy)", description = "Here needs to define what types of leave like: Sick leave = 12, Causal Leave=12 -> total 24/year")
 public class LeaveTypeController {
 
     private final LeaveTypeService leaveTypeService;

@@ -38,13 +38,10 @@ public class AttendanceValidationServiceImpl
         AttendanceSettings settings =
                 attendanceSettingsService.getSettings();
 
-        validateDuplicateAttendance(employee, today);
-
         validateWeekend(today, settings);
-
         validateLeaveAttendance(employee, today);
-
         validateHoliday(today, settings);
+        validateDuplicateAttendance(employee, today);
 
 
     }
