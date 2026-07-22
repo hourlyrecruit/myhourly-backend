@@ -70,8 +70,8 @@ public class CustomUserDetailsService
                     authorities.add(new SimpleGrantedAuthority("employee:updateStatus"));
                     //authorities.add(new SimpleGrantedAuthority("employee:update"));
                     authorities.add(new SimpleGrantedAuthority("employee:viewDropDown"));
-                    authorities.add(new SimpleGrantedAuthority("employee:update"));
-                    authorities.add(new SimpleGrantedAuthority("employee:viewMe"));
+                    //authorities.add(new SimpleGrantedAuthority("employee:update"));
+                  //  authorities.add(new SimpleGrantedAuthority("employee:viewMe"));
                     authorities.add(new SimpleGrantedAuthority("employee:create"));
 
                     authorities.add(new SimpleGrantedAuthority("holiday:create"));
@@ -84,7 +84,7 @@ public class CustomUserDetailsService
                     authorities.add(new SimpleGrantedAuthority("designation:view"));
 
                    // authorities.add(new SimpleGrantedAuthority("employee:create"));
-                    authorities.add(new SimpleGrantedAuthority("employee:view"));
+                  //  authorities.add(new SimpleGrantedAuthority("employee:view"));
                     authorities.add(new SimpleGrantedAuthority("employee:viewMe"));
                     authorities.add(new SimpleGrantedAuthority("employee:update"));
                     //authorities.add(new SimpleGrantedAuthority("employee:updatePhoto"));
