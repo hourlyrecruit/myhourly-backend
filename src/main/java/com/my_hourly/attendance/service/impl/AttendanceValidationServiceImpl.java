@@ -117,9 +117,9 @@ public class AttendanceValidationServiceImpl
                     if (!holiday.getAttendanceAllowed()) {
 
                         throw new ValidationException(
-                                "Attendance cannot be marked on " +
+                                "Attendance cannot be marked on holiday " +
                                         holiday.getHolidayName(),
-                                ErrorCode.VALIDATION_FAILED
+                                ErrorCode.HOLIDAY_DAY
                         );
 
                     }
