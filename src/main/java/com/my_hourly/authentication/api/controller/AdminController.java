@@ -47,7 +47,7 @@ public class AdminController {
 
 
     @Operation(summary = "Register a new user. Access: SUPER_ADMIN, MANAGER, HR_ADMIN", description = "super_admin and manager can add any user")
-    @PostMapping("/register")
+    @PostMapping("users/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> registerUser(
             @Valid @RequestBody AdminRegisterRequest request
     ) {
@@ -66,7 +66,7 @@ public class AdminController {
 
 //=====================================================================================================
 
-    @PostMapping(value = "/user/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/employee-profile/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     //@PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     @Operation(summary = "Create employees profile. Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -95,7 +95,7 @@ public class AdminController {
 
 
 
-    @PutMapping("user/{userId}")
+    @PutMapping("employee-profile/{userId}")
    // @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     @Operation(summary = "Update employee profile. Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
     public ResponseEntity<ApiResponse<EmployeeResponse>> updateUserProfileByAdmin(

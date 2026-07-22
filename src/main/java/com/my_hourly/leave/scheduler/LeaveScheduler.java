@@ -1,11 +1,16 @@
 package com.my_hourly.leave.scheduler;
 
+import com.my_hourly.employee.entity.Employee;
+import com.my_hourly.leave.entity.LeaveType;
+import com.my_hourly.leave.repository.LeaveTypeRepository;
 import com.my_hourly.leave.service.LeaveAllocationService;
 import com.my_hourly.leave.service.LeaveExpiryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -14,6 +19,7 @@ public class LeaveScheduler {
 
     private final LeaveAllocationService leaveAllocationService;
     private final LeaveExpiryService leaveExpiryService;
+    private final LeaveTypeRepository leaveTypeRepository;
 
     /**
      * Runs on Jan 1st at 12:00 AM.
@@ -53,4 +59,5 @@ public class LeaveScheduler {
 
         log.info("Month-End Leave Expiry Completed");
     }
+
 }

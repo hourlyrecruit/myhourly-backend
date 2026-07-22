@@ -2,6 +2,7 @@ package com.my_hourly.lookup.service.impl;
 
 import com.my_hourly.authentication.entity.RoleName;
 import com.my_hourly.authentication.entity.User;
+import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.lookup.api.response.LookupResponse;
 import com.my_hourly.lookup.api.response.ReportingManagerLookupResponse;
@@ -61,9 +62,11 @@ public class LookupServiceImpl implements LookupService {
     public List<ReportingManagerLookupResponse> getReportingManagers() {
 
         //User user = SecurityUtils.getCurrentUser();
-        return employeeRepository.findByActiveTrueAndRoleNameOrderByFirstNameAsc(RoleName.MANAGER)
+          return employeeRepository
+                .findByActiveTrueAndRoleNameInOrderByFirstNameAsc(List.of(RoleName.MANAGER, RoleName.SUPER_ADMIN))
                 .stream()
                 .map(lookupMapper::toResponse)
                 .toList();
+
     }
 }

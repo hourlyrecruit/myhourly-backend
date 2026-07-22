@@ -53,7 +53,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 
         LeaveType leaveType = getLeaveTypeEntity(leaveTypeId);
 
-        validateLeaveTypeName(request.getName(), leaveTypeId);
+       validateLeaveTypeName(request.getName(), leaveTypeId);
 
         leaveTypeMapper.updateEntity(request, leaveType);
 
@@ -149,7 +149,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 
         if (exists) {
             throw new BadRequestException(
-                    "Leave type with name '" + name + "' already exists.", ErrorCode.LEAVE_ALREADY_EXIST);
+                    "Leave type with name '" + name + "' already exists.Most probably wrong ID given", ErrorCode.LEAVE_ALREADY_EXIST);
         }
     }
 }

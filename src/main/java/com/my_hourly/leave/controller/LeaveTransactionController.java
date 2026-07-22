@@ -24,7 +24,7 @@ public class LeaveTransactionController {
 
     @Operation(summary = "Get My Leave Transactions. Access: EMPLOYEE")
     @GetMapping("/my")
-    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<List<LeaveTransactionResponse>>> getMyTransactions() {
 
         return ResponseEntity.ok(

@@ -24,9 +24,9 @@ public class LeaveTypeController {
 
     private final LeaveTypeService leaveTypeService;
 
-    @Operation(summary = "Create Leave Type. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
+    @Operation(summary = "Create Leave Type. Access: HR_ADMIN, MANAGER")
     @PostMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveTypeResponse>> createLeaveType(
             @Valid @RequestBody LeaveTypeRequest request) {
 
@@ -42,7 +42,7 @@ public class LeaveTypeController {
 
     @Operation(summary = "Update Leave Type. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @PutMapping("/{leaveTypeId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveTypeResponse>> updateLeaveType(
             @PathVariable Long leaveTypeId,
             @Valid @RequestBody LeaveTypeRequest request) {
@@ -114,7 +114,7 @@ public class LeaveTypeController {
 
     @Operation(summary = "Activate Leave Type. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @PatchMapping("/{leaveTypeId}/activate")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveTypeResponse>> activateLeaveType(
             @PathVariable Long leaveTypeId) {
 
@@ -132,7 +132,7 @@ public class LeaveTypeController {
 
     @Operation(summary = "Deactivate Leave Type. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @PatchMapping("/{leaveTypeId}/deactivate")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveTypeResponse>> deactivateLeaveType(
             @PathVariable Long leaveTypeId) {
 

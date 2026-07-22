@@ -27,7 +27,7 @@ public class LeaveRequestController {
 
     @Operation(summary = "Apply for Leave. Access: EMPLOYEE")
     @PostMapping
-    @PreAuthorize("hasAnyRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> applyLeave(
             @Valid @RequestBody LeaveRequestRequest request) {
 
@@ -47,7 +47,7 @@ public class LeaveRequestController {
 
     @Operation(summary = "Cancel Leave Request. Access: EMPLOYEE")
     @PutMapping("/{leaveRequestId}/cancel")
-    @PreAuthorize("hasAnyRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> cancelLeave(
             @PathVariable Long leaveRequestId) {
 
@@ -108,7 +108,7 @@ public class LeaveRequestController {
 
     @Operation(summary = "Get Leave Request by ID. Access: EMPLOYEE, MANAGER, HR_ADMIN, SUPER_ADMIN")
     @GetMapping("/{leaveRequestId}")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> getLeaveRequest(
             @PathVariable Long leaveRequestId) {
 
@@ -127,7 +127,7 @@ public class LeaveRequestController {
 
     @Operation(summary = "Get My Leave Requests. Access: EMPLOYEE")
     @GetMapping("/my")
-    @PreAuthorize("hasAnyRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getMyLeaveRequests() {
 
         List<LeaveRequestResponse> response =

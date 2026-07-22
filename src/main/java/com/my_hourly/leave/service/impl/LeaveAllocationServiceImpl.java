@@ -42,6 +42,7 @@ public class LeaveAllocationServiceImpl implements LeaveAllocationService {
                         ErrorCode.RESOURCE_NOT_FOUND
                 ));
 
+
         List<LeaveType> leaveTypes = leaveTypeRepository.findByActiveTrue();
 
         for (LeaveType leaveType : leaveTypes) {
@@ -121,25 +122,34 @@ public class LeaveAllocationServiceImpl implements LeaveAllocationService {
             return;
         }
 
+        LocalDate dateOfJoining = employee.getDateOfJoining();
+
+        int finalAllocatedDays = allocatedDays;
+
+        if (dateOfJoining.getYear() == year) {
+            int monthsRemaining = 13 - dateOfJoining.getMonthValue(); // joining month through December, inclusive
+            finalAllocatedDays = (allocatedDays * monthsRemaining) / 12;
+        }
+
         LeaveBalance leaveBalance = LeaveBalance.builder()
                 .employee(employee)
                 .leaveType(leaveType)
                 .year(year)
-                .allocatedLeaves(allocatedDays)
+                .allocatedLeaves(finalAllocatedDays)
                 .usedLeaves(0)
                 .expiredLeaves(0)
-                .remainingLeaves(allocatedDays)
+                .remainingLeaves(finalAllocatedDays)
                 .build();
 
         leaveBalanceRepository.save(leaveBalance);
 
         leaveTransactionService.createAllocationTransaction(
                 leaveBalance,
-                allocatedDays
+                finalAllocatedDays
         );
 
         log.info("Allocated {} days of {} for employee {} for year {}",
-                allocatedDays, leaveType.getName(),
+                finalAllocatedDays, leaveType.getName(),
                 employee.getId(), year);
     }
 

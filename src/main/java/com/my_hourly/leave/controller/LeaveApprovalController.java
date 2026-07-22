@@ -27,9 +27,9 @@ public class LeaveApprovalController {
     private final LeaveRequestService leaveRequestService;
 
 
-    @Operation(summary = "Manager Leave Action. Access: MANAGER, SUPER_ADMIN, HR_ADMIN")
+    @Operation(summary = "Manager Leave Action. Access: MANAGER")
     @PutMapping("/{leaveRequestId}/leave-approval-by-manager")
-    @PreAuthorize("hasAnyRole('MANAGER', 'SUPER_ADMIN', 'HR_ADMIN')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> managerAction(
             @PathVariable Long leaveRequestId,
             @Valid @RequestBody LeaveActionRequest request) {
