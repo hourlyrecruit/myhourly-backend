@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/lookups")
 @RequiredArgsConstructor
-@Tag(name = "Lookup Controller- Access By Any Logged In User")
+@Tag(name = "12-Lookup Controller- Access By Any Logged In User")
 public class LookupController {
 
     private final LookupService lookupService;

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/designations")
 @RequiredArgsConstructor
-@Tag(name = "Designation Controller", description = "Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
+@Tag(name = "0-Designation Controller", description = "Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
 public class DesignationController {
 
     private final DesignationService designationService;

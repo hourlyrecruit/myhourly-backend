@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/job-titles")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('SUPER_ADMIN, MANAGER, HR_ADMIN')")
-@Tag(name = "JobTitle Controller", description = "Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
+@Tag(name = "0-JobTitle Controller", description = "Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
 public class JobTitleController {
 
     private final JobTitleService jobTitleService;

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/departments")
 @RequiredArgsConstructor
-@Tag(name = "Department Controller", description = "ONLY SUPER_ADMIN, MANAGER, HR_ADMIN ARE ALLOWED")
+@Tag(name = "0-Department Controller", description = "ONLY SUPER_ADMIN, MANAGER, HR_ADMIN ARE ALLOWED")
 public class DepartmentController {
 
     private final DepartmentService departmentService;
