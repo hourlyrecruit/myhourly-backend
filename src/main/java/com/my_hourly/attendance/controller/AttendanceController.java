@@ -29,7 +29,7 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
 
-    @Operation(summary = "Check in. Access: attendance:create")
+    @Operation(summary = "Check in. Access: Employee")
     @PostMapping("/check-in")
     @PreAuthorize("hasAuthority('attendance:create')")
     public ResponseEntity<ApiResponse<CheckInResponse>> checkIn(
@@ -47,7 +47,7 @@ public class AttendanceController {
         );
     }
 
-    @Operation(summary = "Start break. Access: attendance:create")
+    @Operation(summary = "Start break. Access: Employee")
     @PostMapping("/break-start")
     @PreAuthorize("hasAuthority('attendance:create')")
     public ResponseEntity<ApiResponse<BreakStartResponse>> startBreak(
@@ -65,7 +65,7 @@ public class AttendanceController {
         );
     }
 
-    @Operation(summary = "End break. Access: attendance:create")
+    @Operation(summary = "End break. Access: Employee")
     @PostMapping("/break-end")
     @PreAuthorize("hasAuthority('attendance:create')")
     public ResponseEntity<ApiResponse<BreakEndResponse>> endBreak() {
@@ -82,7 +82,7 @@ public class AttendanceController {
         );
     }
 
-    @Operation(summary = "Check out. Access: attendance:create")
+    @Operation(summary = "Check out. Access: Employee")
     @PostMapping("/check-out")
     @PreAuthorize("hasAuthority('attendance:create')")
     public ResponseEntity<ApiResponse<CheckOutResponse>> checkOut(
@@ -115,7 +115,7 @@ public class AttendanceController {
 //        );
 //    }
 
-    @Operation(summary = "Get today's attendance. Access: attendance:view")
+    @Operation(summary = "Get today's attendance. Access: Employee")
     @GetMapping("/today")
     @PreAuthorize("hasAuthority('attendance:view')")
     public ResponseEntity<ApiResponse<AttendanceResponse>> getTodayAttendance() {
@@ -132,7 +132,7 @@ public class AttendanceController {
         );
     }
 
-    @Operation(summary = "Get attendance history. Access: attendance:view")
+    @Operation(summary = "Get attendance history. Access: Employee")
     @GetMapping("/history")
     @PreAuthorize("hasAuthority('attendance:view')")
     public ResponseEntity<ApiResponse<PageResponse<AttendanceResponse>>> getAttendanceHistory(
@@ -178,7 +178,7 @@ public class AttendanceController {
         );
     }
 
-    @Operation(summary = "Get monthly attendance summary. Access: attendance:view")
+    @Operation(summary = "Get monthly attendance summary. Access: Employee")
     @GetMapping("/monthly-summary")
     @PreAuthorize("hasAuthority('attendance:view')")
     public ResponseEntity<ApiResponse<AttendanceMonthlySummaryResponse>> getMonthlySummary(
@@ -201,7 +201,7 @@ public class AttendanceController {
         );
     }
 
-    @Operation(summary = "Get attendance calendar. Access: attendance:view")
+    @Operation(summary = "Get attendance calendar. Access: Employee")
     @GetMapping("/calendar")
     @PreAuthorize("hasAuthority('attendance:view')")
     public ResponseEntity<ApiResponse<List<AttendanceCalendarResponse>>> getAttendanceCalendar(
@@ -227,7 +227,7 @@ public class AttendanceController {
         );
     }
 
-    @Operation(summary = "Get attendance dashboard. Access: attendance:view")
+    @Operation(summary = "Get attendance dashboard. Access: Employee")
     @GetMapping("/dashboard")
     @PreAuthorize("hasAuthority('attendance:view')")
     public ResponseEntity<ApiResponse<AttendanceDashboardResponse>> getDashboard() {
