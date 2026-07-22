@@ -26,8 +26,8 @@ public class DepartmentController {
     private final DepartmentService departmentService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('department:create')")
-    @Operation(summary = "Add Department like: Human Resources, Information Technology, Administration, Engineering etc. Access: department:create")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Add Department like: Human Resources, Information Technology, Administration, Engineering etc. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<DepartmentResponse>> create(
             @Valid @RequestBody CreateDepartmentRequest request) {
 
@@ -42,8 +42,8 @@ public class DepartmentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('department:view')")
-    @Operation(summary = "Get Department By ID. Access: department:view")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Get Department By ID. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<DepartmentResponse>> getById(
             @PathVariable Long id) {
 
@@ -56,8 +56,8 @@ public class DepartmentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('department:view')")
-    @Operation(summary = "Get All Departments. Access: department:view")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Get All Departments. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<PageResponse<DepartmentResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -74,8 +74,8 @@ public class DepartmentController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('department:update')")
-    @Operation(summary = "Update Department. Access: department:update")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Update Department. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<DepartmentResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateDepartmentRequest request) {
@@ -89,8 +89,8 @@ public class DepartmentController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('department:update')")
-    @Operation(summary = "Change Department Status:- True: Active, False: InActive. Access: department:update")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Change Department Status:- True: Active, False: InActive. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<Void>> changeStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
@@ -105,8 +105,8 @@ public class DepartmentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('department:delete')")
-    @Operation(summary = "Delete Department BY ID. Access: department:delete")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Delete Department BY ID. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id) {
 

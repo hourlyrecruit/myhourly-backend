@@ -30,8 +30,8 @@ public class HolidayController {
     private final HolidayService holidayService;
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('holiday:create')")
-    @Operation(summary = "Create Holiday. Access: holiday:create")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Create Holiday. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<HolidayResponse>> createHoliday(
             @Valid @RequestBody CreateHolidayRequest request) {
 
@@ -48,8 +48,8 @@ public class HolidayController {
     }
 
     @PutMapping("/{holidayId}")
-    @PreAuthorize("hasAnyAuthority('holiday:update')")
-    @Operation(summary = "Update Holiday. Access: holiday:update")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Update Holiday. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<HolidayResponse>> updateHoliday(
             @PathVariable Long holidayId,
             @Valid @RequestBody UpdateHolidayRequest request) {
@@ -67,8 +67,8 @@ public class HolidayController {
     }
 
     @DeleteMapping("/{holidayId}")
-    @PreAuthorize("hasAnyAuthority('holiday:delete')")
-    @Operation(summary = "Delete Holiday. Access: holiday:delete")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Delete Holiday. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<Void>> deleteHoliday(
             @PathVariable Long holidayId) {
 
@@ -83,8 +83,8 @@ public class HolidayController {
     }
 
     @GetMapping("/{holidayId}")
-    @PreAuthorize("hasAuthority('holiday:view')")
-    @Operation(summary = "Get Holiday by ID. Access: holiday:view")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Get Holiday by ID. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<HolidayResponse>> getHolidayById(
             @PathVariable Long holidayId) {
 
