@@ -25,7 +25,7 @@ public class JobTitleController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('job-title:create')")
-    @Operation(description = "Add JobTitle like: Backend Engineer, Frontend Engineer, Full Stack Engineer, Software Developer, DevOps Engineer etc.")
+    @Operation(summary = "Add JobTitle like: Backend Engineer, Frontend Engineer, Full Stack Engineer, Software Developer, DevOps Engineer etc. Access: job-title:create")
     public ResponseEntity<ApiResponse<JobTitleResponse>> create(
             @Valid @RequestBody CreateJobTitleRequest request) {
 
@@ -39,6 +39,7 @@ public class JobTitleController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('job-title:view')")
+    @Operation(summary = "Get JobTitle By ID. Access: job-title:view")
     public ResponseEntity<ApiResponse<JobTitleResponse>> getById(
             @PathVariable Long id) {
 
@@ -52,6 +53,7 @@ public class JobTitleController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('job-title:view')")
+    @Operation(summary = "Get All JobTitles. Access: job-title:view")
     public ResponseEntity<ApiResponse<PageResponse<JobTitleResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -75,6 +77,7 @@ public class JobTitleController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('job-title:update')")
+    @Operation(summary = "Update JobTitle. Access: job-title:update")
     public ResponseEntity<ApiResponse<JobTitleResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateJobTitleRequest request) {
@@ -89,6 +92,7 @@ public class JobTitleController {
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAuthority('job-title:update')")
+    @Operation(summary = "Change JobTitle Status. Access: job-title:update")
     public ResponseEntity<ApiResponse<Void>> changeStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
@@ -104,6 +108,7 @@ public class JobTitleController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('job-title:delete')")
+    @Operation(summary = "Delete JobTitle. Access: job-title:delete")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id) {
 

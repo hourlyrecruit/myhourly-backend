@@ -4,6 +4,7 @@ import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.leave.api.response.LeaveTransactionResponse;
 import com.my_hourly.leave.service.LeaveAllocationService;
 import com.my_hourly.leave.service.LeaveTransactionService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ public class LeaveTransactionController {
 
     private final LeaveTransactionService leaveTransactionService;
 
+    @Operation(summary = "Get My Leave Transactions. Access: EMPLOYEE")
     @GetMapping("/my")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<ApiResponse<List<LeaveTransactionResponse>>> getMyTransactions() {
@@ -33,6 +35,7 @@ public class LeaveTransactionController {
                         .build());
     }
 
+    @Operation(summary = "Get Employee Leave Transactions. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @GetMapping("/employee/{employeeId}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<List<LeaveTransactionResponse>>> getEmployeeTransactions(
@@ -46,6 +49,7 @@ public class LeaveTransactionController {
                         .build());
     }
 
+    @Operation(summary = "Get Leave Transactions by Leave Request ID. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @GetMapping("/leave-request/{leaveRequestId}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<List<LeaveTransactionResponse>>> getLeaveTransactions(

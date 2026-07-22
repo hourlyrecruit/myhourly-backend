@@ -12,6 +12,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Settings - Notification", description = "Manage notification settings")
 
 @RestController
 @RequestMapping("/api/v1/settings/notifications")
@@ -20,6 +24,7 @@ public class NotificationSettingsController {
 
     private final NotificationSettingsService notificationSettingsService;
 
+    @Operation(summary = "Get Notification Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<NotificationSettingsResponse>> getNotificationSettings() {
@@ -38,6 +43,7 @@ public class NotificationSettingsController {
         return ResponseEntity.ok(apiResponse);
     }
 
+    @Operation(summary = "Update Notification Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @PutMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<NotificationSettingsResponse>> updateNotificationSettings(

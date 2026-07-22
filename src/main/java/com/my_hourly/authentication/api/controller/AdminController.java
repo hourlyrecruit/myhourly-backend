@@ -46,7 +46,7 @@ public class AdminController {
     private final AttendanceService attendanceService;
 
 
-    @Operation(summary = "HR and manager can add any user", description = "super_admin and manager can add any user")
+    @Operation(summary = "Register a new user. Access: SUPER_ADMIN, MANAGER, HR_ADMIN", description = "super_admin and manager can add any user")
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> registerUser(
             @Valid @RequestBody AdminRegisterRequest request
@@ -68,7 +68,7 @@ public class AdminController {
 
     @PostMapping(value = "/user/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     //@PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
-    @Operation(summary = "Create employees profile")
+    @Operation(summary = "Create employees profile. Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                     mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -97,7 +97,7 @@ public class AdminController {
 
     @PutMapping("user/{userId}")
    // @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
-    @Operation(summary = "Update employee profile")
+    @Operation(summary = "Update employee profile. Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
     public ResponseEntity<ApiResponse<EmployeeResponse>> updateUserProfileByAdmin(
             @PathVariable("userId") Long userId,
             @Valid @RequestBody UpdateEmployeeRequest request) {
@@ -118,7 +118,7 @@ public class AdminController {
 //==============================================================================================================
 
 
-    @Operation(summary = "Change/Grant a role to an existing user.")
+    @Operation(summary = "Change/Grant a role to an existing user. Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
     @PostMapping("/users/{userId}/roles")
     public ResponseEntity<ApiResponse<Void>> grantRole(
             @PathVariable Long userId,
@@ -156,7 +156,7 @@ public class AdminController {
 //    }
 
 
-    @Operation(summary = "List all users with their roles and permissions.")
+    @Operation(summary = "List all users with their roles and permissions. Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<List<UserProfileResponse>>> getAllUsers() {
 
@@ -172,7 +172,7 @@ public class AdminController {
 
     }
 
-    @Operation(summary = "Get a single user by their ID.")
+    @Operation(summary = "Get a single user by their ID. Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
     @GetMapping("/users/{userId}")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getUserById(
             @PathVariable Long userId
@@ -208,7 +208,7 @@ public class AdminController {
 //    }
 
 
-    @Operation(summary = "Update the status of an existing user (ACTIVE, INACTIVE, LOCKED, DISABLED, PASSWORD_EXPIRED).")
+    @Operation(summary = "Update the status of an existing user (ACTIVE, INACTIVE, LOCKED, DISABLED, PASSWORD_EXPIRED). Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
     @PatchMapping("/users/{userId}/status")
     public ResponseEntity<ApiResponse<Void>> updateUserStatus(
             @PathVariable Long userId,
@@ -226,7 +226,7 @@ public class AdminController {
 
     }
 
-    @Operation(summary = "Get all attendance records for HR and Manager")
+    @Operation(summary = "Get all attendance records. Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
     @GetMapping("/attendance")
     public ResponseEntity<ApiResponse<PageResponse<AttendanceResponse>>> getAllAttendance(
             @RequestParam(defaultValue = "0") int page,
@@ -263,7 +263,7 @@ public class AdminController {
         );
     }
 
-    @Operation(summary = "Get attendance records of a specific employee by ID for HR and Manager")
+    @Operation(summary = "Get attendance records of a specific employee by ID. Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
     @GetMapping("/attendance/employee/{employeeId}")
     public ResponseEntity<ApiResponse<PageResponse<AttendanceResponse>>> getAttendanceByEmployeeId(
             @PathVariable Long employeeId,

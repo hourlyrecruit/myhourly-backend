@@ -27,7 +27,7 @@ public class DepartmentController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('department:create')")
-    @Operation(description = "Add Department like: Human Resources, Information Technology, Administration, Engineering etc.  ")
+    @Operation(summary = "Add Department like: Human Resources, Information Technology, Administration, Engineering etc. Access: department:create")
     public ResponseEntity<ApiResponse<DepartmentResponse>> create(
             @Valid @RequestBody CreateDepartmentRequest request) {
 
@@ -43,7 +43,7 @@ public class DepartmentController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('department:view')")
-    @Operation(description = "Get Department By ID")
+    @Operation(summary = "Get Department By ID. Access: department:view")
     public ResponseEntity<ApiResponse<DepartmentResponse>> getById(
             @PathVariable Long id) {
 
@@ -57,7 +57,7 @@ public class DepartmentController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('department:view')")
-    @Operation(description = "Get All Departments")
+    @Operation(summary = "Get All Departments. Access: department:view")
     public ResponseEntity<ApiResponse<PageResponse<DepartmentResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -75,7 +75,7 @@ public class DepartmentController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('department:update')")
-    @Operation(description = "Update Department")
+    @Operation(summary = "Update Department. Access: department:update")
     public ResponseEntity<ApiResponse<DepartmentResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateDepartmentRequest request) {
@@ -90,7 +90,7 @@ public class DepartmentController {
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAuthority('department:update')")
-    @Operation(description = "Change Department Status:- True: Active, False: InActive")
+    @Operation(summary = "Change Department Status:- True: Active, False: InActive. Access: department:update")
     public ResponseEntity<ApiResponse<Void>> changeStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
@@ -106,7 +106,7 @@ public class DepartmentController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('department:delete')")
-    @Operation(description = "Delete Department BY ID")
+    @Operation(summary = "Delete Department BY ID. Access: department:delete")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id) {
 

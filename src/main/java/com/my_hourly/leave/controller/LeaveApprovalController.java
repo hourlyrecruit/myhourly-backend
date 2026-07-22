@@ -6,6 +6,7 @@ import com.my_hourly.leave.api.response.LeaveApprovalResponse;
 import com.my_hourly.leave.api.response.LeaveRequestResponse;
 import com.my_hourly.leave.service.LeaveApprovalService;
 import com.my_hourly.leave.service.LeaveRequestService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class LeaveApprovalController {
     private final LeaveRequestService leaveRequestService;
 
 
+    @Operation(summary = "Manager Leave Action. Access: MANAGER, SUPER_ADMIN, HR_ADMIN")
     @PutMapping("/{leaveRequestId}/leave-approval-by-manager")
     @PreAuthorize("hasAnyRole('MANAGER', 'SUPER_ADMIN', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> managerAction(
@@ -48,6 +50,7 @@ public class LeaveApprovalController {
     }
 
 
+    @Operation(summary = "Get Approval History. Access: Authenticated Users")
     @GetMapping("/leave-request/{leaveRequestId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<LeaveApprovalResponse>>> getApprovalHistory(

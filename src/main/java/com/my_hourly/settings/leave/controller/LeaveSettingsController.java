@@ -11,6 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Settings - Leave", description = "Manage leave settings")
 
 @RestController
 @RequestMapping("/api/v1/settings/leave")
@@ -19,6 +23,7 @@ public class LeaveSettingsController {
 
     private final LeaveSettingsService leaveSettingsService;
 
+    @Operation(summary = "Get Leave Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveSettingsResponse>> getLeaveSettings() {
@@ -36,6 +41,7 @@ public class LeaveSettingsController {
         return ResponseEntity.ok(apiResponse);
     }
 
+    @Operation(summary = "Update Leave Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @PutMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveSettingsResponse>> updateLeaveSettings(

@@ -62,7 +62,7 @@ public class EmployeeController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     @PreAuthorize("hasAuthority('employee:update')")
-    @Operation(summary = "Change Profile Photo: image/jpeg, image/jpg, image/png, Only Access by Loged In User")
+    @Operation(summary = "Change Profile Photo: image/jpeg, image/jpg, image/png. Access: employee:update")
     public ResponseEntity<ApiResponse<EmployeeResponse>> uploadProfilePhoto(
             @RequestParam("file") MultipartFile file) {
 
@@ -79,7 +79,7 @@ public class EmployeeController {
 
     @PutMapping
     @PreAuthorize("hasAuthority('employee:update')")
-    @Operation(summary = "Update employee, Only Access by Employee")
+    @Operation(summary = "Update employee profile. Access: employee:update")
     public ResponseEntity<ApiResponse<EmployeeResponse>> update(
             @Valid @RequestBody UpdateEmployeeByEmployeeRequest request) {
 
@@ -95,7 +95,7 @@ public class EmployeeController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('employee:view')")
-    @Operation(summary = "Get employee BY ID, Only Access By Manager, HR", description = "Only Access by Employee")
+    @Operation(summary = "Get employee BY ID. Access: employee:view", description = "Only Access by Employee")
     public ResponseEntity<ApiResponse<EmployeeResponse>> getById(
             @PathVariable Long id) {
 
@@ -111,7 +111,7 @@ public class EmployeeController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('employee:viewAll')")
-    @Operation(summary = "Get all employees, Only Access by Manager, HR ", description = "Only Access by Manager, HR")
+    @Operation(summary = "Get all employees. Access: employee:viewAll", description = "Only Access by Manager, HR")
     public ResponseEntity<ApiResponse<PageResponse<EmployeeResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -138,7 +138,7 @@ public class EmployeeController {
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAuthority('employee:updateStatus')")
-    @Operation(summary = "Change the employee Profile Status: true =Active or false=Inactive, Only Access Manager, HR", description = "Only Access Manager, HR")
+    @Operation(summary = "Change the employee Profile Status: true=Active or false=Inactive. Access: employee:updateStatus", description = "Only Access Manager, HR")
     public ResponseEntity<ApiResponse<Void>> changeStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
@@ -153,7 +153,7 @@ public class EmployeeController {
 
     @GetMapping("/dropdown")
     @PreAuthorize("hasAuthority('employee:viewDropDown')")
-    @Operation(summary = "Get All Employees ID and Name, Access by Manager, HR", description = "Access by Manager, HR")
+    @Operation(summary = "Get All Employees ID and Name. Access: employee:viewDropDown", description = "Access by Manager, HR")
     public ResponseEntity<ApiResponse<List<EmployeeDropdownResponse>>> getDropdown() {
 
         return ResponseEntity.ok(
@@ -167,7 +167,7 @@ public class EmployeeController {
 
     @GetMapping("/me")
     @PreAuthorize("hasAuthority('employee:viewMe')")
-    @Operation(summary = "Get Login employees profile, Only Access by Logged In User")
+    @Operation(summary = "Get Logged in employee's profile. Access: employee:viewMe")
     public ResponseEntity<ApiResponse<EmployeeResponse>> getMyProfile() {
 
         return ResponseEntity.ok(

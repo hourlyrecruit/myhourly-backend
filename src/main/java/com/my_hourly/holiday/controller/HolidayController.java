@@ -9,6 +9,7 @@ import com.my_hourly.holiday.api.response.HolidayCalendarResponse;
 import com.my_hourly.holiday.api.response.HolidayResponse;
 import com.my_hourly.holiday.entity.HolidayType;
 import com.my_hourly.holiday.service.HolidayService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class HolidayController {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('holiday:create')")
+    @Operation(summary = "Create Holiday. Access: holiday:create")
     public ResponseEntity<ApiResponse<HolidayResponse>> createHoliday(
             @Valid @RequestBody CreateHolidayRequest request) {
 
@@ -47,6 +49,7 @@ public class HolidayController {
 
     @PutMapping("/{holidayId}")
     @PreAuthorize("hasAnyAuthority('holiday:update')")
+    @Operation(summary = "Update Holiday. Access: holiday:update")
     public ResponseEntity<ApiResponse<HolidayResponse>> updateHoliday(
             @PathVariable Long holidayId,
             @Valid @RequestBody UpdateHolidayRequest request) {
@@ -65,6 +68,7 @@ public class HolidayController {
 
     @DeleteMapping("/{holidayId}")
     @PreAuthorize("hasAnyAuthority('holiday:delete')")
+    @Operation(summary = "Delete Holiday. Access: holiday:delete")
     public ResponseEntity<ApiResponse<Void>> deleteHoliday(
             @PathVariable Long holidayId) {
 
@@ -80,6 +84,7 @@ public class HolidayController {
 
     @GetMapping("/{holidayId}")
     @PreAuthorize("hasAuthority('holiday:view')")
+    @Operation(summary = "Get Holiday by ID. Access: holiday:view")
     public ResponseEntity<ApiResponse<HolidayResponse>> getHolidayById(
             @PathVariable Long holidayId) {
 
@@ -97,6 +102,7 @@ public class HolidayController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get All Holidays. Access: Authenticated Users")
     public ResponseEntity<ApiResponse<PageResponse<HolidayResponse>>> getAllHolidays(
 
             @RequestParam(defaultValue = "0") int page,
@@ -146,6 +152,7 @@ public class HolidayController {
 
     @GetMapping("/calendar")
     @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get Holiday Calendar. Access: Authenticated Users")
     public ResponseEntity<ApiResponse<List<HolidayCalendarResponse>>> getHolidayCalendar(
 
             @RequestParam(required = false) Integer month,
@@ -167,6 +174,7 @@ public class HolidayController {
 
     @GetMapping("/upcoming")
     @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get Upcoming Holidays. Access: Authenticated Users")
     public ResponseEntity<ApiResponse<List<HolidayResponse>>> getUpcomingHolidays() {
 
         List<HolidayResponse> response =

@@ -5,6 +5,7 @@ import com.my_hourly.leave.api.request.LeaveActionRequest;
 import com.my_hourly.leave.api.request.LeaveRequestRequest;
 import com.my_hourly.leave.api.response.LeaveRequestResponse;
 import com.my_hourly.leave.service.LeaveRequestService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class LeaveRequestController {
 
     private final LeaveRequestService leaveRequestService;
 
+    @Operation(summary = "Apply for Leave. Access: EMPLOYEE")
     @PostMapping
     @PreAuthorize("hasAnyRole('EMPLOYEE')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> applyLeave(
@@ -43,6 +45,7 @@ public class LeaveRequestController {
                 );
     }
 
+    @Operation(summary = "Cancel Leave Request. Access: EMPLOYEE")
     @PutMapping("/{leaveRequestId}/cancel")
     @PreAuthorize("hasAnyRole('EMPLOYEE')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> cancelLeave(
@@ -103,6 +106,7 @@ public class LeaveRequestController {
 //        );
 //    }
 
+    @Operation(summary = "Get Leave Request by ID. Access: EMPLOYEE, MANAGER, HR_ADMIN, SUPER_ADMIN")
     @GetMapping("/{leaveRequestId}")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<LeaveRequestResponse>> getLeaveRequest(
@@ -121,6 +125,7 @@ public class LeaveRequestController {
         );
     }
 
+    @Operation(summary = "Get My Leave Requests. Access: EMPLOYEE")
     @GetMapping("/my")
     @PreAuthorize("hasAnyRole('EMPLOYEE')")
     public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getMyLeaveRequests() {
@@ -138,6 +143,7 @@ public class LeaveRequestController {
         );
     }
 
+    @Operation(summary = "Get Team Leave Requests. Access: MANAGER, SUPER_ADMIN")
     @GetMapping("/team")
     @PreAuthorize("hasAnyRole('MANAGER', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getTeamLeaveRequests() {
@@ -155,6 +161,7 @@ public class LeaveRequestController {
         );
     }
 
+    @Operation(summary = "Get All Leave Requests. Access: HR_ADMIN, SUPER_ADMIN, MANAGER")
     @GetMapping
     @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getAllLeaveRequests() {

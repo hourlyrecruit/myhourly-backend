@@ -27,7 +27,7 @@ public class DesignationController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('designation:create')")
-    @Operation(description = "Add Designation like: HR Manager, IT Manager, Software Engineer, QA Engineer, Design Engineer etc.")
+    @Operation(summary = "Add Designation like: HR Manager, IT Manager, Software Engineer, QA Engineer, Design Engineer etc. Access: designation:create")
     public ResponseEntity<ApiResponse<DesignationResponse>> create(
             @Valid @RequestBody CreateDesignationRequest request) {
 
@@ -43,6 +43,7 @@ public class DesignationController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('designation:view')")
+    @Operation(summary = "Get Designation By ID. Access: designation:view")
     public ResponseEntity<ApiResponse<DesignationResponse>> getById(
             @PathVariable Long id) {
 
@@ -56,6 +57,7 @@ public class DesignationController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('designation:view')")
+    @Operation(summary = "Get All Designations. Access: designation:view")
     public ResponseEntity<ApiResponse<PageResponse<DesignationResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -73,6 +75,7 @@ public class DesignationController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('designation:update')")
+    @Operation(summary = "Update Designation. Access: designation:update")
     public ResponseEntity<ApiResponse<DesignationResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateDesignationRequest request) {
@@ -87,6 +90,7 @@ public class DesignationController {
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAuthority('designation:update')")
+    @Operation(summary = "Change Designation Status. Access: designation:update")
     public ResponseEntity<ApiResponse<Void>> changeStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
@@ -102,6 +106,7 @@ public class DesignationController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('designation:delete')")
+    @Operation(summary = "Delete Designation. Access: designation:delete")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id) {
 
