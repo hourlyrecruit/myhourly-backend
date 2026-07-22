@@ -3,6 +3,7 @@ package com.my_hourly.employee.service;
 import com.my_hourly.authentication.entity.User;
 import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.employee.api.request.CreateEmployeeRequest;
+import com.my_hourly.employee.api.request.UpdateEmployeeByEmployeeRequest;
 import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
 import com.my_hourly.employee.api.response.EmployeeDropdownResponse;
 import com.my_hourly.employee.api.response.EmployeeResponse;
@@ -19,7 +20,7 @@ public interface EmployeeService {
 
     EmployeeResponse updateUserProfileByAdmin(Long userId, UpdateEmployeeRequest request);
 
-    EmployeeResponse update(UpdateEmployeeRequest request);
+    EmployeeResponse update(UpdateEmployeeByEmployeeRequest request);
 
     EmployeeResponse getById(Long id);
 

@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/holidays")
 @RequiredArgsConstructor
-@Tag(name = "Holiday", description = "Holiday Management APIs")
+@Tag(name = "11-Holiday", description = "Holiday Management APIs")
 public class HolidayController {
 
     private final HolidayService holidayService;

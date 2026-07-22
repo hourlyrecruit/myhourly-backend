@@ -3,6 +3,7 @@ package com.my_hourly.employee.controller;
 import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.employee.api.request.CreateEmployeeRequest;
+import com.my_hourly.employee.api.request.UpdateEmployeeByEmployeeRequest;
 import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
 import com.my_hourly.employee.api.response.EmployeeDropdownResponse;
 import com.my_hourly.employee.api.response.EmployeeResponse;
@@ -76,21 +77,21 @@ public class EmployeeController {
         );
     }
 
-//    @PutMapping
-//    @PreAuthorize("hasAuthority('employee:update')")
-//    @Operation(summary = "Update employee, Only Access by Employee", description = "Only Access by Employee")
-//    public ResponseEntity<ApiResponse<EmployeeResponse>> update(
-//            @Valid @RequestBody UpdateEmployeeRequest request) {
-//
-//        EmployeeResponse response = employeeService.update(request);
-//
-//        return ResponseEntity.ok(
-//                ApiResponse.<EmployeeResponse>builder()
-//                        .success(true)
-//                        .message("Employee updated successfully.")
-//                        .data(response)
-//                        .build());
-//    }
+    @PutMapping
+    @PreAuthorize("hasAuthority('employee:update')")
+    @Operation(summary = "Update employee, Only Access by Employee")
+    public ResponseEntity<ApiResponse<EmployeeResponse>> update(
+            @Valid @RequestBody UpdateEmployeeByEmployeeRequest request) {
+
+        EmployeeResponse response = employeeService.update(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.<EmployeeResponse>builder()
+                        .success(true)
+                        .message("Employee updated successfully.")
+                        .data(response)
+                        .build());
+    }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('employee:view')")

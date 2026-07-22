@@ -19,7 +19,7 @@ public class HolidayMapper {
                 .holidayName(request.getHolidayName())
                 .holidayType(request.getHolidayType())
                 .description(request.getDescription())
-                .attendanceAllowed(request.getAttendanceAllowed())
+               // .attendanceAllowed(request.getAttendanceAllowed())
                 .recurring(request.getRecurring())
                 .active(true)
                 .build();

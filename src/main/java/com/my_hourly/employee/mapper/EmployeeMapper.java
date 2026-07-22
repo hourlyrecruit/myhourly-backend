@@ -2,6 +2,7 @@ package com.my_hourly.employee.mapper;
 
 import com.my_hourly.authentication.entity.User;
 import com.my_hourly.employee.api.request.CreateEmployeeRequest;
+import com.my_hourly.employee.api.request.UpdateEmployeeByEmployeeRequest;
 import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
 import com.my_hourly.employee.api.response.EmployeeDropdownResponse;
 import com.my_hourly.employee.api.response.EmployeeResponse;
@@ -67,6 +68,21 @@ public class EmployeeMapper {
         employee.setReportingManager(reportingManager);
 
     }
+
+
+    public void updateEntityByEmp(
+            Employee employee,
+            UpdateEmployeeByEmployeeRequest request
+    ) {
+
+        employee.setFirstName(request.getFirstName());
+        employee.setLastName(request.getLastName());
+        //employee.setEmail(request.getEmail());
+        employee.setPhoneNumber(request.getPhoneNumber());
+        employee.setGender(request.getGender());
+        employee.setDateOfBirth(request.getDateOfBirth());
+    }
+
 
     public EmployeeResponse toResponse(Employee employee) {
 
