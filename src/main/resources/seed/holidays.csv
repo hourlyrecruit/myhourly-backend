@@ -1,0 +1,6 @@
+holiday_date,holiday_name,holiday_type,description,attendance_allowed,recurring
+2026-01-01,New Year's Day,PUBLIC_HOLIDAY,First day of the year,false,true
+2026-05-01,Labor Day,PUBLIC_HOLIDAY,Workers day,false,true
+2026-12-25,Christmas Day,PUBLIC_HOLIDAY,Christmas,false,true
+2026-10-31,Halloween,OPTIONAL_HOLIDAY,Halloween day,true,true
+2026-11-26,Thanksgiving,PUBLIC_HOLIDAY,Thanksgiving day,false,false

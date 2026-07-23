@@ -1,0 +1,8 @@
+recipient_employee_code,title,message,type,is_read
+EMP001,Leave Request Approved,Your sick leave for June 10 has been approved.,LEAVE,true
+EMP002,New Team Member,John Doe has been added to project PROJ001.,ANNOUNCEMENT,false
+EMP003,Leave Request Approved,Your sick leave for June 15-16 has been approved.,LEAVE,true
+EMP004,Attendance Alert,You were marked late on July 1. Please regularize if needed.,ATTENDANCE,false
+EMP005,Leave Request Approved,Your sick leave for July 7 has been approved.,LEAVE,true
+EMP001,Work Log Reminder,Please submit your work log before 6:00 PM today.,WORK_LOG,false
+EMP002,Holiday Announcement,Independence Day on August 15 is a public holiday. Office closed.,HOLIDAY,true
