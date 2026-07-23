@@ -4,3 +4,5 @@ EMP002,Jane,Smith,jane.smith@example.com,2345678901,FEMALE,1985-05-15,2020-03-10
 EMP003,Alice,Jones,alice.jones@example.com,3456789012,FEMALE,1992-10-20,2023-06-01,FULL_TIME,FIN,FINA,Finance Lead,alice.jones
 EMP004,Bob,Brown,bob.brown@example.com,4567890123,MALE,1988-12-12,2021-11-15,FULL_TIME,HR,HRA,HR Manager,bob.brown
 EMP005,Charlie,Davis,charlie.davis@example.com,5678901234,MALE,1995-08-30,2024-02-01,CONTRACT,IT,ITA,IT Manager,charlie.davis
+EMP006,Anagha,Pothi,manager@myhourly.com,8975327582,FEMALE,1990-03-12,2020-01-05,FULL_TIME,IT,SWE,JT0010,anagha
+EMP007,Harshitha,P,hr@myhourly.com,8975327682,FEMALE,1993-05-18,2021-02-07,FULL_TIME,HR,HRA,JT0007,harshitha

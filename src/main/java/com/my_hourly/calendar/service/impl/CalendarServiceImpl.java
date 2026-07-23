@@ -53,45 +53,53 @@ public class CalendarServiceImpl implements CalendarService {
         }
 
         List<CalendarEventResponse> events = new ArrayList<>();
+        boolean fetchAll = eventTypes == null || eventTypes.isEmpty();
 
         // Holidays
-        events.addAll(
-                getHolidayEvents(startDate, endDate)
-        );
+        if (fetchAll || eventTypes.contains(CalendarEventType.HOLIDAY)) {
+            events.addAll(
+                    getHolidayEvents(startDate, endDate)
+            );
+        }
 
         // Birthdays
-        events.addAll(
-                getBirthdayEvents(
-                        currentEmployee,
-                        month,
-                        year,
-                        view
-                )
-        );
+        if (fetchAll || eventTypes.contains(CalendarEventType.BIRTHDAY)) {
+            events.addAll(
+                    getBirthdayEvents(
+                            currentEmployee,
+                            month,
+                            year,
+                            view
+                    )
+            );
+        }
 
         // Work Anniversary
-        events.addAll(
-                getWorkAnniversaryEvents(
-                        currentEmployee,
-                        month,
-                        year,
-                        view
-                )
-        );
+        if (fetchAll || eventTypes.contains(CalendarEventType.WORK_ANNIVERSARY)) {
+            events.addAll(
+                    getWorkAnniversaryEvents(
+                            currentEmployee,
+                            month,
+                            year,
+                            view
+                    )
+            );
+        }
 
         // Leave
-        events.addAll(
-                getLeaveEvents(
-                        currentEmployee,
-                        startDate,
-                        endDate,
-                        view
-                )
-        );
+        if (fetchAll || eventTypes.contains(CalendarEventType.LEAVE)) {
+            events.addAll(
+                    getLeaveEvents(
+                            currentEmployee,
+                            startDate,
+                            endDate,
+                            view
+                    )
+            );
+        }
 
         // Attendance (Personal Only)
-        if (view == CalendarView.PERSONAL) {
-
+        if (view == CalendarView.PERSONAL && (fetchAll || eventTypes.contains(CalendarEventType.ATTENDANCE))) {
             events.addAll(
                     getAttendanceEvents(
                             startDate,
@@ -99,7 +107,6 @@ public class CalendarServiceImpl implements CalendarService {
                             currentEmployee
                     )
             );
-
         }
 
         events = filterEvents(events, eventTypes);
@@ -136,6 +143,11 @@ public class CalendarServiceImpl implements CalendarService {
     private void validateOrganizationCalendarAccess(
             Employee currentEmployee
     ) {
+        if (currentEmployee == null || currentEmployee.getUser() == null) {
+            throw new AccessDeniedException(
+                    "You are not authorized to access organization calendar."
+            );
+        }
 
         RoleName roleName = currentEmployee.getUser().getRole();
 
@@ -153,6 +165,9 @@ public class CalendarServiceImpl implements CalendarService {
     private String getEmployeeName(
             Employee employee
     ) {
+        if (employee == null) {
+            return "";
+        }
 
         String firstName = employee.getFirstName() == null
                 ? ""
@@ -195,23 +210,28 @@ public class CalendarServiceImpl implements CalendarService {
         List<Employee> employees;
 
         if (view == CalendarView.PERSONAL) {
-            employees = List.of(currentEmployee);
+            employees = currentEmployee != null ? List.of(currentEmployee) : List.of();
         } else {
             employees = employeeRepository.findByActiveTrue();
         }
 
+        int maxDay = YearMonth.of(year, month).lengthOfMonth();
+
         return employees.stream()
 
                 .filter(employee ->
-                        employee.getDateOfBirth() != null
+                        employee != null
+                                && employee.getDateOfBirth() != null
                                 && employee.getDateOfBirth().getMonthValue() == month)
 
                 .map(employee -> {
 
+                    int day = Math.min(employee.getDateOfBirth().getDayOfMonth(), maxDay);
+
                     LocalDate birthday = LocalDate.of(
                             year,
                             month,
-                            employee.getDateOfBirth().getDayOfMonth()
+                            day
                     );
 
                     return CalendarEventResponse.builder()
@@ -239,23 +259,28 @@ public class CalendarServiceImpl implements CalendarService {
         List<Employee> employees;
 
         if (view == CalendarView.PERSONAL) {
-            employees = List.of(currentEmployee);
+            employees = currentEmployee != null ? List.of(currentEmployee) : List.of();
         } else {
             employees = employeeRepository.findByActiveTrue();
         }
 
+        int maxDay = YearMonth.of(year, month).lengthOfMonth();
+
         return employees.stream()
 
                 .filter(employee ->
-                        employee.getDateOfJoining() != null
+                        employee != null
+                                && employee.getDateOfJoining() != null
                                 && employee.getDateOfJoining().getMonthValue() == month)
 
                 .map(employee -> {
 
+                    int day = Math.min(employee.getDateOfJoining().getDayOfMonth(), maxDay);
+
                     LocalDate anniversary = LocalDate.of(
                             year,
                             month,
-                            employee.getDateOfJoining().getDayOfMonth()
+                            day
                     );
 
                     int yearsCompleted =
@@ -286,6 +311,9 @@ public class CalendarServiceImpl implements CalendarService {
         List<LeaveRequest> leaveRequests;
 
         if (view == CalendarView.PERSONAL) {
+            if (currentEmployee == null) {
+                return List.of();
+            }
 
             leaveRequests = leaveRequestRepository.findByEmployee(currentEmployee)
                     .stream()
@@ -318,14 +346,17 @@ public class CalendarServiceImpl implements CalendarService {
 
             while (!current.isAfter(last)) {
 
+                String leaveTypeName = leave.getLeaveType() != null ? leave.getLeaveType().getName() : "Leave";
+                String leaveStatusName = leave.getStatus() != null ? leave.getStatus().name() : "";
+
                 events.add(
                         CalendarEventResponse.builder()
                                 .eventDate(current)
                                 .title(getEmployeeName(leave.getEmployee()) + " - Leave")
                                 .description(
-                                        leave.getLeaveType().getName()
+                                        leaveTypeName
                                                 + " ("
-                                                + leave.getStatus().name()
+                                                + leaveStatusName
                                                 + ")"
                                 )
                                 .eventType(CalendarEventType.LEAVE)
