@@ -28,4 +28,6 @@ public interface JobTitleRepository extends JpaRepository<JobTitle, Long> {
     );
 
     boolean existsByJobTitle(String jobTitle);
+
+    java.util.Optional<JobTitle> findByJobTitle(String jobTitle);
 }

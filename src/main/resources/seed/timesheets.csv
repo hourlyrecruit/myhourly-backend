@@ -1,0 +1,10 @@
+employee_code,work_date,project_code,hours_worked,description
+EMP001,2026-07-01,PROJ001,8,Worked on backend API for employee module
+EMP001,2026-07-02,PROJ005,6,Implemented employee portal login page
+EMP002,2026-07-01,PROJ001,8,Code review and architecture planning
+EMP002,2026-07-02,PROJ005,7,Database schema design for employee portal
+EMP003,2026-07-01,PROJ002,8,Analyzed Q2 financial data and built reports
+EMP003,2026-07-02,PROJ002,5,Created dashboard widgets for finance KPIs
+EMP004,2026-07-01,PROJ003,8,Coordinated Q3 marketing campaign timeline
+EMP005,2026-07-01,PROJ004,8,Server migration and testing for infrastructure upgrade
+EMP005,2026-07-02,PROJ004,6,Documented upgrade results and closed out project

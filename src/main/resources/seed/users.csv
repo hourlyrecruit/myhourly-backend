@@ -1,0 +1,6 @@
+username,email,password,role,user_status
+john.doe,john.doe@example.com,password123,EMPLOYEE,ACTIVE
+jane.smith,jane.smith@example.com,password123,MANAGER,ACTIVE
+alice.jones,alice.jones@example.com,password123,EMPLOYEE,ACTIVE
+bob.brown,bob.brown@example.com,password123,HR_ADMIN,ACTIVE
+charlie.davis,charlie.davis@example.com,password123,EMPLOYEE,ACTIVE
