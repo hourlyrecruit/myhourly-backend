@@ -1,6 +1,7 @@
 package com.my_hourly.lookup.controller;
 
 import com.my_hourly.common.payload.response.ApiResponse;
+import com.my_hourly.lookup.api.response.EmployeeIdName;
 import com.my_hourly.lookup.api.response.LookupResponse;
 import com.my_hourly.lookup.api.response.ReportingManagerLookupResponse;
 import com.my_hourly.lookup.service.LookupService;
@@ -75,6 +76,20 @@ public class LookupController {
                         .success(true)
                         .message("Reporting managers fetched successfully.")
                         .data(lookupService.getReportingManagers())
+                        .build()
+        );
+    }
+
+    @GetMapping("/employee-id-name")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get List of Employee's Id, Name can used for Dropdown where employee Id required. Access: Authenticated Users")
+    public ResponseEntity<ApiResponse<List<EmployeeIdName>>> getEmployeeNameAndId() {
+
+        return ResponseEntity.ok(
+                ApiResponse.<List<EmployeeIdName>>builder()
+                        .success(true)
+                        .message("Employee-id-name fetched successfully.")
+                        .data(lookupService.employeesNameAndId())
                         .build()
         );
     }

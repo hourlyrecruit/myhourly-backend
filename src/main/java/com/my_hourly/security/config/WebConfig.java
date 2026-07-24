@@ -1,11 +1,17 @@
 package com.my_hourly.security.config;
 
+import com.my_hourly.common.config.StringToEnumConverterFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
+
+    private final StringToEnumConverterFactory stringToEnumConverterFactory;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -13,5 +19,10 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins("*")
                 .allowedMethods("*")
                 .allowedHeaders("*");
+    }
+
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverterFactory(stringToEnumConverterFactory);
     }
 }

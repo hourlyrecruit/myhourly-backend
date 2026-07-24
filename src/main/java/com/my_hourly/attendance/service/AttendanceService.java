@@ -39,7 +39,8 @@ public interface AttendanceService {
             String sortDirection,
             LocalDate fromDate,
             LocalDate toDate,
-            AttendanceStatus status
+            AttendanceStatus status,
+            String search
     );
 
     PageResponse<AttendanceResponse> getAttendanceByEmployeeId(

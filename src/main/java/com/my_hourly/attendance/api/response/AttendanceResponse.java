@@ -15,7 +15,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AttendanceResponse {
 
-    private Long id;
+    private Long AttendanceId;
+
+    private Long employeeId;
+    private String employeeName;
 
     private LocalDate attendanceDate;
 
