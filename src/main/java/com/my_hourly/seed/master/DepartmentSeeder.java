@@ -21,10 +21,10 @@ public class DepartmentSeeder {
 
     @Transactional
     public void seed() {
-        if (departmentRepository.count() > 1) { // 1 is from DataInitializer
-            log.info("Departments already seeded. Skipping...");
-            return;
-        }
+//        if (departmentRepository.count() > 1) { // 1 is from DataInitializer
+//            log.info("Departments already seeded. Skipping...");
+//            return;
+//        }
 
         List<Map<String, String>> records = csvReader.readCsv("seed/departments.csv");
         for (Map<String, String> record : records) {

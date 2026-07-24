@@ -38,10 +38,10 @@ public class EmployeeSeeder {
 
     @Transactional
     public void seed() {
-        if (employeeRepository.count() > 0) {
-            log.info("Employees already seeded. Skipping...");
-            return;
-        }
+//        if (employeeRepository.count() > 0) {
+//            log.info("Employees already seeded. Skipping...");
+//            return;
+//        }
 
         List<Map<String, String>> records = csvReader.readCsv("seed/employees.csv");
         for (Map<String, String> record : records) {

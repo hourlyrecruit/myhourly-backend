@@ -1,4 +1,6 @@
 username,email,password,role,user_status
+anagha,manager@myhourly.com,Manager@1234,MANAGER,ACTIVE
+harshitha,hr@myhourly.com,Hr@1234,HR_ADMIN,ACTIVE
 john.doe,john.doe@example.com,password123,EMPLOYEE,ACTIVE
 jane.smith,jane.smith@example.com,password123,MANAGER,ACTIVE
 alice.jones,alice.jones@example.com,password123,EMPLOYEE,ACTIVE

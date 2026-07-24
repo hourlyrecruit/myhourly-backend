@@ -63,14 +63,14 @@ public class DataInitializer implements ApplicationRunner {
    // private final SuperAdminProperties superAdminProperties;
 //==================================================
 
-    @Value("${app.hr.username}")
-    private String hrUsername;
-
-    @Value("${app.hr.email}")
-    private String hrEmail;
-
-    @Value("${app.hr.password}")
-    private String hrPassword;
+//    @Value("${app.hr.username}")
+//    private String hrUsername;
+//
+//    @Value("${app.hr.email}")
+//    private String hrEmail;
+//
+//    @Value("${app.hr.password}")
+//    private String hrPassword;
 //====================================================
     @Value("${app.super-admin.username}")
     private String superAdminUsername;
@@ -81,40 +81,40 @@ public class DataInitializer implements ApplicationRunner {
     @Value("${app.super-admin.password}")
     private String superAdminPassword;
 
-    @Value("${app.manager.username}")
-    private String managerUsername;
-
-    @Value("${app.manager.email}")
-    private String managerEmail;
-
-    @Value("${app.manager.password}")
-    private String managerPassword;
-
-    //========================================================================
-    @Value("${app.department.name}")
-    private String departmentName;
-
-    @Value("${app.department.description}")
-    private String departmentDescription;
-    //========================================================================
-    //========================================================================
-        @Value("${app.designation.name}")
-        private String designationName;
-
-        @Value("${app.department.id}")
-        private Long departmentId;
-
-        @Value("${app.designation.description}")
-        private String designationDescription;
-    //========================================================================
-
-    //========================================================================
-    @Value("${app.job.title}")
-    private String jobTitle;
-
-    @Value("${app.designation.id}")
-    private Long designationId;
-    //========================================================================
+//    @Value("${app.manager.username}")
+//    private String managerUsername;
+//
+//    @Value("${app.manager.email}")
+//    private String managerEmail;
+//
+//    @Value("${app.manager.password}")
+//    private String managerPassword;
+//
+//    //========================================================================
+//    @Value("${app.department.name}")
+//    private String departmentName;
+//
+//    @Value("${app.department.description}")
+//    private String departmentDescription;
+//    //========================================================================
+//    //========================================================================
+//        @Value("${app.designation.name}")
+//        private String designationName;
+//
+//        @Value("${app.department.id}")
+//        private Long departmentId;
+//
+//        @Value("${app.designation.description}")
+//        private String designationDescription;
+//    //========================================================================
+//
+//    //========================================================================
+//    @Value("${app.job.title}")
+//    private String jobTitle;
+//
+//    @Value("${app.designation.id}")
+//    private Long designationId;
+//    //========================================================================
 
 
 
@@ -125,55 +125,56 @@ public class DataInitializer implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
         seedSuperAdmin();
-        seedManager();
+//        seedManager();
+//        seedHr();
        // seedEmployees();
-        seedDepartmentDesignationJobTitle();
+//        seedDepartmentDesignationJobTitle();
         seedCompanySettings();
         seedAttendanceSettings();
         seedLeaveSettings();
         seedWorkLogSettings();
         seedNotificationSettings();
-        seedHr();
+
         initializeHoliday();
 
     }
 
 
-    private void seedHr() {
+//    private void seedHr() {
+//
+//        if (userRepository.existsByUsername(hrUsername)) {
+//            log.info("[DataInitializer] HR '{}' already exists — skipping.", hrUsername);
+//            return;
+//        }
+//
+//        User hr = User.builder()
+//                .username(hrUsername)
+//                .email(hrEmail)
+//                .password(passwordEncoder.encode(hrPassword))
+//                .userStatus(UserStatus.ACTIVE)
+//                .role(RoleName.HR_ADMIN)
+//                .build();
+//
+//        userRepository.save(hr);
+//    }
 
-        if (userRepository.existsByUsername(hrUsername)) {
-            log.info("[DataInitializer] HR '{}' already exists — skipping.", hrUsername);
-            return;
-        }
-
-        User hr = User.builder()
-                .username(hrUsername)
-                .email(hrEmail)
-                .password(passwordEncoder.encode(hrPassword))
-                .userStatus(UserStatus.ACTIVE)
-                .role(RoleName.HR_ADMIN)
-                .build();
-
-        userRepository.save(hr);
-    }
-
-    private void seedManager() {
-
-        if (userRepository.existsByUsername(managerUsername)) {
-            log.info("[DataInitializer] MANAGER '{}' already exists — skipping.", managerUsername);
-            return;
-        }
-
-        User manager = User.builder()
-                .username(managerUsername)
-                .email(managerEmail)
-                .password(passwordEncoder.encode(managerPassword))
-                .userStatus(UserStatus.ACTIVE)
-                .role(RoleName.MANAGER)
-                .build();
-
-        userRepository.save(manager);
-    }
+//    private void seedManager() {
+//
+//        if (userRepository.existsByUsername(managerUsername)) {
+//            log.info("[DataInitializer] MANAGER '{}' already exists — skipping.", managerUsername);
+//            return;
+//        }
+//
+//        User manager = User.builder()
+//                .username(managerUsername)
+//                .email(managerEmail)
+//                .password(passwordEncoder.encode(managerPassword))
+//                .userStatus(UserStatus.ACTIVE)
+//                .role(RoleName.MANAGER)
+//                .build();
+//
+//        userRepository.save(manager);
+//    }
 
 
     private void seedSuperAdmin() {
@@ -197,31 +198,31 @@ public class DataInitializer implements ApplicationRunner {
     }
 
 
-    private void seedDepartmentDesignationJobTitle(){
-        if (departmentRepository.existsByDepartmentName(departmentName)
-                && designationRepository.existsByDesignationName(designationName)
-                && jobTitleRepository.existsByJobTitle(jobTitle)) {
-            log.info("[DataInitializer] departmentName,departmentName,jobTitle '{}' already exists — skipping.", departmentName);
-            return;
-        }
-
-        CreateDepartmentRequest dept = new CreateDepartmentRequest();
-        dept.setDepartmentName(departmentName);
-        dept.setDescription(departmentDescription);
-        departmentService.create(dept);
-
-        CreateDesignationRequest desi = new CreateDesignationRequest();
-        desi.setDesignationName(designationName);
-        desi.setDepartmentId(departmentId);
-        desi.setDescription(designationDescription);
-        designationService.create(desi);
-
-        CreateJobTitleRequest job = new CreateJobTitleRequest();
-        job.setJobTitle(jobTitle);
-        job.setDesignationId(designationId);
-        jobTitleService.create(job);
-
-    }
+//    private void seedDepartmentDesignationJobTitle(){
+//        if (departmentRepository.existsByDepartmentName(departmentName)
+//                && designationRepository.existsByDesignationName(designationName)
+//                && jobTitleRepository.existsByJobTitle(jobTitle)) {
+//            log.info("[DataInitializer] departmentName,departmentName,jobTitle '{}' already exists — skipping.", departmentName);
+//            return;
+//        }
+//
+//        CreateDepartmentRequest dept = new CreateDepartmentRequest();
+//        dept.setDepartmentName(departmentName);
+//        dept.setDescription(departmentDescription);
+//        departmentService.create(dept);
+//
+//        CreateDesignationRequest desi = new CreateDesignationRequest();
+//        desi.setDesignationName(designationName);
+//        desi.setDepartmentId(departmentId);
+//        desi.setDescription(designationDescription);
+//        designationService.create(desi);
+//
+//        CreateJobTitleRequest job = new CreateJobTitleRequest();
+//        job.setJobTitle(jobTitle);
+//        job.setDesignationId(designationId);
+//        jobTitleService.create(job);
+//
+//    }
 
     private void seedCompanySettings() {
 

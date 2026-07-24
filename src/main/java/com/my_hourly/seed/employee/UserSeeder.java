@@ -25,7 +25,7 @@ public class UserSeeder {
 
     @Transactional
     public void seed() {
-        if (userRepository.count() > 3) { // HR, Manager, Super Admin created in DataInitializer
+        if (userRepository.count() > 1) { // HR, Manager, Super Admin created in DataInitializer
             log.info("Users already seeded. Skipping...");
             return;
         }
