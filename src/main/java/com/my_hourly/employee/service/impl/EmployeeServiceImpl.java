@@ -8,6 +8,7 @@ import com.my_hourly.common.exception.ValidationException;
 
 import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.employee.api.request.CreateEmployeeRequest;
+import com.my_hourly.employee.api.request.UpdateEmployeeByEmployeeRequest;
 import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
 import com.my_hourly.employee.api.response.EmployeeDropdownResponse;
 import com.my_hourly.employee.api.response.EmployeeResponse;
@@ -372,7 +373,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 
     @Override
-    public EmployeeResponse update(UpdateEmployeeRequest request) {
+    public EmployeeResponse update(UpdateEmployeeByEmployeeRequest request) {
 
         Employee employee = getCurrentEmployee();
 
@@ -385,28 +386,24 @@ public class EmployeeServiceImpl implements EmployeeService {
 //            );
 //        }
 
-        validateHierarchy(
-                request.getDepartmentId(),
-                request.getDesignationId(),
-                request.getJobTitleId()
-        );
+//        validateHierarchy(
+//                request.getDepartmentId(),
+//                request.getDesignationId(),
+//                request.getJobTitleId()
+//        );
 
-        Department department = getDepartment(request.getDepartmentId());
+//        Department department = getDepartment(request.getDepartmentId());
+//
+//        Designation designation = getDesignation(request.getDesignationId());
+//
+//        JobTitle jobTitle = getJobTitle(request.getJobTitleId());
 
-        Designation designation = getDesignation(request.getDesignationId());
-
-        JobTitle jobTitle = getJobTitle(request.getJobTitleId());
-
-        Employee reportingManager =
-                getReportingManager(request.getReportingManagerId());
-
-        employeeMapper.updateEntity(
+//        Employee reportingManager =
+//                getReportingManager(request.getReportingManagerId());
+//
+        employeeMapper.updateEntityByEmp(
                 employee,
-                request,
-                department,
-                designation,
-                jobTitle,
-                reportingManager
+                request
         );
 
         Employee updatedEmployee = employeeRepository.save(employee);

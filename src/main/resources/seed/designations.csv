@@ -1,0 +1,7 @@
+designation_code,designation_name,department_code,description
+SWE,Software Engineer,ENG,Develops software
+SRE,Site Reliability Engineer,ENG,Manages infrastructure
+HRA,HR Associate,HR,Handles HR duties
+FINA,Financial Analyst,FIN,Handles finance
+MKTA,Marketing Associate,MKT,Handles marketing
+ITA,IT Administrator,IT,Manages internal IT

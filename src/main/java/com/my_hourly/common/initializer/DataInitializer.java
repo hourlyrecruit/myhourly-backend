@@ -2,7 +2,6 @@ package com.my_hourly.common.initializer;
 
 import com.my_hourly.authentication.entity.*;
 import com.my_hourly.authentication.repository.*;
-import com.my_hourly.authentication.entity.RoleName;
 import com.my_hourly.holiday.entity.Holiday;
 import com.my_hourly.holiday.entity.HolidayType;
 import com.my_hourly.holiday.repository.HolidayRepository;
@@ -36,10 +35,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
+
+import org.springframework.core.annotation.Order;
 
 @Slf4j
 @Component
+@Order(1)
 @RequiredArgsConstructor
 public class DataInitializer implements ApplicationRunner {
 
@@ -123,6 +126,7 @@ public class DataInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         seedSuperAdmin();
         seedManager();
+       // seedEmployees();
         seedDepartmentDesignationJobTitle();
         seedCompanySettings();
         seedAttendanceSettings();

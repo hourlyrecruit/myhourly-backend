@@ -60,15 +60,31 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
      * @return total approved days in the month; 0 if none
      */
     @Query("SELECT COALESCE(SUM(lr.totalDays), 0) FROM LeaveRequest lr " +
-           "WHERE lr.employee = :employee " +
-           "AND lr.leaveType = :leaveType " +
-           "AND lr.status = 'HR_APPROVED' " +
-           "AND lr.startDate >= :monthStart " +
-           "AND lr.startDate <= :monthEnd")
+            "WHERE lr.employee = :employee " +
+            "AND lr.leaveType = :leaveType " +
+            "AND lr.status = 'HR_APPROVED' " +
+            "AND lr.startDate >= :monthStart " +
+            "AND lr.startDate <= :monthEnd")
     Integer sumApprovedLeaveDaysInMonth(
             @Param("employee") Employee employee,
             @Param("leaveType") LeaveType leaveType,
             @Param("monthStart") LocalDate monthStart,
             @Param("monthEnd") LocalDate monthEnd);
 
+
+    @Query("""
+            SELECT lr
+            FROM LeaveRequest lr
+            WHERE lr.status = :status
+            AND lr.startDate <= :endDate
+            AND lr.endDate >= :startDate
+            """)
+    List<LeaveRequest> findCalendarLeaves(
+            @Param("status") LeaveStatus status,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
 }
+
+

@@ -4,6 +4,7 @@ import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.leave.api.request.LeaveTypeRequest;
 import com.my_hourly.leave.api.response.LeaveTypeResponse;
 import com.my_hourly.leave.service.LeaveTypeService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,9 @@ public class LeaveTypeController {
 
     private final LeaveTypeService leaveTypeService;
 
+    @Operation(summary = "Create Leave Type. Access: HR_ADMIN, MANAGER")
     @PostMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveTypeResponse>> createLeaveType(
             @Valid @RequestBody LeaveTypeRequest request) {
 
@@ -38,8 +40,9 @@ public class LeaveTypeController {
                         .build());
     }
 
+    @Operation(summary = "Update Leave Type. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @PutMapping("/{leaveTypeId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveTypeResponse>> updateLeaveType(
             @PathVariable Long leaveTypeId,
             @Valid @RequestBody LeaveTypeRequest request) {
@@ -56,6 +59,7 @@ public class LeaveTypeController {
         );
     }
 
+    @Operation(summary = "Get Leave Type by ID. Access: Authenticated Users")
     @GetMapping("/{leaveTypeId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<LeaveTypeResponse>> getLeaveType(
@@ -74,6 +78,7 @@ public class LeaveTypeController {
         );
     }
 
+    @Operation(summary = "Get All Leave Types. Access: Authenticated Users")
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<LeaveTypeResponse>>> getAllLeaveTypes() {
@@ -90,6 +95,7 @@ public class LeaveTypeController {
         );
     }
 
+    @Operation(summary = "Get Active Leave Types. Access: Authenticated Users")
     @GetMapping("/active")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<LeaveTypeResponse>>> getActiveLeaveTypes() {
@@ -106,8 +112,9 @@ public class LeaveTypeController {
         );
     }
 
+    @Operation(summary = "Activate Leave Type. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @PatchMapping("/{leaveTypeId}/activate")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveTypeResponse>> activateLeaveType(
             @PathVariable Long leaveTypeId) {
 
@@ -123,8 +130,9 @@ public class LeaveTypeController {
         );
     }
 
+    @Operation(summary = "Deactivate Leave Type. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @PatchMapping("/{leaveTypeId}/deactivate")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<LeaveTypeResponse>> deactivateLeaveType(
             @PathVariable Long leaveTypeId) {
 

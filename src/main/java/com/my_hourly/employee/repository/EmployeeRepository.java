@@ -41,4 +41,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
 
     List<Employee> findByActiveTrue();
+
+    List<Employee> findByActiveTrueAndRoleNameInOrderByFirstNameAsc(List<RoleName> manager);
 }

@@ -18,14 +18,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/job-titles")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('SUPER_ADMIN, MANAGER, HR_ADMIN')")
-@Tag(name = "JobTitle Controller", description = "Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
+@Tag(name = "0-JobTitle Controller", description = "Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
 public class JobTitleController {
 
     private final JobTitleService jobTitleService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('job-title:create')")
-    @Operation(description = "Add JobTitle like: Backend Engineer, Frontend Engineer, Full Stack Engineer, Software Developer, DevOps Engineer etc.")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Add JobTitle like: Backend Engineer, Frontend Engineer, Full Stack Engineer, Software Developer, DevOps Engineer etc. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<JobTitleResponse>> create(
             @Valid @RequestBody CreateJobTitleRequest request) {
 
@@ -38,7 +38,8 @@ public class JobTitleController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('job-title:view')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Get JobTitle By ID. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<JobTitleResponse>> getById(
             @PathVariable Long id) {
 
@@ -51,7 +52,8 @@ public class JobTitleController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('job-title:view')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Get All JobTitles. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<PageResponse<JobTitleResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -74,7 +76,8 @@ public class JobTitleController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('job-title:update')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Update JobTitle. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<JobTitleResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateJobTitleRequest request) {
@@ -88,7 +91,8 @@ public class JobTitleController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('job-title:update')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Change JobTitle Status. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<Void>> changeStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
@@ -103,7 +107,8 @@ public class JobTitleController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('job-title:delete')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Delete JobTitle. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id) {
 

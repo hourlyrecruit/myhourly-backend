@@ -1,0 +1,13 @@
+employee_code,work_date,task_description,hours_spent,status
+EMP001,2026-07-01,Implemented REST endpoints for employee onboarding module,4,SUBMITTED
+EMP001,2026-07-01,Fixed authentication bug in JWT filter,2,SUBMITTED
+EMP001,2026-07-01,Unit tests for employee service layer,2,SUBMITTED
+EMP002,2026-07-01,Sprint planning and backlog grooming session,2,SUBMITTED
+EMP002,2026-07-01,Architecture design for employee portal,4,SUBMITTED
+EMP002,2026-07-01,Code review for EMP001 pull requests,2,SUBMITTED
+EMP003,2026-07-01,Monthly financial report compilation,5,SUBMITTED
+EMP003,2026-07-01,Budget variance analysis for Q2,3,SUBMITTED
+EMP004,2026-07-01,Team meeting for Q3 campaign kickoff,2,SUBMITTED
+EMP004,2026-07-01,Drafted marketing content calendar,6,SUBMITTED
+EMP005,2026-07-01,Server rack installation and OS configuration,5,SUBMITTED
+EMP005,2026-07-01,Network topology documentation,3,SUBMITTED

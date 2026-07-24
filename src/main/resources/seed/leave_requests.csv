@@ -1,0 +1,8 @@
+employee_code,leave_type_name,start_date,end_date,total_days,reason,status
+EMP001,Annual Leave,2026-08-04,2026-08-05,2,Personal vacation,PENDING
+EMP001,Sick Leave,2026-06-10,2026-06-10,1,Fever and flu,HR_APPROVED
+EMP002,Annual Leave,2026-07-21,2026-07-25,5,Family holiday,MANAGER_APPROVED
+EMP003,Sick Leave,2026-06-15,2026-06-16,2,Medical appointment,HR_APPROVED
+EMP003,Casual Leave,2026-08-18,2026-08-18,1,Personal errand,PENDING
+EMP004,Annual Leave,2026-09-01,2026-09-03,3,Travel,PENDING
+EMP005,Sick Leave,2026-07-07,2026-07-07,1,Headache,HR_APPROVED

@@ -20,14 +20,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/designations")
 @RequiredArgsConstructor
-@Tag(name = "Designation Controller", description = "Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
+@Tag(name = "0-Designation Controller", description = "Access: SUPER_ADMIN, MANAGER, HR_ADMIN")
 public class DesignationController {
 
     private final DesignationService designationService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('designation:create')")
-    @Operation(description = "Add Designation like: HR Manager, IT Manager, Software Engineer, QA Engineer, Design Engineer etc.")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Add Designation like: HR Manager, IT Manager, Software Engineer, QA Engineer, Design Engineer etc. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<DesignationResponse>> create(
             @Valid @RequestBody CreateDesignationRequest request) {
 
@@ -42,7 +42,8 @@ public class DesignationController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('designation:view')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Get Designation By ID. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<DesignationResponse>> getById(
             @PathVariable Long id) {
 
@@ -55,7 +56,8 @@ public class DesignationController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('designation:view')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Get All Designations. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<PageResponse<DesignationResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -72,7 +74,8 @@ public class DesignationController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('designation:update')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Update Designation. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<DesignationResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateDesignationRequest request) {
@@ -86,7 +89,8 @@ public class DesignationController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('designation:update')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Change Designation Status. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<Void>> changeStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
@@ -101,7 +105,8 @@ public class DesignationController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('designation:delete')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Delete Designation. Access: 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id) {
 

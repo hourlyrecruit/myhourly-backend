@@ -16,14 +16,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/lookups")
 @RequiredArgsConstructor
-@Tag(name = "Lookup Controller- Access By Any Logged In User")
+@Tag(name = "12-Lookup Controller- Access By Any Logged In User")
 public class LookupController {
 
     private final LookupService lookupService;
 
     @GetMapping("/departments")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Get List of Departments Id, Name can used for Dropdown in Emp Profile Filling")
+    @Operation(summary = "Get List of Departments Id, Name can used for Dropdown in Emp Profile Filling. Access: Authenticated Users")
     public ResponseEntity<ApiResponse<List<LookupResponse>>> getDepartments() {
 
         return ResponseEntity.ok(
@@ -37,7 +37,7 @@ public class LookupController {
 
     @GetMapping("/departments/{departmentId}/designations")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Get List of Designations Id, Name can used for Dropdown in Emp Profile Filling")
+    @Operation(summary = "Get List of Designations Id, Name can used for Dropdown in Emp Profile Filling. Access: Authenticated Users")
     public ResponseEntity<ApiResponse<List<LookupResponse>>> getDesignations(
             @RequestParam Long departmentId) {
 
@@ -52,7 +52,7 @@ public class LookupController {
 
     @GetMapping("/designations/{designationId}/job-titles")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Get List of Job Titles Id, Name can used for Dropdown in Emp Profile Filling")
+    @Operation(summary = "Get List of Job Titles Id, Name can used for Dropdown in Emp Profile Filling. Access: Authenticated Users")
     public ResponseEntity<ApiResponse<List<LookupResponse>>> getJobTitles(
             @RequestParam Long designationId) {
 
@@ -67,7 +67,7 @@ public class LookupController {
 
     @GetMapping("/reporting-managers")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Get List of Manager's Id, EmployeeCode, Name can used for Dropdown in Emp Profile Filling")
+    @Operation(summary = "Get List of Manager's Id, EmployeeCode, Name can used for Dropdown in Emp Profile Filling. Access: Authenticated Users")
     public ResponseEntity<ApiResponse<List<ReportingManagerLookupResponse>>> getReportingManagers() {
 
         return ResponseEntity.ok(

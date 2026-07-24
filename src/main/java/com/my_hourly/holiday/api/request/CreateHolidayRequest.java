@@ -27,9 +27,9 @@ public class CreateHolidayRequest {
 
     @Size(max = 300)
     private String description;
-
-    @Builder.Default
-    private Boolean attendanceAllowed = false;
+//
+//    @Builder.Default
+//    private Boolean attendanceAllowed = false;
 
     @Builder.Default
     private Boolean recurring = false;

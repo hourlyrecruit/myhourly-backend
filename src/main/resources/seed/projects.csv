@@ -1,0 +1,6 @@
+project_code,project_name,description,start_date,end_date,status
+PROJ001,HR Automation,Automate HR workflows,2026-01-01,2026-12-31,ACTIVE
+PROJ002,Finance Dashboard,Build a real-time finance dashboard,2026-02-01,2026-08-31,ACTIVE
+PROJ003,Marketing Campaign,Q3 Marketing campaign,2026-04-01,2026-09-30,ACTIVE
+PROJ004,IT Infrastructure Upgrade,Upgrade all internal servers,2026-03-01,2026-07-31,COMPLETED
+PROJ005,Employee Portal,Self-service employee portal,2026-06-01,2026-12-31,ACTIVE

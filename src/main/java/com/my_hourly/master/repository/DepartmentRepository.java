@@ -24,5 +24,6 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     List<Department> findByActiveTrueOrderByDepartmentNameAsc();
 
+    Optional<Department> findByDepartmentName(String departmentName);
 
 }

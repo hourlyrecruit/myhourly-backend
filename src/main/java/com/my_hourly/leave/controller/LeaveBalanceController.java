@@ -3,6 +3,7 @@ package com.my_hourly.leave.controller;
 import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.leave.api.response.LeaveBalanceResponse;
 import com.my_hourly.leave.service.LeaveBalanceService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +20,9 @@ public class LeaveBalanceController {
 
     private final LeaveBalanceService leaveBalanceService;
 
+    @Operation(summary = "Get My Leave Balances. Access: EMPLOYEE")
     @GetMapping("/my")
-    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<List<LeaveBalanceResponse>>> getMyLeaveBalances() {
 
         return ResponseEntity.ok(
@@ -32,6 +34,7 @@ public class LeaveBalanceController {
         );
     }
 
+    @Operation(summary = "Get Employee Leave Balances. Access: HR_ADMIN, SUPER_ADMIN, MANAGER")
     @GetMapping("/employee/{employeeId}")
     @PreAuthorize("hasAnyRole('HR_ADMIN','SUPER_ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<List<LeaveBalanceResponse>>> getEmployeeLeaveBalances(
@@ -46,6 +49,7 @@ public class LeaveBalanceController {
         );
     }
 
+    @Operation(summary = "Get Leave Balance by ID. Access: HR_ADMIN, SUPER_ADMIN, MANAGER")
     @GetMapping("/{leaveBalanceId}")
     @PreAuthorize("hasAnyRole('HR_ADMIN','SUPER_ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<LeaveBalanceResponse>> getLeaveBalance(
@@ -60,6 +64,7 @@ public class LeaveBalanceController {
         );
     }
 
+    @Operation(summary = "Get All Leave Balances. Access: HR_ADMIN, SUPER_ADMIN, MANAGER")
     @GetMapping
     @PreAuthorize("hasAnyRole('HR_ADMIN','SUPER_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<List<LeaveBalanceResponse>>> getAllLeaveBalances() {

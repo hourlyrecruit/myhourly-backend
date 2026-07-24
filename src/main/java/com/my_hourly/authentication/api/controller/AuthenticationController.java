@@ -47,7 +47,7 @@ public class AuthenticationController {
 //
 //    }
 
-    @Operation(summary = "Common Login Endpoint for All Users ")
+    @Operation(summary = "Common Login Endpoint for All Users. Access: Public")
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
             @Valid @RequestBody LoginRequest request
@@ -66,7 +66,7 @@ public class AuthenticationController {
 
     }
 
-    @Operation(summary = "Send Refresh Token to Get Fresh Access Token")
+    @Operation(summary = "Send Refresh Token to Get Fresh Access Token. Access: Public")
     @PostMapping("/token/refresh")
     public ResponseEntity<ApiResponse<RefreshTokenResponse>> refreshToken(
             @Valid @RequestBody RefreshTokenRequest request
@@ -84,7 +84,7 @@ public class AuthenticationController {
         );
     }
 
-    @Operation(summary = "Common Logout Endpoint for All Users")
+    @Operation(summary = "Common Logout Endpoint for All Users. Access: Public")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @Valid @RequestBody RefreshTokenRequest request,
@@ -106,7 +106,7 @@ public class AuthenticationController {
         );
     }
 
-    @Operation(summary = "User can Change Password")
+    @Operation(summary = "User can Change Password. Access: Public")
     @PostMapping("/change-password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @Valid @RequestBody ChangePasswordRequest request
@@ -122,7 +122,7 @@ public class AuthenticationController {
         );
     }
 
-    @Operation(summary = "Get Current logged in User Details: employeeId, username, email, userStatus, role, permissions")
+    @Operation(summary = "Get Current logged in User Details: employeeId, username, email, userStatus, role, permissions. Access: Authenticated Users")
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getCurrentUser() {

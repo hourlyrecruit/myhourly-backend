@@ -8,6 +8,7 @@ import com.my_hourly.attendance.entity.AttendanceStatus;
 import com.my_hourly.attendance.service.AttendanceService;
 import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.common.payload.response.PageResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,9 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
 
+    @Operation(summary = "Check in. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @PostMapping("/check-in")
-    @PreAuthorize("hasAuthority('attendance:create')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<CheckInResponse>> checkIn(
             @Valid @RequestBody CheckInRequest request) {
 
@@ -45,8 +47,9 @@ public class AttendanceController {
         );
     }
 
+    @Operation(summary = "Start break. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @PostMapping("/break-start")
-    @PreAuthorize("hasAuthority('attendance:create')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<BreakStartResponse>> startBreak(
             @Valid @RequestBody BreakStartRequest request) {
 
@@ -62,8 +65,9 @@ public class AttendanceController {
         );
     }
 
+    @Operation(summary = "End break. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @PostMapping("/break-end")
-    @PreAuthorize("hasAuthority('attendance:create')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<BreakEndResponse>> endBreak() {
 
         BreakEndResponse response = attendanceService.endBreak();
@@ -78,8 +82,9 @@ public class AttendanceController {
         );
     }
 
+    @Operation(summary = "Check out. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @PostMapping("/check-out")
-    @PreAuthorize("hasAuthority('attendance:create')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<CheckOutResponse>> checkOut(
             @Valid @RequestBody CheckOutRequest request) {
 
@@ -110,8 +115,9 @@ public class AttendanceController {
 //        );
 //    }
 
+    @Operation(summary = "Get today's attendance. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @GetMapping("/today")
-    @PreAuthorize("hasAuthority('attendance:view')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<AttendanceResponse>> getTodayAttendance() {
 
         AttendanceResponse response = attendanceService.getTodayAttendance();
@@ -126,8 +132,9 @@ public class AttendanceController {
         );
     }
 
+    @Operation(summary = "Get attendance history. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @GetMapping("/history")
-    @PreAuthorize("hasAuthority('attendance:view')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<PageResponse<AttendanceResponse>>> getAttendanceHistory(
 
             @RequestParam(defaultValue = "0") int page,
@@ -171,8 +178,9 @@ public class AttendanceController {
         );
     }
 
+    @Operation(summary = "Get monthly attendance summary. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @GetMapping("/monthly-summary")
-    @PreAuthorize("hasAuthority('attendance:view')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<AttendanceMonthlySummaryResponse>> getMonthlySummary(
 
             @RequestParam(required = false) Integer month,
@@ -193,8 +201,9 @@ public class AttendanceController {
         );
     }
 
+    @Operation(summary = "Get attendance calendar. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @GetMapping("/calendar")
-    @PreAuthorize("hasAuthority('attendance:view')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<List<AttendanceCalendarResponse>>> getAttendanceCalendar(
 
             @RequestParam(required = false) Integer month,
@@ -218,8 +227,9 @@ public class AttendanceController {
         );
     }
 
+    @Operation(summary = "Get attendance dashboard. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @GetMapping("/dashboard")
-    @PreAuthorize("hasAuthority('attendance:view')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<ApiResponse<AttendanceDashboardResponse>> getDashboard() {
 
         AttendanceDashboardResponse response =

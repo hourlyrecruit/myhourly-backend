@@ -11,6 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Settings - Work Log", description = "Manage work log settings")
 
 @RestController
 @RequestMapping("/api/v1/settings/work-log")
@@ -19,6 +23,7 @@ public class WorkLogSettingsController {
 
     private final WorkLogSettingsService workLogSettingsService;
 
+    @Operation(summary = "Get Work Log Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<WorkLogSettingsResponse>> getWorkLogSettings() {
@@ -37,6 +42,7 @@ public class WorkLogSettingsController {
         return ResponseEntity.ok(apiResponse);
     }
 
+    @Operation(summary = "Update Work Log Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @PutMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<WorkLogSettingsResponse>> updateWorkLogSettings(

@@ -37,11 +37,14 @@ public class LookupMapper {
 
     public ReportingManagerLookupResponse toResponse(Employee employee) {
 
+        String fullName = (employee.getLastName() == null || employee.getLastName().isBlank())
+                ? employee.getFirstName()
+                : employee.getFirstName() + " " + employee.getLastName();
+
         return ReportingManagerLookupResponse.builder()
                 .id(employee.getId())
                 .employeeCode(employee.getEmployeeCode())
-                .name(employee.getFirstName() + " " +
-                        (employee.getLastName() == null ? "" : employee.getLastName()))
+                .name(fullName)
                 .build();
     }
 }

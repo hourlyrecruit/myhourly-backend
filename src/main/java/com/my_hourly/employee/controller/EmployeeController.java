@@ -3,6 +3,7 @@ package com.my_hourly.employee.controller;
 import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.employee.api.request.CreateEmployeeRequest;
+import com.my_hourly.employee.api.request.UpdateEmployeeByEmployeeRequest;
 import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
 import com.my_hourly.employee.api.response.EmployeeDropdownResponse;
 import com.my_hourly.employee.api.response.EmployeeResponse;
@@ -60,8 +61,8 @@ public class EmployeeController {
             value = "/profile-photo",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    @PreAuthorize("hasAuthority('employee:update')")
-    @Operation(summary = "Change Profile Photo: image/jpeg, image/jpg, image/png, Only Access by Loged In User")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @Operation(summary = "Change Profile Photo: image/jpeg, image/jpg, image/png. Access: EMPLOYEE")
     public ResponseEntity<ApiResponse<EmployeeResponse>> uploadProfilePhoto(
             @RequestParam("file") MultipartFile file) {
 
@@ -76,25 +77,25 @@ public class EmployeeController {
         );
     }
 
-//    @PutMapping
-//    @PreAuthorize("hasAuthority('employee:update')")
-//    @Operation(summary = "Update employee, Only Access by Employee", description = "Only Access by Employee")
-//    public ResponseEntity<ApiResponse<EmployeeResponse>> update(
-//            @Valid @RequestBody UpdateEmployeeRequest request) {
-//
-//        EmployeeResponse response = employeeService.update(request);
-//
-//        return ResponseEntity.ok(
-//                ApiResponse.<EmployeeResponse>builder()
-//                        .success(true)
-//                        .message("Employee updated successfully.")
-//                        .data(response)
-//                        .build());
-//    }
+    @PutMapping
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @Operation(summary = "Update employee profile. Access: EMPLOYEE")
+    public ResponseEntity<ApiResponse<EmployeeResponse>> update(
+            @Valid @RequestBody UpdateEmployeeByEmployeeRequest request) {
+
+        EmployeeResponse response = employeeService.update(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.<EmployeeResponse>builder()
+                        .success(true)
+                        .message("Employee updated successfully.")
+                        .data(response)
+                        .build());
+    }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('employee:view')")
-    @Operation(summary = "Get employee BY ID, Only Access By Manager, HR", description = "Only Access by Employee")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Get employee BY ID. Access: 'HR_ADMIN', 'MANAGER'", description = "HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<EmployeeResponse>> getById(
             @PathVariable Long id) {
 
@@ -109,8 +110,8 @@ public class EmployeeController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('employee:viewAll')")
-    @Operation(summary = "Get all employees, Only Access by Manager, HR ", description = "Only Access by Manager, HR")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Get all employees. Access: 'HR_ADMIN', 'MANAGER", description = "Only Access by 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<PageResponse<EmployeeResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -136,8 +137,8 @@ public class EmployeeController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('employee:updateStatus')")
-    @Operation(summary = "Change the employee Profile Status: true =Active or false=Inactive, Only Access Manager, HR", description = "Only Access Manager, HR")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Change the employee Profile Status: true=Active or false=Inactive. Access: 'HR_ADMIN', 'MANAGER'", description = "Only Access 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<Void>> changeStatus(
             @PathVariable Long id,
             @RequestParam boolean active) {
@@ -151,8 +152,8 @@ public class EmployeeController {
     }
 
     @GetMapping("/dropdown")
-    @PreAuthorize("hasAuthority('employee:viewDropDown')")
-    @Operation(summary = "Get All Employees ID and Name, Access by Manager, HR", description = "Access by Manager, HR")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @Operation(summary = "Get All Employees ID and Name. Access: 'HR_ADMIN', 'MANAGER')", description = "Access by 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<List<EmployeeDropdownResponse>>> getDropdown() {
 
         return ResponseEntity.ok(
@@ -165,8 +166,8 @@ public class EmployeeController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasAuthority('employee:viewMe')")
-    @Operation(summary = "Get Login employees profile, Only Access by Logged In User")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @Operation(summary = "Get Logged in employee's profile. Access: EMPLOYEE")
     public ResponseEntity<ApiResponse<EmployeeResponse>> getMyProfile() {
 
         return ResponseEntity.ok(
