@@ -14,5 +14,12 @@ public interface CalendarService {
             CalendarView view,
             List<CalendarEventType> eventTypes
     );
+//
+//    CalendarResponse getCalendar(
+//            Integer month,
+//            Integer year,
+//            CalendarView view,
+//            CalendarEventType eventTypes
+//    );
 
 }

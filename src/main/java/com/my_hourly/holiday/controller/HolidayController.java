@@ -12,6 +12,8 @@ import com.my_hourly.holiday.service.HolidayService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -155,7 +157,8 @@ public class HolidayController {
     @Operation(summary = "Get Holiday Calendar. Access: Authenticated Users")
     public ResponseEntity<ApiResponse<List<HolidayCalendarResponse>>> getHolidayCalendar(
 
-            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false)
+            Integer month,
 
             @RequestParam(required = false) Integer year
     ) {

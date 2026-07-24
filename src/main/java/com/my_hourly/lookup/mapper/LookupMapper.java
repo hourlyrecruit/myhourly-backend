@@ -1,6 +1,7 @@
 package com.my_hourly.lookup.mapper;
 
 import com.my_hourly.employee.entity.Employee;
+import com.my_hourly.lookup.api.response.EmployeeIdName;
 import com.my_hourly.lookup.api.response.LookupResponse;
 import com.my_hourly.lookup.api.response.ReportingManagerLookupResponse;
 import com.my_hourly.master.entity.Department;
@@ -45,6 +46,18 @@ public class LookupMapper {
                 .id(employee.getId())
                 .employeeCode(employee.getEmployeeCode())
                 .name(fullName)
+                .build();
+    }
+
+    public EmployeeIdName toResponseEmployee(Employee employee) {
+
+        String fullName = (employee.getLastName() == null || employee.getLastName().isBlank())
+                ? employee.getFirstName()
+                : employee.getFirstName() + " " + employee.getLastName();
+
+        return EmployeeIdName.builder()
+                .id(employee.getId())
+                .employeeName(fullName)
                 .build();
     }
 }

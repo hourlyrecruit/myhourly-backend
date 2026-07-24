@@ -185,6 +185,12 @@ public class HolidayServiceImpl implements HolidayService {
             Integer month,
             Integer year
     ) {
+        if (month != null && (month < 1 || month > 12)) {
+            throw new ValidationException(
+                    "Month must be between 1 and 12.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
 
         LocalDate today = LocalDate.now();
 

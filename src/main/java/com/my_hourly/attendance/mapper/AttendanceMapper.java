@@ -77,7 +77,9 @@ public class AttendanceMapper {
     ) {
 
         return AttendanceResponse.builder()
-                .id(attendance.getId())
+                .AttendanceId(attendance.getId())
+                .employeeId(attendance.getEmployee().getId())
+                .employeeName(attendance.getEmployee().getFirstName())
                 .attendanceDate(attendance.getAttendanceDate())
                 //.checkInTime(attendance.getCheckInTime())
                 .checkInTime(DateTimeUtil.formatTime(attendance.getCheckInTime()))

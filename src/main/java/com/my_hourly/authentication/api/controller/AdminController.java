@@ -240,7 +240,9 @@ public class AdminController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate toDate,
             @RequestParam(required = false)
-            AttendanceStatus status
+            AttendanceStatus status,
+            @RequestParam(required = false)
+            String search
     ) {
 
         PageResponse<AttendanceResponse> response =
@@ -251,7 +253,9 @@ public class AdminController {
                         sortDirection,
                         fromDate,
                         toDate,
-                        status
+                        status,
+                        search
+
                 );
 
         return ResponseEntity.ok(

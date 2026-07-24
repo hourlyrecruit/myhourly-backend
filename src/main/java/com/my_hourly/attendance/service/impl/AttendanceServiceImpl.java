@@ -365,15 +365,12 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Specification<Attendance> specification =
-                Specification.where(
-                                AttendanceSpecification.hasEmployee(employee))
-                        .and(
-                                AttendanceSpecification.fromDate(fromDate))
-                        .and(
-                                AttendanceSpecification.toDate(toDate))
-                        .and(
-                                AttendanceSpecification.hasStatus(status));
+        Specification<Attendance> specification = Specification.where(AttendanceSpecification.hasEmployee(employee))
+                .and(AttendanceSpecification.fromDate(fromDate))
+                .and(AttendanceSpecification.toDate(toDate));
+        if (status != null) {
+            specification = specification.and(AttendanceSpecification.hasStatus(status));
+        }
 
         Page<Attendance> attendancePage =
                 attendanceRepository.findAll(
@@ -418,7 +415,8 @@ public class AttendanceServiceImpl implements AttendanceService {
             String sortDirection,
             LocalDate fromDate,
             LocalDate toDate,
-            AttendanceStatus status
+            AttendanceStatus status,
+            String search
     ) {
 
         if (page < 0) {
@@ -451,20 +449,20 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Specification<Attendance> specification =
-                Specification.where(
-                                AttendanceSpecification.fromDate(fromDate))
-                        .and(
-                                AttendanceSpecification.toDate(toDate))
-                        .and(
-                                AttendanceSpecification.hasStatus(status));
+        Specification<Attendance> specification = Specification
+                .where(AttendanceSpecification.fromDate(fromDate))
+                .and(AttendanceSpecification.toDate(toDate));
+
+        if (status != null) {
+            specification = specification.and(AttendanceSpecification.hasStatus(status));
+        }
+
+        if (search != null && !search.isBlank()) {
+            specification = specification.and(AttendanceSpecification.search(search));
+        }
 
         Page<Attendance> attendancePage =
-                attendanceRepository.findAll(
-                        specification,
-                        pageable
-                );
-
+                attendanceRepository.findAll(specification, pageable);
         List<AttendanceResponse> responses =
                 attendancePage.getContent()
                         .stream()
@@ -541,15 +539,13 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Specification<Attendance> specification =
-                Specification.where(
-                                AttendanceSpecification.hasEmployee(employee))
-                        .and(
-                                AttendanceSpecification.fromDate(fromDate))
-                        .and(
-                                AttendanceSpecification.toDate(toDate))
-                        .and(
-                                AttendanceSpecification.hasStatus(status));
+        Specification<Attendance> specification = Specification.where(
+                AttendanceSpecification.hasEmployee(employee))
+                .and(AttendanceSpecification.fromDate(fromDate))
+                .and(AttendanceSpecification.toDate(toDate));
+        if (status != null) {
+            specification = specification.and(AttendanceSpecification.hasStatus(status));
+        }
 
         Page<Attendance> attendancePage =
                 attendanceRepository.findAll(

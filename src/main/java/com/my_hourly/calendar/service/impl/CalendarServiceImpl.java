@@ -35,6 +35,8 @@ public class CalendarServiceImpl implements CalendarService {
     private final AttendanceRepository attendanceRepository;
     private final EmployeeService employeeService;
 
+
+
     @Override
     public CalendarResponse getCalendar(
             Integer month,
@@ -132,12 +134,13 @@ public class CalendarServiceImpl implements CalendarService {
             return events;
         }
 
-        return events.stream()
-                .filter(event ->
-                        eventTypes.contains(event.getEventType())
-                )
-                .toList();
-
+        return new ArrayList<>(
+                events.stream()
+                        .filter(event ->
+                                eventTypes.contains(event.getEventType())
+                        )
+                        .toList()
+        );
     }
 
     private void validateOrganizationCalendarAccess(
