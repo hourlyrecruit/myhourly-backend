@@ -24,6 +24,7 @@ public final class AttendanceSpecification {
             AttendanceStatus status
     ) {
 
+
         if (status == null) {
             return null;
         }

@@ -452,6 +452,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Specification<Attendance> specification =
+
                 Specification.where(
                                 AttendanceSpecification.fromDate(fromDate))
                         .and(
