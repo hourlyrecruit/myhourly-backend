@@ -25,10 +25,10 @@ public class JobTitleSeeder {
 
     @Transactional
     public void seed() {
-        if (jobTitleRepository.count() > 1) {
-            log.info("Job Titles already seeded. Skipping...");
-            return;
-        }
+//        if (jobTitleRepository.count() > 1) {
+//            log.info("Job Titles already seeded. Skipping...");
+//            return;
+//        }
 
         List<Map<String, String>> records = csvReader.readCsv("seed/job_titles.csv");
         for (Map<String, String> record : records) {
