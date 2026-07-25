@@ -1,5 +1,7 @@
 package com.my_hourly.employee.service.impl;
 
+import com.my_hourly.attendance.entity.Attendance;
+import com.my_hourly.attendance.specification.AttendanceSpecification;
 import com.my_hourly.authentication.entity.User;
 import com.my_hourly.authentication.repository.UserRepository;
 import com.my_hourly.common.enums.ErrorCode;
@@ -16,6 +18,7 @@ import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.mapper.EmployeeMapper;
 import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.employee.service.EmployeeService;
+import com.my_hourly.employee.specification.EmployeeSpecification;
 import com.my_hourly.leave.service.LeaveAllocationService;
 import com.my_hourly.leave.service.LeaveBalanceService;
 import com.my_hourly.master.entity.Department;
@@ -30,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -455,20 +459,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Page<Employee> employees;
 
+        Specification<Employee> specification = Specification
+                .where(EmployeeSpecification.search(search));
+
         if (search == null || search.isBlank()) {
-
             employees = employeeRepository.findAll(pageable);
-
         } else {
-
-            employees = employeeRepository
-                    .findByEmployeeCodeContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
-                            search,
-                            search,
-                            search,
-                            search,
-                            pageable
-                    );
+            employees = employeeRepository.findAll(specification, pageable);
         }
 
         List<EmployeeResponse> responses = employees.getContent()

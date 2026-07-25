@@ -1,10 +1,12 @@
 package com.my_hourly.employee.repository;
 
+import com.my_hourly.attendance.entity.Attendance;
 import com.my_hourly.authentication.entity.RoleName;
 import com.my_hourly.authentication.entity.User;
 import com.my_hourly.employee.entity.Employee;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
@@ -41,4 +43,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByActiveTrue();
 
     List<Employee> findByActiveTrueAndRoleNameInOrderByFirstNameAsc(List<RoleName> manager);
+
+    Page<Employee> findAll(Specification<Employee> specification, Pageable pageable);
 }
