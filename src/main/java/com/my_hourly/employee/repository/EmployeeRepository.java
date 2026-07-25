@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
@@ -45,4 +46,12 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByActiveTrueAndRoleNameInOrderByFirstNameAsc(List<RoleName> manager);
 
     Page<Employee> findAll(Specification<Employee> specification, Pageable pageable);
+
+
+
+//    ==========================
+
+    List<Employee> findByIdIn(List<Long> ids);
+
+    List<Employee> findByUserIdIn(List<Long> userIds);
 }
