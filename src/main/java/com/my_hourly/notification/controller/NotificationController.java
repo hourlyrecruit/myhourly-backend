@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/notifications")
-@Tag(name = "Notification Management", description = "APIs for managing employee notifications")
+@Tag(name = "14-Announcement & Celebration posts & Notification Management", description = "APIs for managing employee notifications")
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -79,8 +79,8 @@ public class NotificationController {
                 .build();
     }
 
-    @Operation(summary = "Create an announcement. Access: EMPLOYEE','MANAGER','HR_ADMIN','SUPER_ADMIN'")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
+    @Operation(summary = "Create an announcement. Access: 'MANAGER','HR_ADMIN','SUPER_ADMIN'")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','MANAGER')")
     @PostMapping("/announcement")
     public ApiResponse<Void> createAnnouncement(
             @Valid @RequestBody AnnouncementRequest request

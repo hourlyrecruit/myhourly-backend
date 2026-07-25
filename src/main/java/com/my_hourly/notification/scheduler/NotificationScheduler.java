@@ -31,16 +31,16 @@ public class NotificationScheduler {
      * Process birthday, work anniversary and holiday notifications.
      * Runs every day at 9:00 AM.
      */
-    @Scheduled(cron = "0 0 9 * * *")
-    public void processDailyNotifications() {
-
-        log.info("Processing birthday notifications...");
-        notificationService.processBirthdayNotifications();
-
-        log.info("Processing work anniversary notifications...");
-        notificationService.processWorkAnniversaryNotifications();
-
-        log.info("Processing holiday notifications...");
-        notificationService.processHolidayNotifications();
-    }
+//    @Scheduled(cron = "0 0 9 * * *")
+//    public void processDailyNotifications() {
+//
+//        log.info("Processing birthday notifications...");
+//        notificationService.processBirthdayNotifications();
+//
+//        log.info("Processing work anniversary notifications...");
+//        notificationService.processWorkAnniversaryNotifications();
+//
+//        log.info("Processing holiday notifications...");
+//        notificationService.processHolidayNotifications();
+//    }
 }

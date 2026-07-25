@@ -298,6 +298,14 @@ public class NotificationServiceImpl implements NotificationService {
 
             switch (leaveRequest.getStatus()) {
 
+                case APPROVED -> createLeaveNotification(
+                        leaveRequest,
+                        NotificationType.APPROVED,
+                        NotificationPriority.MEDIUM,
+                        "Leave Approved",
+                        "Your leave request has been approved by your manager."
+                );
+
                 case MANAGER_APPROVED -> createLeaveNotification(
                         leaveRequest,
                         NotificationType.LEAVE_MANAGER_APPROVED,
@@ -371,7 +379,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         String message = switch (notificationType) {
 
-            case LEAVE_MANAGER_APPROVED -> leaveRequest.getEmployee().getFirstName()
+            case APPROVED, LEAVE_MANAGER_APPROVED -> leaveRequest.getEmployee().getFirstName()
                     + " leave request has been approved by the manager.";
 
             case LEAVE_HR_APPROVED -> leaveRequest.getEmployee().getFirstName()
@@ -401,87 +409,87 @@ public class NotificationServiceImpl implements NotificationService {
         );
     }
 
-    @Override
-    public void processBirthdayNotifications() {
-
-        LocalDate today = LocalDate.now();
-
-        List<Employee> employees = employeeRepository.findByActiveTrue()
-                .stream()
-                .filter(employee ->
-                        employee.getDateOfBirth() != null
-                                && employee.getDateOfBirth().getMonthValue() == today.getMonthValue()
-                                && employee.getDateOfBirth().getDayOfMonth() == today.getDayOfMonth()
-                )
-                .toList();
-
-        for (Employee employee : employees) {
-
-            createNotification(
-                    employee,
-                    "Happy Birthday 🎉",
-                    "Wishing you a wonderful birthday. Have a fantastic year ahead!",
-                    NotificationType.BIRTHDAY,
-                    NotificationPriority.LOW,
-                    ReferenceType.EMPLOYEE,
-                    employee.getId()
-            );
-        }
-    }
-
-    @Override
-    public void processWorkAnniversaryNotifications() {
-
-        LocalDate today = LocalDate.now();
-
-        List<Employee> employees = employeeRepository.findByActiveTrue()
-                .stream()
-                .filter(employee ->
-                        employee.getDateOfJoining() != null
-                                && employee.getDateOfJoining().getMonthValue() == today.getMonthValue()
-                                && employee.getDateOfJoining().getDayOfMonth() == today.getDayOfMonth()
-                )
-                .toList();
-
-        for (Employee employee : employees) {
-
-            createNotification(
-                    employee,
-                    "Happy Work Anniversary 🎉",
-                    "Congratulations on your work anniversary. Thank you for being part of the organization.",
-                    NotificationType.WORK_ANNIVERSARY,
-                    NotificationPriority.LOW,
-                    ReferenceType.EMPLOYEE,
-                    employee.getId()
-            );
-        }
-    }
-
-    @Override
-    public void processHolidayNotifications() {
-
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-
-        holidayRepository.findByHolidayDate(tomorrow)
-                .ifPresent(holiday -> {
-
-                    List<Employee> employees =
-                            employeeRepository.findAll();
-
-                    for (Employee employee : employees) {
-
-                        createNotification(
-                                employee,
-                                "Holiday Tomorrow",
-                                "Tomorrow is "
-                                        + holiday.getHolidayName()
-                                        + ". Enjoy your holiday!",
-                                NotificationType.HOLIDAY,
-                                NotificationPriority.MEDIUM,
-                                ReferenceType.HOLIDAY,
-                                holiday.getId()
-                        );
-                    }
-                });
-    }
+//    @Override
+//    public void processBirthdayNotifications() {
+//
+//        LocalDate today = LocalDate.now();
+//
+//        List<Employee> employees = employeeRepository.findByActiveTrue()
+//                .stream()
+//                .filter(employee ->
+//                        employee.getDateOfBirth() != null
+//                                && employee.getDateOfBirth().getMonthValue() == today.getMonthValue()
+//                                && employee.getDateOfBirth().getDayOfMonth() == today.getDayOfMonth()
+//                )
+//                .toList();
+//
+//        for (Employee employee : employees) {
+//
+//            createNotification(
+//                    employee,
+//                    "Happy Birthday 🎉",
+//                    "Wishing you a wonderful birthday. Have a fantastic year ahead!",
+//                    NotificationType.BIRTHDAY,
+//                    NotificationPriority.LOW,
+//                    ReferenceType.EMPLOYEE,
+//                    employee.getId()
+//            );
+//        }
+//    }
+//
+//    @Override
+//    public void processWorkAnniversaryNotifications() {
+//
+//        LocalDate today = LocalDate.now();
+//
+//        List<Employee> employees = employeeRepository.findByActiveTrue()
+//                .stream()
+//                .filter(employee ->
+//                        employee.getDateOfJoining() != null
+//                                && employee.getDateOfJoining().getMonthValue() == today.getMonthValue()
+//                                && employee.getDateOfJoining().getDayOfMonth() == today.getDayOfMonth()
+//                )
+//                .toList();
+//
+//        for (Employee employee : employees) {
+//
+//            createNotification(
+//                    employee,
+//                    "Happy Work Anniversary 🎉",
+//                    "Congratulations on your work anniversary. Thank you for being part of the organization.",
+//                    NotificationType.WORK_ANNIVERSARY,
+//                    NotificationPriority.LOW,
+//                    ReferenceType.EMPLOYEE,
+//                    employee.getId()
+//            );
+//        }
+//    }
+//
+//    @Override
+//    public void processHolidayNotifications() {
+//
+//        LocalDate tomorrow = LocalDate.now().plusDays(1);
+//
+//        holidayRepository.findByHolidayDate(tomorrow)
+//                .ifPresent(holiday -> {
+//
+//                    List<Employee> employees =
+//                            employeeRepository.findAll();
+//
+//                    for (Employee employee : employees) {
+//
+//                        createNotification(
+//                                employee,
+//                                "Holiday Tomorrow",
+//                                "Tomorrow is "
+//                                        + holiday.getHolidayName()
+//                                        + ". Enjoy your holiday!",
+//                                NotificationType.HOLIDAY,
+//                                NotificationPriority.MEDIUM,
+//                                ReferenceType.HOLIDAY,
+//                                holiday.getId()
+//                        );
+//                    }
+//                });
+//    }
 }

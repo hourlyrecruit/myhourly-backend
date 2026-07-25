@@ -22,6 +22,6 @@ public enum NotificationType {
     // HR Notifications
     ANNOUNCEMENT,
 
-    // Generic Notification
+    APPROVED, // Generic Notification
     GENERAL
 }

@@ -58,10 +58,10 @@ public interface NotificationService {
 
     void processLeaveNotifications();
 
-    void processBirthdayNotifications();
-
-    void processWorkAnniversaryNotifications();
-
-    void processHolidayNotifications();
+//    void processBirthdayNotifications();
+//
+//    void processWorkAnniversaryNotifications();
+//
+//    void processHolidayNotifications();
 
 }
