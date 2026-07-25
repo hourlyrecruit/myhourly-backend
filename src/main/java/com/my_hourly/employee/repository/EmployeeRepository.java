@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,24 +24,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     Optional<Employee> findTopByOrderByEmployeeCodeDesc();
 
-    Page<Employee> findByEmployeeCodeContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
-            String employeeCode,
-            String firstName,
-            String lastName,
-            String email,
-            Pageable pageable
-    );
-
     List<Employee> findByActiveTrueOrderByFirstNameAsc();
 
     Optional<Employee> findByUser(User user);
-
-    boolean existsByUser(User user);
-
-    boolean existsByPhoneNumber(String phoneNumber);
-
-   // List<Employee> findByActiveTrueAndRoleNameOrderByFirstNameAsc(RoleName role);
-
 
     List<Employee> findByActiveTrue();
 
@@ -47,11 +34,11 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     Page<Employee> findAll(Specification<Employee> specification, Pageable pageable);
 
-
-
 //    ==========================
 
     List<Employee> findByIdIn(List<Long> ids);
 
     List<Employee> findByUserIdIn(List<Long> userIds);
+
+
 }
