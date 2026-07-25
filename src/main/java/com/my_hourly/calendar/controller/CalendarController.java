@@ -31,12 +31,12 @@ import org.springframework.validation.annotation.Validated;
 @RequestMapping("/api/v1/calendar")
 @RequiredArgsConstructor
 @Validated
-@Tag(name = "Calendar", description = "Calendar APIs")
+@Tag(name = "13-Calendar", description = "Calendar APIs")
 public class CalendarController {
 
     private final CalendarService calendarService;
 
-    @Operation(summary = "Get Calendar Events")
+    @Operation(summary = "Get Calendar Events. Access: Any Logged In User")
     @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<ApiResponse<CalendarResponse>> getCalendar(

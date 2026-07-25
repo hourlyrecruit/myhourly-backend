@@ -1,0 +1,495 @@
+package com.my_hourly.notification.service.impl;
+
+import com.my_hourly.attendance.entity.Attendance;
+import com.my_hourly.authentication.service.AuthenticationService;
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
+import com.my_hourly.common.payload.response.PageResponse;
+import com.my_hourly.employee.entity.Employee;
+import com.my_hourly.employee.repository.EmployeeRepository;
+import com.my_hourly.employee.service.EmployeeService;
+import com.my_hourly.holiday.repository.HolidayRepository;
+import com.my_hourly.attendance.repository.AttendanceRepository;
+import com.my_hourly.leave.entity.LeaveRequest;
+import com.my_hourly.leave.repository.LeaveRequestRepository;
+import com.my_hourly.notification.api.request.AnnouncementRequest;
+import com.my_hourly.notification.api.response.NotificationResponse;
+import com.my_hourly.notification.entity.Notification;
+import com.my_hourly.notification.enums.NotificationPriority;
+import com.my_hourly.notification.enums.NotificationType;
+import com.my_hourly.notification.enums.ReferenceType;
+import com.my_hourly.notification.mapper.NotificationMapper;
+import com.my_hourly.notification.repository.NotificationRepository;
+import com.my_hourly.notification.service.NotificationService;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class NotificationServiceImpl implements NotificationService {
+
+    private final NotificationRepository notificationRepository;
+
+    private final NotificationMapper notificationMapper;
+
+    private final AuthenticationService authenticationService;
+
+    private final AttendanceRepository attendanceRepository;
+
+    private final LeaveRequestRepository leaveRequestRepository;
+
+    private final EmployeeRepository employeeRepository;
+
+    private final HolidayRepository holidayRepository;
+    private final EmployeeService employeeService;
+
+    private Employee getCurrentEmployee() {
+        Employee currentEmployee = employeeService.getCurrentEmployee();
+        return currentEmployee;
+    }
+
+    @Override
+    @Transactional
+    public PageResponse<NotificationResponse> getMyNotifications(
+            int page,
+            int size
+    ) {
+
+        Employee employee = getCurrentEmployee();
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Notification> notifications =
+                notificationRepository.findByEmployeeOrderByCreatedAtDesc(
+                        employee,
+                        pageable
+                );
+
+        return PageResponse.<NotificationResponse>builder()
+                .content(
+                        notifications.getContent()
+                                .stream()
+                                .map(notificationMapper::toResponse)
+                                .toList()
+                )
+                .page(notifications.getNumber())
+                .size(notifications.getSize())
+                .totalElements(notifications.getTotalElements())
+                .totalPages(notifications.getTotalPages())
+                .first(notifications.isFirst())
+                .last(notifications.isLast())
+                .build();
+    }
+
+    @Override
+    public long getUnreadCount() {
+
+        return notificationRepository.countByEmployeeAndIsReadFalse(
+                getCurrentEmployee()
+        );
+    }
+
+    @Override
+    public void markAsRead(Long notificationId) {
+
+        Employee employee = getCurrentEmployee();
+
+        Notification notification =
+                notificationRepository.findByIdAndEmployee(
+                        notificationId,
+                        employee
+                );
+
+        if (notification == null) {
+            throw new ResourceNotFoundException(
+                    "Notification not found.", ErrorCode.RESOURCE_NOT_FOUND
+            );
+        }
+
+        notificationRepository.markAsRead(
+                notificationId,
+                employee
+        );
+    }
+
+    @Override
+    public void markAllAsRead() {
+
+        notificationRepository.markAllAsRead(
+                getCurrentEmployee()
+        );
+    }
+
+    @Override
+    public void createNotification(
+            Employee employee,
+            String title,
+            String message,
+            NotificationType notificationType,
+            NotificationPriority priority,
+            ReferenceType referenceType,
+            Long referenceId
+    ) {
+
+        if (employee == null) {
+            return;
+        }
+
+        boolean exists = notificationRepository
+                .existsByEmployeeIdAndReferenceTypeAndReferenceIdAndNotificationType(
+                        employee.getId(),
+                        referenceType,
+                        referenceId,
+                        notificationType
+                );
+
+        if (exists) {
+            return;
+        }
+
+        Notification notification = Notification.builder()
+                .employee(employee)
+                .title(title)
+                .message(message)
+                .notificationType(notificationType)
+                .priority(priority)
+                .referenceType(referenceType)
+                .referenceId(referenceId)
+                .isRead(false)
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
+    @Override
+    public void createAnnouncement(AnnouncementRequest request) {
+
+        List<Employee> employees = employeeRepository.findAll();
+
+        for (Employee employee : employees) {
+
+            createNotification(
+                    employee,
+                    request.getTitle(),
+                    request.getMessage(),
+                    NotificationType.ANNOUNCEMENT,
+                    NotificationPriority.HIGH,
+                    ReferenceType.ANNOUNCEMENT,
+                    0L
+            );
+        }
+    }
+
+    @Override
+    public void processAttendanceNotifications() {
+
+        LocalDate today = LocalDate.now();
+
+        List<Attendance> attendances =
+                attendanceRepository.findByAttendanceDate(today);
+
+        for (Attendance attendance : attendances) {
+
+            switch (attendance.getAttendanceStatus()) {
+
+                case LATE -> createAttendanceNotification(
+                        attendance,
+                        NotificationType.LATE_CHECK_IN,
+                        NotificationPriority.MEDIUM,
+                        "Late Check-in",
+                        "You checked in "
+                                + attendance.getLateMinutes()
+                                + " minutes late today."
+                );
+
+                case ABSENT -> createAttendanceNotification(
+                        attendance,
+                        NotificationType.ABSENT,
+                        NotificationPriority.HIGH,
+                        "Absent",
+                        "You are marked absent today."
+                );
+
+                case MISSED_CHECKOUT -> createAttendanceNotification(
+                        attendance,
+                        NotificationType.MISSED_CHECKOUT,
+                        NotificationPriority.HIGH,
+                        "Missed Checkout",
+                        "You forgot to checkout today."
+                );
+
+                default -> {
+                    // No notification required
+                }
+            }
+        }
+    }
+
+    private void createAttendanceNotification(
+            Attendance attendance,
+            NotificationType type,
+            NotificationPriority priority,
+            String title,
+            String message
+    ) {
+
+        createNotification(
+                attendance.getEmployee(),
+                title,
+                message,
+                type,
+                priority,
+                ReferenceType.ATTENDANCE,
+                attendance.getId()
+        );
+
+        notifyReportingManager(attendance, title);
+    }
+
+    private void notifyReportingManager(
+            Attendance attendance,
+            String title
+    ) {
+
+        Employee manager = attendance.getEmployee().getReportingManager();
+
+        if (manager == null) {
+            return;
+        }
+
+        createNotification(
+                manager,
+                title,
+                attendance.getEmployee().getFirstName()
+                        + " "
+                        + attendance.getEmployee().getLastName()
+                        + " has "
+                        + title.toLowerCase()
+                        + ".",
+                NotificationType.GENERAL,
+                NotificationPriority.MEDIUM,
+                ReferenceType.ATTENDANCE,
+                attendance.getId()
+        );
+    }
+
+    @Override
+    public void processLeaveNotifications() {
+
+        LocalDateTime endTime = LocalDateTime.now();
+        LocalDateTime startTime = endTime.minusMinutes(5);
+
+        List<LeaveRequest> leaveRequests =
+                leaveRequestRepository.findByUpdatedAtBetween(
+                        startTime,
+                        endTime
+                );
+
+        for (LeaveRequest leaveRequest : leaveRequests) {
+
+            switch (leaveRequest.getStatus()) {
+
+                case APPROVED -> createLeaveNotification(
+                        leaveRequest,
+                        NotificationType.APPROVED,
+                        NotificationPriority.MEDIUM,
+                        "Leave Approved",
+                        "Your leave request has been approved by your manager."
+                );
+
+                case MANAGER_APPROVED -> createLeaveNotification(
+                        leaveRequest,
+                        NotificationType.LEAVE_MANAGER_APPROVED,
+                        NotificationPriority.MEDIUM,
+                        "Leave Approved",
+                        "Your leave request has been approved by your manager."
+                );
+
+                case HR_APPROVED -> createLeaveNotification(
+                        leaveRequest,
+                        NotificationType.LEAVE_HR_APPROVED,
+                        NotificationPriority.MEDIUM,
+                        "Leave Approved",
+                        "Your leave request has been approved by HR."
+                );
+
+                case REJECTED -> createLeaveNotification(
+                        leaveRequest,
+                        NotificationType.LEAVE_REJECTED,
+                        NotificationPriority.HIGH,
+                        "Leave Rejected",
+                        "Your leave request has been rejected."
+                );
+
+                case CANCELLED -> createLeaveNotification(
+                        leaveRequest,
+                        NotificationType.LEAVE_CANCELLED,
+                        NotificationPriority.MEDIUM,
+                        "Leave Cancelled",
+                        "Your leave request has been cancelled."
+                );
+
+                default -> {
+                    // Ignore PENDING and other statuses
+                }
+            }
+        }
+    }
+
+    private void createLeaveNotification(
+            LeaveRequest leaveRequest,
+            NotificationType notificationType,
+            NotificationPriority priority,
+            String title,
+            String message
+    ) {
+
+        createNotification(
+                leaveRequest.getEmployee(),
+                title,
+                message,
+                notificationType,
+                priority,
+                ReferenceType.LEAVE,
+                leaveRequest.getId()
+        );
+
+        notifyManagerForLeave(leaveRequest, notificationType);
+    }
+
+    private void notifyManagerForLeave(
+            LeaveRequest leaveRequest,
+            NotificationType notificationType
+    ) {
+
+        Employee manager = leaveRequest.getEmployee().getReportingManager();
+
+        if (manager == null) {
+            return;
+        }
+
+        String message = switch (notificationType) {
+
+            case APPROVED, LEAVE_MANAGER_APPROVED -> leaveRequest.getEmployee().getFirstName()
+                    + " leave request has been approved by the manager.";
+
+            case LEAVE_HR_APPROVED -> leaveRequest.getEmployee().getFirstName()
+                    + " leave request has been approved by HR.";
+
+            case LEAVE_REJECTED -> leaveRequest.getEmployee().getFirstName()
+                    + " leave request has been rejected.";
+
+            case LEAVE_CANCELLED -> leaveRequest.getEmployee().getFirstName()
+                    + " leave request has been cancelled.";
+
+            default -> null;
+        };
+
+        if (message == null) {
+            return;
+        }
+
+        createNotification(
+                manager,
+                "Leave Update",
+                message,
+                NotificationType.GENERAL,
+                NotificationPriority.MEDIUM,
+                ReferenceType.LEAVE,
+                leaveRequest.getId()
+        );
+    }
+
+//    @Override
+//    public void processBirthdayNotifications() {
+//
+//        LocalDate today = LocalDate.now();
+//
+//        List<Employee> employees = employeeRepository.findByActiveTrue()
+//                .stream()
+//                .filter(employee ->
+//                        employee.getDateOfBirth() != null
+//                                && employee.getDateOfBirth().getMonthValue() == today.getMonthValue()
+//                                && employee.getDateOfBirth().getDayOfMonth() == today.getDayOfMonth()
+//                )
+//                .toList();
+//
+//        for (Employee employee : employees) {
+//
+//            createNotification(
+//                    employee,
+//                    "Happy Birthday 🎉",
+//                    "Wishing you a wonderful birthday. Have a fantastic year ahead!",
+//                    NotificationType.BIRTHDAY,
+//                    NotificationPriority.LOW,
+//                    ReferenceType.EMPLOYEE,
+//                    employee.getId()
+//            );
+//        }
+//    }
+//
+//    @Override
+//    public void processWorkAnniversaryNotifications() {
+//
+//        LocalDate today = LocalDate.now();
+//
+//        List<Employee> employees = employeeRepository.findByActiveTrue()
+//                .stream()
+//                .filter(employee ->
+//                        employee.getDateOfJoining() != null
+//                                && employee.getDateOfJoining().getMonthValue() == today.getMonthValue()
+//                                && employee.getDateOfJoining().getDayOfMonth() == today.getDayOfMonth()
+//                )
+//                .toList();
+//
+//        for (Employee employee : employees) {
+//
+//            createNotification(
+//                    employee,
+//                    "Happy Work Anniversary 🎉",
+//                    "Congratulations on your work anniversary. Thank you for being part of the organization.",
+//                    NotificationType.WORK_ANNIVERSARY,
+//                    NotificationPriority.LOW,
+//                    ReferenceType.EMPLOYEE,
+//                    employee.getId()
+//            );
+//        }
+//    }
+//
+//    @Override
+//    public void processHolidayNotifications() {
+//
+//        LocalDate tomorrow = LocalDate.now().plusDays(1);
+//
+//        holidayRepository.findByHolidayDate(tomorrow)
+//                .ifPresent(holiday -> {
+//
+//                    List<Employee> employees =
+//                            employeeRepository.findAll();
+//
+//                    for (Employee employee : employees) {
+//
+//                        createNotification(
+//                                employee,
+//                                "Holiday Tomorrow",
+//                                "Tomorrow is "
+//                                        + holiday.getHolidayName()
+//                                        + ". Enjoy your holiday!",
+//                                NotificationType.HOLIDAY,
+//                                NotificationPriority.MEDIUM,
+//                                ReferenceType.HOLIDAY,
+//                                holiday.getId()
+//                        );
+//                    }
+//                });
+//    }
+}

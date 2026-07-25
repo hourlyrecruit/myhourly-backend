@@ -10,6 +10,6 @@ public enum LeaveStatus {
 
     REJECTED,
 
-    CANCELLED
+    APPROVED, CANCELLED
 
 }
