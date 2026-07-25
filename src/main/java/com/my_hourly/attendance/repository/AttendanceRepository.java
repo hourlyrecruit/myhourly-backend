@@ -32,6 +32,10 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long>,
 
     List<Attendance> findByCheckOutTimeIsNull();
 
+    List<Attendance> findByAttendanceDateBetween(
+            LocalDate fromDate,
+            LocalDate toDate);
+
 
 
 }

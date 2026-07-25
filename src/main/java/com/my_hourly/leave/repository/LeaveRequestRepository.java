@@ -84,6 +84,17 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+    @Query("""
+SELECT lr
+FROM LeaveRequest lr
+WHERE lr.employee = :employee
+AND lr.startDate <= :toDate
+AND lr.endDate >= :fromDate
+""")
+    List<LeaveRequest> findEmployeeLeavesBetween(
+            @Param("employee") Employee employee,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate);
 
 }
 
