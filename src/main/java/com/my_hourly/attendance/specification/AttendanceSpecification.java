@@ -25,9 +25,8 @@ public final class AttendanceSpecification {
             AttendanceStatus status
     ) {
 
-
         if (status == null) {
-            return null;
+            return (root, query, cb) -> cb.conjunction();
         }
 
         return (root, query, cb) ->
@@ -39,7 +38,7 @@ public final class AttendanceSpecification {
     ) {
 
         if (fromDate == null) {
-            return null;
+            return (root, query, cb) -> cb.conjunction();
         }
 
         return (root, query, cb) ->
@@ -54,7 +53,7 @@ public final class AttendanceSpecification {
     ) {
 
         if (toDate == null) {
-            return null;
+            return (root, query, cb) -> cb.conjunction();
         }
 
         return (root, query, cb) ->

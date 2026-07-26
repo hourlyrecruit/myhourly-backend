@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/leave-allocation")
+@RequestMapping("/api/v1/leave-allocation")
 @RequiredArgsConstructor
 @Tag(name="06-Leave Allocation Controller", description = "Optional: Leave will be automatically allocate to newly add employee and reset every year and allocation based on leave policy, HR can allocation total leave in year(leave policy). Guideline for month leave like 2 leave/month")
 public class LeaveAllocationController {
