@@ -9,10 +9,12 @@ import com.my_hourly.celebration.entity.UpcomingEvents;
 import com.my_hourly.celebration.repository.UpcomingEventRepository;
 import com.my_hourly.celebration.service.UpcomingEventService;
 import com.my_hourly.celebration.dto.ApiResponse;
+import com.my_hourly.employee.repository.EmployeeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import java.util.ArrayList;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -28,6 +31,7 @@ public class UpcomingEventServiceImpl implements UpcomingEventService {
 
     private final UpcomingEventRepository eventRepository;
     private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
 
     private User getLoggedInUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -65,11 +69,66 @@ public class UpcomingEventServiceImpl implements UpcomingEventService {
 
     @Override
     public List<UpcomingEventResponse> getUpcomingEvents() {
-        return eventRepository
-                .findByEventDateAfterOrderByEventDateAsc(LocalDate.now())
+
+        LocalDate today = LocalDate.now();
+        LocalDate nextWeek = today.plusDays(7);
+
+        List<UpcomingEventResponse> events = eventRepository
+                .findByEventDateBetweenOrderByEventDateAsc(today, nextWeek)
                 .stream()
                 .map(this::map)
                 .toList();
+
+        List<UpcomingEventResponse> response = new ArrayList<>(events);
+
+        employeeRepository.findAll().forEach(employee -> {
+
+            // Birthday
+            if (employee.getDateOfBirth() != null) {
+
+                LocalDate birthday = employee.getDateOfBirth().withYear(today.getYear());
+
+                if (birthday.isBefore(today)) {
+                    birthday = birthday.plusYears(1);
+                }
+
+                if (!birthday.isBefore(today) && !birthday.isAfter(nextWeek)) {
+
+                    UpcomingEventResponse birthdayEvent = new UpcomingEventResponse();
+                    birthdayEvent.setTitle(employee.getFirstName() + " " + employee.getLastName() + "'s Birthday");
+                    birthdayEvent.setDescription("Birthday Celebration");
+                    birthdayEvent.setLocation("Office");
+                    birthdayEvent.setEventDate(birthday);
+
+                    response.add(birthdayEvent);
+                }
+            }
+
+            // Work Anniversary
+            if (employee.getDateOfJoining() != null) {
+
+                LocalDate anniversary = employee.getDateOfJoining().withYear(today.getYear());
+
+                if (anniversary.isBefore(today)) {
+                    anniversary = anniversary.plusYears(1);
+                }
+
+                if (!anniversary.isBefore(today) && !anniversary.isAfter(nextWeek)) {
+
+                    UpcomingEventResponse anniversaryEvent = new UpcomingEventResponse();
+                    anniversaryEvent.setTitle(employee.getFirstName() + " " + employee.getLastName() + "'s Work Anniversary");
+                    anniversaryEvent.setDescription("Work Anniversary Celebration");
+                    anniversaryEvent.setLocation("Office");
+                    anniversaryEvent.setEventDate(anniversary);
+
+                    response.add(anniversaryEvent);
+                }
+            }
+        });
+
+        response.sort(Comparator.comparing(UpcomingEventResponse::getEventDate));
+
+        return response;
     }
 
     @Override

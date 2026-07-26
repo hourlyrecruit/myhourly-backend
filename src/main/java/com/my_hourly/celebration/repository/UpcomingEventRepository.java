@@ -11,4 +11,8 @@ import java.util.List;
 public interface UpcomingEventRepository extends JpaRepository<UpcomingEvents,Long> {
     List<UpcomingEvents> findByEventDateAfterOrderByEventDateAsc(LocalDate date);
     void deleteByEventDateLessThanEqual(LocalDate date);
+    List<UpcomingEvents> findByEventDateBetweenOrderByEventDateAsc(
+            LocalDate startDate,
+            LocalDate endDate
+    );
 }
