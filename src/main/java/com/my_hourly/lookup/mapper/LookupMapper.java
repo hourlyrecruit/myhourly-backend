@@ -57,6 +57,7 @@ public class LookupMapper {
 
         return EmployeeIdName.builder()
                 .id(employee.getId())
+                .employeeCode(employee.getEmployeeCode())
                 .employeeName(fullName)
                 .build();
     }

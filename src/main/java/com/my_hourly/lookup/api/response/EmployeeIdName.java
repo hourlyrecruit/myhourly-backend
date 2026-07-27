@@ -11,6 +11,8 @@ public class EmployeeIdName {
 
     private Long id;
 
+    private String employeeCode;
+
     private String employeeName;
 
 }

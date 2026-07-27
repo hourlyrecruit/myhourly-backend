@@ -49,4 +49,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long>,
     );
 
     List<LeaveRequest> findByUpdatedAtAfter(LocalDateTime updatedAt);
+
+
 }
