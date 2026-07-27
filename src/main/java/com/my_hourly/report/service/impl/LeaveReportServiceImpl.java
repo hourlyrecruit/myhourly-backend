@@ -220,7 +220,8 @@ public class LeaveReportServiceImpl implements LeaveReportService {
 
         return LeaveSummaryResponse.builder()
                 .totalLeaves(total)
-                .approvedLeaves(managerApproved + hrApproved)
+                //.approvedLeaves(managerApproved + hrApproved)
+                .approvedLeaves(managerApproved)
                 .pendingLeaves(pending)
                 .rejectedLeaves(rejected)
                 .cancelledLeaves(cancelled)

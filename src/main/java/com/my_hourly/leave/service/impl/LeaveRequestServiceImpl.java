@@ -261,6 +261,16 @@ public class LeaveRequestServiceImpl
                             ErrorCode.INVALID_DATE);
                 }
 
+
+
+
+
+        switch (request.getAction()) {
+
+            case APPROVE -> {
+
+
+
                 LeaveBalance leaveBalance =
                         leaveBalanceService.getLeaveBalanceEntity(
                                 leaveRequest.getEmployee(),
@@ -285,6 +295,32 @@ public class LeaveRequestServiceImpl
                         ApprovalLevel.MANAGER,
                         LeaveAction.APPROVE,
                         request.getReason());
+            }
+
+            case REJECT -> {
+
+                if (request.getReason() == null ||
+                        request.getReason().isBlank()) {
+
+                    throw new BadRequestException(
+                            "Rejection reason is required.",
+                            ErrorCode.REASON_REQUIRED);
+                }
+
+                leaveRequest.setStatus(LeaveStatus.REJECTED);
+
+                leaveApprovalService.createApproval(
+                        leaveRequest,
+                        manager,
+                        ApprovalLevel.MANAGER,
+                        LeaveAction.REJECT,
+                        request.getReason());
+            }
+
+            default -> throw new BadRequestException(
+                    "Invalid leave action.",
+                    ErrorCode.INVALID_REQUEST);
+        }
 
 
 
