@@ -3,9 +3,7 @@ package com.my_hourly.report.service.impl;
 import com.my_hourly.attendance.entity.Attendance;
 import com.my_hourly.attendance.entity.AttendanceStatus;
 import com.my_hourly.attendance.repository.AttendanceRepository;
-import com.my_hourly.authentication.entity.User;
 import com.my_hourly.common.enums.ErrorCode;
-import com.my_hourly.common.exception.BadRequestException;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.repository.EmployeeRepository;
@@ -14,35 +12,28 @@ import com.my_hourly.leave.entity.LeaveRequest;
 import com.my_hourly.leave.enums.LeaveStatus;
 import com.my_hourly.leave.repository.LeaveBalanceRepository;
 import com.my_hourly.leave.repository.LeaveRequestRepository;
-import com.my_hourly.report.dto.ApiResponse;
-import com.my_hourly.report.dto.EmployeeReportResponse;
-import com.my_hourly.report.dto.ReportRequest;
-import com.my_hourly.report.entity.Report;
-import com.my_hourly.report.entity.ReportFormat;
-import com.my_hourly.report.repository.ReportRepository;
+import com.my_hourly.report.dto.*;
+import com.my_hourly.report.entity.ReportType;
 import com.my_hourly.report.service.ReportService;
 import com.my_hourly.report.util.ExcelReportGenerator;
 import com.my_hourly.report.util.PdfReportGenerator;
-import com.my_hourly.security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-@Slf4j
 public class ReportServiceImpl implements ReportService {
 
     private final EmployeeRepository employeeRepository;
@@ -53,163 +44,313 @@ public class ReportServiceImpl implements ReportService {
 
     private final LeaveBalanceRepository leaveBalanceRepository;
 
-    private final ReportRepository reportRepository;
+    @Override
+    public Page<EmployeeReportResponse> getReports(
+            AttendanceReportFilter filter) {
 
+        String sortBy =
+                filter.getSortBy() != null
+                        ? filter.getSortBy()
+                        : "firstName";
+
+
+        String sortDirection =
+                filter.getSortDirection() != null
+                        ? filter.getSortDirection()
+                        : "ASC";
+
+
+        Sort sort = Sort.by(
+                Sort.Direction.fromString(sortDirection),
+                sortBy
+        );
+
+        Pageable pageable = PageRequest.of(
+                filter.getPage(),
+                filter.getSize(),
+                sort);
+
+        Page<Employee> employees;
+
+        // Employee Id Filter
+        if (filter.getEmployeeId() != null) {
+
+            Employee employee = employeeRepository.findById(
+                            filter.getEmployeeId())
+                    .orElseThrow(() ->
+                            new RuntimeException("Employee not found."));
+
+            EmployeeReportResponse response =
+                    mapEmployee(employee, filter);
+
+            return new PageImpl<>(
+                    List.of(response),
+                    pageable,
+                    1);
+
+        }
+
+        // Department Filter
+        else if (filter.getDepartmentId() != null) {
+
+            employees =
+                    employeeRepository.findByDepartmentId(
+                            filter.getDepartmentId(),
+                            pageable);
+
+        }
+
+        // Employee Name Filter
+        else if (filter.getEmployeeName() != null
+                && !filter.getEmployeeName().isBlank()) {
+
+            employees =
+                    employeeRepository
+                            .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                                    filter.getEmployeeName(),
+                                    filter.getEmployeeName(),
+                                    pageable);
+
+        }
+
+        // All Employees
+        else {
+
+            employees =
+                    employeeRepository.findByActiveTrue(pageable);
+
+        }
+
+        return employees.map(employee ->
+                mapEmployee(employee, filter));
+    }
     @Override
     public EmployeeReportResponse getEmployeeReport(
             Long employeeId,
-            LocalDate fromDate,
-            LocalDate toDate) {
-
+            AttendanceReportFilter filter) {
 
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Employee not found.",
-                                ErrorCode.RESOURCE_NOT_FOUND));
+                                "Employee not found",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
 
+        return mapEmployee(employee, filter);
+    }
+    private EmployeeReportResponse mapEmployee(
+            Employee employee,
+            AttendanceReportFilter filter) {
 
-        EmployeeReportResponse response =
-                new EmployeeReportResponse();
+        EmployeeReportResponse response = new EmployeeReportResponse();
 
-
+        // Employee Details
         response.setEmployeeId(employee.getId());
-
-        response.setEmployeeCode(
-                employee.getEmployeeCode()
-        );
-
+        response.setEmployeeCode(employee.getEmployeeCode());
         response.setEmployeeName(
-                employee.getFirstName()
-                        + " "
-                        + employee.getLastName()
-        );
-
+                employee.getFirstName() + " " + employee.getLastName());
 
         response.setDepartment(
-                employee.getDepartment() != null ?
-                        employee.getDepartment().getDepartmentName()
-                        :
-                        "-"
-        );
-
+                employee.getDepartment() != null
+                        ? employee.getDepartment().getDepartmentName()
+                        : "-");
 
         response.setDesignation(
-                employee.getDesignation() != null ?
-                        employee.getDesignation().getDesignationName()
-                        :
-                        "-"
-        );
+                employee.getDesignation() != null
+                        ? employee.getDesignation().getDesignationName()
+                        : "-");
 
+        switch (filter.getReportType()) {
 
-        response.setFromDate(fromDate);
-        response.setToDate(toDate);
+            case ATTENDANCE -> {
+                response.setAttendanceSummary(
+                        populateAttendanceSummary(employee, filter));
+            }
 
+            case LEAVE -> {
+                response.setLeaveSummary(
+                        populateLeaveSummary(employee, filter));
+            }
 
-        populateAttendance(
-                employee,
-                fromDate,
-                toDate,
-                response
-        );
+            case ATTENDANCE_LEAVE -> {
+                response.setAttendanceSummary(
+                        populateAttendanceSummary(employee, filter));
 
+                response.setLeaveSummary(
+                        populateLeaveSummary(employee, filter));
+            }
 
-        populateLeave(
-                employee,
-                fromDate,
-                toDate,
-                response
-        );
+            case ATTENDANCE_DETAIL -> {
+                response.setAttendanceDetails(
+                        populateAttendanceDetails(employee, filter));
+            }
 
+            case LEAVE_DETAIL -> {
+                response.setLeaveDetails(
+                        populateLeaveDetails(employee, filter));
+            }
+
+            case ATTENDANCE_LEAVE_DETAIL -> {
+
+                response.setAttendanceDetails(
+                        populateAttendanceDetails(employee, filter));
+
+                response.setLeaveDetails(
+                        populateLeaveDetails(employee, filter));
+            }
+        }
 
         return response;
     }
-    public List<EmployeeReportResponse> getEmployeeReports(LocalDate fromDate, LocalDate toDate){
-        List<Employee> employees = employeeRepository.findByActiveTrue();
-        return employees.stream()
-                .map(employee -> getEmployeeReport(
-                        employee.getId(),
-                        fromDate,
-                        toDate))
+    private List<AttendanceDetailResponse> populateAttendanceDetails(
+            Employee employee,
+            AttendanceReportFilter filter) {
+
+        return getFilteredAttendances(employee, filter)
+                .stream()
+                .map(attendance -> {
+
+                    AttendanceDetailResponse dto =
+                            new AttendanceDetailResponse();
+
+                    dto.setAttendanceDate(
+                            attendance.getAttendanceDate());
+
+                    dto.setCheckInTime(
+                            attendance.getCheckInTime() != null
+                                    ? attendance.getCheckInTime().toLocalTime()
+                                    : null);
+
+                    dto.setCheckOutTime(
+                            attendance.getCheckOutTime() != null
+                                    ? attendance.getCheckOutTime().toLocalTime()
+                                    : null);
+
+                    dto.setWorkingMinutes(
+                            attendance.getWorkingMinutes());
+
+                    dto.setTotalBreakMinutes(
+                            attendance.getTotalBreakMinutes());
+
+                    dto.setLateMinutes(
+                            attendance.getLateMinutes());
+
+                    dto.setEarlyExitMinutes(
+                            attendance.getEarlyExitMinutes());
+
+                    dto.setOvertimeMinutes(
+                            attendance.getOvertimeMinutes());
+
+                    dto.setAttendanceStatus(
+                            attendance.getAttendanceStatus());
+
+                    dto.setBreaks(
+                            attendance.getBreaks()
+                                    .stream()
+                                    .map(breakEntity -> {
+
+                                        AttendanceBreakResponse breakDto =
+                                                new AttendanceBreakResponse();
+
+                                        breakDto.setBreakStartTime(
+                                                breakEntity.getBreakStartTime() != null
+                                                        ? breakEntity.getBreakStartTime().toLocalTime()
+                                                        : null);
+
+                                        breakDto.setBreakEndTime(
+                                                breakEntity.getBreakEndTime() != null
+                                                        ? breakEntity.getBreakEndTime().toLocalTime()
+                                                        : null);
+
+                                        breakDto.setBreakDurationMinutes(
+                                                breakEntity.getBreakMinutes());
+
+                                        breakDto.setBreakType(
+                                                breakEntity.getBreakType() != null
+                                                        ? breakEntity.getBreakType().name()
+                                                        : null);
+
+                                        return breakDto;
+
+                                    })
+                                    .toList());
+
+                    return dto;
+
+                })
                 .toList();
     }
-    private void validateRequest(ReportRequest request) {
-
-        if (request.getFromDate() == null || request.getToDate() == null) {
-            throw new BadRequestException(
-                    "From date and To date are required.",
-                    ErrorCode.VALIDATION_FAILED);
-        }
-
-        if (request.getFromDate().isAfter(request.getToDate())) {
-            throw new BadRequestException(
-                    "From date cannot be after To date.",
-                    ErrorCode.VALIDATION_FAILED);
-        }
-
-        if (request.getReportType() == null) {
-            throw new BadRequestException(
-                    "Report type is required.",
-                    ErrorCode.VALIDATION_FAILED);
-        }
-
-        if (request.getReportFormat() == null) {
-            throw new BadRequestException(
-                    "Report format is required.",
-                    ErrorCode.VALIDATION_FAILED
-            );
-        }
-    }
-    private Employee getCurrentEmployee() {
-        User user = SecurityUtils.getCurrentUser();
-        return employeeRepository.findByUser(user)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Employee not found.",
-                                ErrorCode.RESOURCE_NOT_FOUND));
-    }
-    private void populateAttendance(
+    private List<LeaveDetailResponse> populateLeaveDetails(
             Employee employee,
-            LocalDate fromDate,
-            LocalDate toDate,
-            EmployeeReportResponse response) {
+            AttendanceReportFilter filter) {
+
+        return getFilteredLeaveRequests(employee, filter)
+                .stream()
+                .map(leave -> {
+
+                    LeaveDetailResponse dto = new LeaveDetailResponse();
+
+                    dto.setLeaveType(
+                            leave.getLeaveType().getName());
+
+                    dto.setStartDate(leave.getStartDate());
+
+                    dto.setEndDate(leave.getEndDate());
+
+                    dto.setTotalDays(leave.getTotalDays());
+
+                    dto.setStatus(leave.getStatus());
+
+                    dto.setReason(leave.getReason());
+
+                    return dto;
+
+                })
+                .toList();
+    }
+    private AttendanceReportResponse populateAttendanceSummary(
+            Employee employee,
+            AttendanceReportFilter filter) {
+
 
         List<Attendance> attendances =
-                attendanceRepository
-                        .findByEmployeeAndAttendanceDateBetween(
-                                employee,
-                                fromDate,
-                                toDate);
+                getFilteredAttendances(employee, filter);
+
+
+        AttendanceReportResponse response =
+                new AttendanceReportResponse();
+
+
 
         response.setPresentDays(
                 attendances.stream()
-                        .filter(a -> a.getAttendanceStatus() ==
-                                AttendanceStatus.PRESENT)
+                        .filter(a ->
+                                a.getAttendanceStatus() == AttendanceStatus.PRESENT)
                         .count());
+
 
         response.setAbsentDays(
                 attendances.stream()
-                        .filter(a -> a.getAttendanceStatus() ==
-                                AttendanceStatus.ABSENT)
+                        .filter(a ->
+                                a.getAttendanceStatus() == AttendanceStatus.ABSENT)
                         .count());
+
 
         response.setHalfDays(
                 attendances.stream()
-                        .filter(a -> a.getAttendanceStatus() ==
-                                AttendanceStatus.HALF_DAY)
+                        .filter(a ->
+                                a.getAttendanceStatus() == AttendanceStatus.HALF_DAY)
                         .count());
 
-        response.setLeaveDays(
-                attendances.stream()
-                        .filter(a -> a.getAttendanceStatus() ==
-                                AttendanceStatus.LEAVE)
-                        .count());
 
         response.setLateDays(
                 attendances.stream()
-                        .filter(a -> a.getLateMinutes() != null
-                                && a.getLateMinutes() > 0)
+                        .filter(a ->
+                                a.getLateMinutes() != null
+                                        && a.getLateMinutes() > 0)
                         .count());
+
+
 
         response.setTotalWorkingMinutes(
                 attendances.stream()
@@ -219,6 +360,8 @@ public class ReportServiceImpl implements ReportService {
                                         : a.getWorkingMinutes())
                         .sum());
 
+
+
         response.setTotalBreakMinutes(
                 attendances.stream()
                         .mapToInt(a ->
@@ -226,6 +369,8 @@ public class ReportServiceImpl implements ReportService {
                                         ? 0
                                         : a.getTotalBreakMinutes())
                         .sum());
+
+
 
         response.setTotalLateMinutes(
                 attendances.stream()
@@ -235,6 +380,8 @@ public class ReportServiceImpl implements ReportService {
                                         : a.getLateMinutes())
                         .sum());
 
+
+
         response.setTotalEarlyExitMinutes(
                 attendances.stream()
                         .mapToInt(a ->
@@ -242,6 +389,8 @@ public class ReportServiceImpl implements ReportService {
                                         ? 0
                                         : a.getEarlyExitMinutes())
                         .sum());
+
+
 
         response.setTotalOvertimeMinutes(
                 attendances.stream()
@@ -251,266 +400,324 @@ public class ReportServiceImpl implements ReportService {
                                         : a.getOvertimeMinutes())
                         .sum());
 
+
+
         long workingDays =
                 response.getPresentDays()
                         + response.getAbsentDays()
-                        + response.getHalfDays()
-                        + response.getLeaveDays();
+                        + response.getHalfDays();
+
+
 
         double percentage =
                 workingDays == 0
-                        ? 0
-                        : (response.getPresentDays() * 100.0) / workingDays;
+                        ? 0.0
+                        : (response.getPresentDays() * 100.0)
+                          / workingDays;
+
+
 
         response.setAttendancePercentage(percentage);
-    }
-    private void populateLeave(
-            Employee employee,
-            LocalDate fromDate,
-            LocalDate toDate,
-            EmployeeReportResponse response) {
 
-        List<LeaveBalance> balances =
+
+
+        if(filter.getStatus()!=null){
+            response.setStatus(filter.getStatus());
+        }
+
+
+        return response;
+    }
+    private List<Attendance> getFilteredAttendances(
+            Employee employee,
+            AttendanceReportFilter filter) {
+
+        List<Attendance> attendances;
+
+        // Custom Date Filter
+        if (filter.getStartDate() != null && filter.getEndDate() != null) {
+
+            attendances = attendanceRepository
+                    .findByEmployeeAndAttendanceDateBetween(
+                            employee,
+                            filter.getStartDate(),
+                            filter.getEndDate());
+
+        }
+
+        // Month Filter
+        else if (filter.getMonth() != null && filter.getYear() != null) {
+
+            LocalDate startDate = LocalDate.of(
+                    filter.getYear(),
+                    filter.getMonth(),
+                    1);
+
+            LocalDate endDate = startDate.withDayOfMonth(
+                    startDate.lengthOfMonth());
+
+            attendances = attendanceRepository
+                    .findByEmployeeAndAttendanceDateBetween(
+                            employee,
+                            startDate,
+                            endDate);
+
+        }
+
+        // Year Filter
+        else if (filter.getYear() != null) {
+
+            LocalDate startDate = LocalDate.of(
+                    filter.getYear(),
+                    1,
+                    1);
+
+            LocalDate endDate = LocalDate.of(
+                    filter.getYear(),
+                    12,
+                    31);
+
+            attendances = attendanceRepository
+                    .findByEmployeeAndAttendanceDateBetween(
+                            employee,
+                            startDate,
+                            endDate);
+
+        }
+
+        // No Date Filter
+        else {
+
+            attendances = attendanceRepository
+                    .findByEmployee(employee);
+
+        }
+
+        // Attendance Status Filter
+
+        if(filter.getStatus()!=null){
+
+            attendances =
+                    attendances.stream()
+                            .filter(attendance ->
+                                    attendance.getAttendanceStatus()
+                                            .equals(filter.getStatus())
+                            )
+                            .toList();
+
+        }
+
+        return attendances;
+    }
+    private LeaveReportResponse populateLeaveSummary(
+            Employee employee,
+            AttendanceReportFilter filter) {
+
+        List<LeaveBalance> leaveBalances =
                 leaveBalanceRepository.findByEmployeeAndYear(
                         employee,
-                        fromDate.getYear());
+                        filter.getYear() != null
+                                ? filter.getYear()
+                                : LocalDate.now().getYear());
 
+
+        List<LeaveRequest> leaveRequests =
+                getFilteredLeaveRequests(employee, filter);
+
+
+        LeaveReportResponse response = new LeaveReportResponse();
+
+
+        // Leave Balance Summary
         response.setAllocatedLeaves(
-                balances.stream()
+                leaveBalances.stream()
                         .mapToInt(LeaveBalance::getAllocatedLeaves)
                         .sum());
 
+
         response.setUsedLeaves(
-                balances.stream()
+                leaveBalances.stream()
                         .mapToInt(LeaveBalance::getUsedLeaves)
                         .sum());
 
+
         response.setRemainingLeaves(
-                balances.stream()
+                leaveBalances.stream()
                         .mapToInt(LeaveBalance::getRemainingLeaves)
                         .sum());
 
+
         response.setExpiredLeaves(
-                balances.stream()
+                leaveBalances.stream()
                         .mapToInt(LeaveBalance::getExpiredLeaves)
                         .sum());
 
-        List<LeaveRequest> requests =
-                leaveRequestRepository.findEmployeeLeavesBetween(
-                        employee,
-                        fromDate,
-                        toDate);
 
+        // Leave Request Summary
         response.setPendingLeaves(
-                requests.stream()
-                        .filter(r -> r.getStatus() ==
-                                LeaveStatus.PENDING)
+                leaveRequests.stream()
+                        .filter(request ->
+                                request.getStatus() == LeaveStatus.PENDING)
                         .count());
+
 
         response.setApprovedLeaves(
-                requests.stream()
-                        .filter(r ->
-                                r.getStatus() == LeaveStatus.HR_APPROVED)
+                leaveRequests.stream()
+                        .filter(request ->
+                                request.getStatus() == LeaveStatus.HR_APPROVED)
                         .count());
+
 
         response.setRejectedLeaves(
-                requests.stream()
-                        .filter(r ->
-                                r.getStatus() == LeaveStatus.REJECTED)
+                leaveRequests.stream()
+                        .filter(request ->
+                                request.getStatus() == LeaveStatus.REJECTED)
                         .count());
+
 
         response.setCancelledLeaves(
-                requests.stream()
-                        .filter(r ->
-                                r.getStatus() == LeaveStatus.CANCELLED)
+                leaveRequests.stream()
+                        .filter(request ->
+                                request.getStatus() == LeaveStatus.CANCELLED)
                         .count());
+
+
+        return response;
     }
-    private List<EmployeeReportResponse> prepareEmployeeReports(
-            ReportRequest request) {
+    private List<LeaveRequest> getFilteredLeaveRequests(
+            Employee employee,
+            AttendanceReportFilter filter) {
 
-        List<Employee> employees;
+        List<LeaveRequest> leaveRequests;
 
-        if (request.getEmployeeIds() == null ||
-                request.getEmployeeIds().isEmpty()) {
+        // Custom Date Filter
+        if (filter.getStartDate() != null
+                && filter.getEndDate() != null) {
 
-            employees = employeeRepository.findByActiveTrue();
-
-        } else {
-
-            employees = employeeRepository.findAllById(
-                    request.getEmployeeIds());
-
+            leaveRequests =
+                    leaveRequestRepository
+                            .findEmployeeLeavesBetween(
+                                    employee,
+                                    filter.getStartDate(),
+                                    filter.getEndDate());
         }
 
-        return employees.stream()
-                .map(employee -> {
+        // Month Filter
+        else if (filter.getMonth() != null
+                && filter.getYear() != null) {
 
-                    EmployeeReportResponse response =
-                            new EmployeeReportResponse();
+            LocalDate startDate = LocalDate.of(
+                    filter.getYear(),
+                    filter.getMonth(),
+                    1);
 
-                    response.setEmployeeId(employee.getId());
-                    response.setEmployeeCode(employee.getEmployeeCode());
-                    response.setEmployeeName(
-                            employee.getFirstName() + " " +
-                                    employee.getLastName());
+            LocalDate endDate = startDate.withDayOfMonth(
+                    startDate.lengthOfMonth());
 
-                    response.setDepartment(
-                            employee.getDepartment() != null
-                                    ? employee.getDepartment().getDepartmentName()
-                                    : "-");
 
-                    response.setDesignation(
-                            employee.getDesignation() != null
-                                    ? employee.getDesignation().getDesignationName()
-                                    : "-");
-
-                    response.setFromDate(request.getFromDate());
-                    response.setToDate(request.getToDate());
-
-                    switch (request.getReportType()) {
-
-                        case ATTENDANCE ->
-                                populateAttendance(
-                                        employee,
-                                        request.getFromDate(),
-                                        request.getToDate(),
-                                        response);
-
-                        case LEAVE ->
-                                populateLeave(
-                                        employee,
-                                        request.getFromDate(),
-                                        request.getToDate(),
-                                        response);
-
-                        case LEAVE_ATTENDANCE -> {
-
-                            populateAttendance(
+            leaveRequests =
+                    leaveRequestRepository
+                            .findEmployeeLeavesBetween(
                                     employee,
-                                    request.getFromDate(),
-                                    request.getToDate(),
-                                    response);
+                                    startDate,
+                                    endDate);
+        }
 
-                            populateLeave(
+        // Year Filter
+        else if (filter.getYear() != null) {
+
+            LocalDate startDate = LocalDate.of(
+                    filter.getYear(),
+                    1,
+                    1);
+
+            LocalDate endDate = LocalDate.of(
+                    filter.getYear(),
+                    12,
+                    31);
+
+
+            leaveRequests =
+                    leaveRequestRepository
+                            .findEmployeeLeavesBetween(
                                     employee,
-                                    request.getFromDate(),
-                                    request.getToDate(),
-                                    response);
-                        }
-                    }
+                                    startDate,
+                                    endDate);
+        }
 
-                    return response;
+        // No Date Filter
+        else {
 
-                })
-                .toList();
+            leaveRequests =
+                    leaveRequestRepository
+                            .findByEmployee(employee);
+        }
+
+
+        return leaveRequests;
     }
-
-    @Transactional
     @Override
-    public ResponseEntity<ApiResponse> generatePdfReport(
-            ReportRequest request) {
+    public ResponseEntity<Resource> generatePdfReport(
+            AttendanceReportFilter filter) {
 
-        validateRequest(request);
 
         List<EmployeeReportResponse> reports =
-                prepareEmployeeReports(request);
+                getReports(filter)
+                        .getContent();
+
 
         ByteArrayInputStream pdf =
-                PdfReportGenerator.generateEmployeeReport(reports);
+                PdfReportGenerator.generateReport(
+                        reports,
+                        filter.getReportType());
 
-        String fileName =
-                "Employee_Report_" + System.currentTimeMillis() + ".pdf";
 
-        try {
+        ByteArrayResource resource =
+                new ByteArrayResource(
+                        pdf.readAllBytes()
+                );
 
-            Path path = Paths.get("reports", fileName);
 
-            Files.createDirectories(path.getParent());
-
-            Files.copy(
-                    pdf,
-                    path,
-                    StandardCopyOption.REPLACE_EXISTING
-            );
-
-            Report report = Report.builder()
-                    .reportType(request.getReportType())
-                    .reportFormat(ReportFormat.PDF)
-                    .generatedBy(getCurrentEmployee())
-                    .fromDate(request.getFromDate())
-                    .toDate(request.getToDate())
-                    .fileName(fileName)
-                    .filePath(path.toString())
-                    .fileSize(Files.size(path))
-                    .build();
-
-            reportRepository.save(report);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to generate PDF report.", e);
-        }
-
-        return ResponseEntity.ok(
-                new ApiResponse(
-                        true,
-                        "PDF report generated successfully."
-                )
-        );
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=employee-report.pdf")
+                .contentType(
+                        MediaType.APPLICATION_PDF)
+                .contentLength(
+                        resource.contentLength())
+                .body(resource);
     }
-
-    @Transactional
     @Override
-    public ResponseEntity<ApiResponse> generateExcelReport(
-            ReportRequest request) {
+    public ResponseEntity<Resource> generateExcelReport(
+            AttendanceReportFilter filter) {
 
-        validateRequest(request);
 
         List<EmployeeReportResponse> reports =
-                prepareEmployeeReports(request);
+                getReports(filter)
+                        .getContent();
+
 
         ByteArrayInputStream excel =
-                ExcelReportGenerator.generateEmployeeReport(reports);
+                ExcelReportGenerator.generateReport(
+                        reports,
+                        filter.getReportType());
 
-        String fileName =
-                "Employee_Report_" + System.currentTimeMillis() + ".xlsx";
 
-        try {
+        ByteArrayResource resource =
+                new ByteArrayResource(
+                        excel.readAllBytes()
+                );
 
-            Path path = Paths.get("reports", fileName);
 
-            Files.createDirectories(path.getParent());
-
-            Files.copy(
-                    excel,
-                    path,
-                    StandardCopyOption.REPLACE_EXISTING
-            );
-
-            long fileSize = Files.size(path);
-
-            Report report = Report.builder()
-                    .reportType(request.getReportType())
-                    .reportFormat(ReportFormat.EXCEL)
-                    .generatedBy(getCurrentEmployee())
-                    .fromDate(request.getFromDate())
-                    .toDate(request.getToDate())
-                    .fileName(fileName)
-                    .filePath(path.toString())
-                    .fileSize(fileSize)
-                    .build();
-
-            reportRepository.save(report);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to generate Excel report.", e);
-        }
-
-        return ResponseEntity.ok(
-                new ApiResponse(
-                        true,
-                        "Excel report generated successfully."
-                )
-        );
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=employee-report.xlsx")
+                .contentType(
+                        MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(
+                        resource.contentLength())
+                .body(resource);
     }
-
 }

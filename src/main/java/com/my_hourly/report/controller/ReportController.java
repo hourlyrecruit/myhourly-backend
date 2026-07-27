@@ -1,16 +1,13 @@
 package com.my_hourly.report.controller;
 
-import com.my_hourly.report.dto.ApiResponse;
+import com.my_hourly.report.dto.AttendanceReportFilter;
 import com.my_hourly.report.dto.EmployeeReportResponse;
-import com.my_hourly.report.dto.ReportRequest;
 import com.my_hourly.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -19,61 +16,78 @@ public class ReportController {
 
     private final ReportService reportService;
 
-    /**
-     * Get report for a single employee.
-     */
-    @GetMapping("/employee/{employeeId}")
-    @PreAuthorize("hasAnyRole('HR_ADMIN','MANAGER','SUPER_ADMIN')")
-    public ResponseEntity<EmployeeReportResponse> getEmployeeReport(@PathVariable Long employeeId,
-            @RequestParam LocalDate fromDate,
-            @RequestParam LocalDate toDate) {
 
-        return ResponseEntity.ok(
+    /**
+     * Get reports for all employees
+     * Supports:
+     * - department filter
+     * - employee name filter
+     * - employee id filter
+     * - attendance/leave filter
+     * - date/month/year filter
+     */
+    @PostMapping("/employees")
+    public ResponseEntity<Page<EmployeeReportResponse>> getEmployeeReports(
+            @RequestBody AttendanceReportFilter filter) {
+
+
+        Page<EmployeeReportResponse> reports =
+                reportService.getReports(filter);
+
+
+        return ResponseEntity.ok(reports);
+    }
+
+
+
+    /**
+     * Get single employee report
+     */
+    @PostMapping("/employee/{employeeId}")
+    public ResponseEntity<EmployeeReportResponse> getEmployeeReport(
+            @PathVariable Long employeeId,
+            @RequestBody AttendanceReportFilter filter) {
+
+
+        EmployeeReportResponse report =
                 reportService.getEmployeeReport(
                         employeeId,
-                        fromDate,
-                        toDate));
-    }
-    /**
-     * Get all employee reports without generating file.
-     */
-    @GetMapping("/employees")
-    @PreAuthorize("hasAnyRole('HR_ADMIN','MANAGER','SUPER_ADMIN')")
-    public ResponseEntity<List<EmployeeReportResponse>> getAllEmployeeReports(@RequestParam LocalDate fromDate, @RequestParam LocalDate toDate) {
-        return ResponseEntity.ok(
-                reportService.getEmployeeReports(
-                        fromDate,
-                        toDate));
+                        filter
+                );
+
+
+        return ResponseEntity.ok(report);
     }
 
-    /**
-     * Generate PDF report.
-     * Supports:
-     * - All employees
-     * - Selected employees
-     * - Attendance
-     * - Leave
-     * - Attendance + Leave
-     */
-    @PostMapping("/pdf")
-    @PreAuthorize("hasAnyRole('HR_ADMIN','MANAGER','SUPER_ADMIN')")
-    public ResponseEntity<ApiResponse> generatePdfReport(@RequestBody ReportRequest request) {
-        return reportService.generatePdfReport(request);
-    }
+
+
 
     /**
-     * Generate Excel report.
-     * Supports:
-     * - All employees
-     * - Selected employees
-     * - Attendance
-     * - Leave
-     * - Attendance + Leave
+     * Download PDF Report
      */
-    @PostMapping("/excel")
-    @PreAuthorize("hasAnyRole('HR_ADMIN','MANAGER','SUPER_ADMIN')")
-    public ResponseEntity<ApiResponse> generateExcelReport(@RequestBody ReportRequest request) {
-        return reportService.generateExcelReport(request);
+    @PostMapping("/download/pdf")
+    public ResponseEntity<Resource> downloadPdf(
+            @RequestBody AttendanceReportFilter filter) {
+
+
+        return reportService.generatePdfReport(filter);
+
+    }
+
+
+
+
+
+    /**
+     * Download Excel Report
+     */
+    @PostMapping("/download/excel")
+    public ResponseEntity<Resource> downloadExcel(
+            @RequestBody AttendanceReportFilter filter) {
+
+
+        return reportService.generateExcelReport(filter);
+
     }
 
 }

@@ -43,4 +43,14 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByActiveTrue();
 
     List<Employee> findByActiveTrueAndRoleNameInOrderByFirstNameAsc(List<RoleName> manager);
+    Page<Employee> findByActiveTrue(Pageable pageable);
+
+    Page<Employee> findByDepartmentId(
+            Long departmentId,
+            Pageable pageable);
+
+    Page<Employee> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+            String firstName,
+            String lastName,
+            Pageable pageable);
 }

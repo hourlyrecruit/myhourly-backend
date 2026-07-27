@@ -1,30 +1,35 @@
 package com.my_hourly.report.service;
 
-import com.my_hourly.report.dto.ApiResponse;
+import com.my_hourly.report.dto.AttendanceReportFilter;
 import com.my_hourly.report.dto.EmployeeReportResponse;
-import com.my_hourly.report.dto.ReportRequest;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.List;
 
 public interface ReportService {
 
-    // Dashboard/API
+    /**
+     * Returns paginated employee reports based on filters.
+     */
+    Page<EmployeeReportResponse> getReports(
+            AttendanceReportFilter filter);
+
+    /**
+     * Returns a complete report for a single employee.
+     */
     EmployeeReportResponse getEmployeeReport(
             Long employeeId,
-            LocalDate fromDate,
-            LocalDate toDate);
+            AttendanceReportFilter filter);
 
-    List<EmployeeReportResponse> getEmployeeReports(
-            LocalDate fromDate,
-            LocalDate toDate);
+    /**
+     * Generate PDF report.
+     */
+    ResponseEntity<Resource> generatePdfReport(
+            AttendanceReportFilter filter);
 
-    @Transactional
-    ResponseEntity<ApiResponse> generatePdfReport(ReportRequest request);
-
-    @Transactional
-    ResponseEntity<ApiResponse> generateExcelReport(ReportRequest request);
+    /**
+     * Generate Excel report.
+     */
+    ResponseEntity<Resource> generateExcelReport(
+            AttendanceReportFilter filter);
 }
