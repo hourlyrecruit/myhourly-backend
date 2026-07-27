@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/leave-requests")
+@RequestMapping("/api/leave-requests")
 @RequiredArgsConstructor
 @Tag(name="07-Leave Request Controller", description = "Employee can apply for leave")
 public class LeaveRequestController {

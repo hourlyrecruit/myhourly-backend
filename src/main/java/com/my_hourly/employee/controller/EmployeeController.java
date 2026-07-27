@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import com.my_hourly.employee.entity.Employee;
-import org.springframework.http.HttpHeaders;
 
 @RestController
 @RequestMapping("/api/v1/employees")
@@ -63,8 +61,8 @@ public class EmployeeController {
             value = "/profile-photo",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
-    @Operation(summary = "Change Profile Photo: image/jpeg, image/jpg, image/png. Access: EMPLOYEE, MANAGER, HR_ADMIN")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @Operation(summary = "Change Profile Photo: image/jpeg, image/jpg, image/png. Access: EMPLOYEE")
     public ResponseEntity<ApiResponse<EmployeeResponse>> uploadProfilePhoto(
             @RequestParam("file") MultipartFile file) {
 
@@ -80,8 +78,8 @@ public class EmployeeController {
     }
 
     @PutMapping
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
-    @Operation(summary = "Update employee profile. Access: EMPLOYEE, MANAGER, HR_ADMIN")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @Operation(summary = "Update employee profile. Access: EMPLOYEE")
     public ResponseEntity<ApiResponse<EmployeeResponse>> update(
             @Valid @RequestBody UpdateEmployeeByEmployeeRequest request) {
 
@@ -168,8 +166,8 @@ public class EmployeeController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
-    @Operation(summary = "Get Logged in employee's profile. Access: EMPLOYEE, MANAGER, HR_ADMIN")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @Operation(summary = "Get Logged in employee's profile. Access: EMPLOYEE")
     public ResponseEntity<ApiResponse<EmployeeResponse>> getMyProfile() {
 
         return ResponseEntity.ok(
@@ -183,20 +181,20 @@ public class EmployeeController {
 
 
 
-    @GetMapping("/{id}/profile-photo")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<byte[]> getProfilePhoto(@PathVariable Long id) {
-
-        Employee employee = employeeService.getEmployeeEntityById(id);
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(employee.getProfilePhotoType()))
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + employee.getProfilePhotoName() + "\""
-                )
-                .body(employee.getProfilePhoto());
-    }
-
+//    @GetMapping("/{id}/profile-photo")
+//    @PreAuthorize("isAuthenticated()")
+//    public ResponseEntity<byte[]> getProfilePhoto(
+//            @PathVariable Long id) {
+//
+//        Employee employee = employeeService.getEmployee(id);
+//
+//        return ResponseEntity.ok()
+//                .contentType(MediaType.parseMediaType(employee.getProfilePhotoType()))
+//                .header(
+//                        HttpHeaders.CONTENT_DISPOSITION,
+//                        "inline; filename=\"" + employee.getProfilePhotoName() + "\""
+//                )
+//                .body(employee.getProfilePhoto());
+//    }
 
 }

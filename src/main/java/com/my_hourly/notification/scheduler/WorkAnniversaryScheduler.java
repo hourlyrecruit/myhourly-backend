@@ -23,7 +23,7 @@ public class WorkAnniversaryScheduler {
     private final EmployeeRepository employeeRepository;
     private final NotificationService notificationService;
 
-    @Scheduled(cron = "*/15 * * * * *")
+    @Scheduled(cron = "0 5 9 * * *")
     @Transactional
     public void sendWorkAnniversaryNotifications() {
 
