@@ -2,6 +2,7 @@ package com.my_hourly.report.specification;
 
 import com.my_hourly.attendance.entity.Attendance;
 import com.my_hourly.report.dto.request.AttendanceReportRequest;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -18,10 +19,17 @@ public class AttendanceReportSpecification {
 
     /**
      * Build dynamic filter specification based on request parameters
+     * Includes JOIN FETCH to avoid LazyInitializationException
      */
     public static Specification<Attendance> filter(AttendanceReportRequest request) {
 
         return (root, query, cb) -> {
+
+            // Add FETCH joins to eagerly load associations (only for non-count queries)
+            if (query != null && Long.class != query.getResultType()) {
+                var employeeFetch = root.fetch("employee", JoinType.LEFT);
+                employeeFetch.fetch("department", JoinType.LEFT);
+            }
 
             List<Predicate> predicates = new ArrayList<>();
 

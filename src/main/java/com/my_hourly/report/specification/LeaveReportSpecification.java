@@ -2,6 +2,7 @@ package com.my_hourly.report.specification;
 
 import com.my_hourly.leave.entity.LeaveRequest;
 import com.my_hourly.report.dto.request.LeaveReportRequest;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -18,11 +19,19 @@ public class LeaveReportSpecification {
 
     /**
      * Build dynamic filter specification based on request parameters
+     * Includes JOIN FETCH to avoid LazyInitializationException
      */
     public static Specification<LeaveRequest> filter(
             LeaveReportRequest request) {
 
         return (root, query, cb) -> {
+
+            // Add FETCH joins to eagerly load associations (only for non-count queries)
+            if (query != null && Long.class != query.getResultType()) {
+                var employeeFetch = root.fetch("employee", JoinType.LEFT);
+                employeeFetch.fetch("department", JoinType.LEFT);
+                root.fetch("leaveType", JoinType.LEFT);
+            }
 
             List<Predicate> predicates = new ArrayList<>();
 
