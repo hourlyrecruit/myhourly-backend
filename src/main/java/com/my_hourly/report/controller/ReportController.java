@@ -7,11 +7,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/reports")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('HR_ADMIN','MANAGER')")
 public class ReportController {
 
     private final ReportService reportService;
@@ -26,6 +28,7 @@ public class ReportController {
      * - attendance/leave filter
      * - date/month/year filter
      */
+
     @PostMapping("/employees")
     public ResponseEntity<Page<EmployeeReportResponse>> getEmployeeReports(
             @RequestBody AttendanceReportFilter filter) {
