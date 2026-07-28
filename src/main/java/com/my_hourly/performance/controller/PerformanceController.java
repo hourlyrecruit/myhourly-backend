@@ -75,8 +75,8 @@ public class PerformanceController {
                 performanceService.getReviews(request));
     }
 
-    @PostMapping("/summary")
-    @Operation(summary = "Performance Dashboard Summary")
+    @PostMapping("/get-summary")
+    @Operation(summary = "Performance Dashboard Summary, Fill the filter")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<PerformanceSummaryResponse> getSummary(
             @RequestBody PerformanceReviewFilterRequest request) {
