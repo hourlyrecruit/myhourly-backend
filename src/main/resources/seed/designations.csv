@@ -1,7 +1,11 @@
 designation_code,designation_name,department_code,description
-SWE,Software Engineer,ENG,Develops software
-SRE,Site Reliability Engineer,ENG,Manages infrastructure
-HRA,HR Associate,HR,Handles HR duties
-FINA,Financial Analyst,FIN,Handles finance
-MKTA,Marketing Associate,MKT,Handles marketing
-ITA,IT Administrator,IT,Manages internal IT
+SWE,Software Engineer,IT,Develops and maintains software applications
+SSE,Senior Software Engineer,IT,Designs and develops complex software solutions and mentors team members
+TL,Technical Lead,IT,Leads the development team and oversees technical implementation
+DM,Delivery Manager,IT,Manages project delivery client communication and team coordination
+HRA,HR Associate,HR,Handles employee onboarding documentation and HR operations
+HRM,HR Manager,HR,Manages HR policies recruitment employee engagement and payroll coordination
+DA,Data Analyst,DA,Analyzes business data creates reports and dashboards
+SDA,Senior Data Analyst,DA,Leads analytics projects and provides business insights
+UID,UI/UX Designer,UID,Designs user interfaces wireframes prototypes and user experiences
+UIL,Senior UI/UX Designer,UID,Leads UI UX design activities and design system implementation
