@@ -17,7 +17,7 @@ public class NotificationScheduler {
      * Process attendance and leave notifications.
      * Runs every 5 minutes.
      */
-    @Scheduled(cron = "0 */5 * * * *")
+//@Scheduled(cron = "*/15 * * * * *")
     public void processEventNotifications() {
 
         log.info("Processing attendance notifications...");
