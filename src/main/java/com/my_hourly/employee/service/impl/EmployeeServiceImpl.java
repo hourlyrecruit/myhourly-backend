@@ -59,17 +59,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     private String generateEmployeeCode() {
 
         Optional<Employee> lastEmployee =
-                employeeRepository.findTopByOrderByEmployeeCodeDesc();
+                employeeRepository.findEmployeeWithHighestCode();
 
         if (lastEmployee.isEmpty()) {
-            return "EMP0001";
+            return "EMP001";
         }
 
         String lastCode = lastEmployee.get().getEmployeeCode();
 
         int number = Integer.parseInt(lastCode.substring(3));
 
-        return String.format("EMP%04d", number + 1);
+        return String.format("EMP%03d", number + 1);
     }
 
     private Department getDepartment(Long departmentId) {
@@ -174,8 +174,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee reportingManager =
                 getReportingManager(request.getReportingManagerId());
 
-
-
         Employee employee = employeeMapper.toEntity(
                 request,
                 user,
@@ -194,22 +192,16 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (file == null || file.isEmpty()) {
             return employeeMapper.toResponse(savedEmployee);
-        }else {
+        } else {
             return updateProfilePhoto(file);
         }
 
     }
 
-
-
-
     //===================================================================================================
-
 
     @Override
     public EmployeeResponse createUserProfileByAdmin(Long userId, CreateEmployeeRequest request, MultipartFile file) {
-
-       // User user = SecurityUtils.getCurrentUser();
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id :" + userId, ErrorCode.USER_NOT_FOUND));
@@ -221,8 +213,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                     ErrorCode.VALIDATION_FAILED
             );
         }
-
-
 
         validateHierarchy(
                 request.getDepartmentId(),
@@ -241,8 +231,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Employee reportingManager =
                 getReportingManager(request.getReportingManagerId());
-
-
 
         Employee employee = employeeMapper.toEntity(
                 request,
@@ -264,26 +252,21 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (file == null || file.isEmpty()) {
             return employeeMapper.toResponse(savedEmployee);
-        }else {
+        } else {
             return uploadProfilePhoto(file, savedEmployee);
         }
 
     }
-
 
     @Override
     public EmployeeResponse uploadProfilePhoto(
             MultipartFile file, Employee employee
     ) {
 
-        // MultipartFileValidator.validate(file);
-        //Employee employee =  getCurrentEmployee();
-
         validateProfilePhoto(file);
 
         try {
 
-            // Replace old image with new one
             employee.setProfilePhoto(file.getBytes());
             employee.setProfilePhotoName(file.getOriginalFilename());
             employee.setProfilePhotoType(file.getContentType());
@@ -301,7 +284,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeMapper.toResponse(savedEmployee);
     }
 
-
     @Override
     public EmployeeResponse updateUserProfileByAdmin(Long userId, UpdateEmployeeRequest request) {
 
@@ -309,7 +291,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id :" + userId, ErrorCode.USER_NOT_FOUND));
         Employee employee = employeeRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not create for user: " + user.getUsername(), ErrorCode.RESOURCE_NOT_FOUND));
-
 
         validateHierarchy(
                 request.getDepartmentId(),
@@ -340,20 +321,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeMapper.toResponse(updatedEmployee);
     }
 
-
     @Override
     public EmployeeResponse updateProfilePhoto(
             MultipartFile file
     ) {
 
-        // MultipartFileValidator.validate(file);
-        Employee employee =  getCurrentEmployee();
+        Employee employee = getCurrentEmployee();
 
         validateProfilePhoto(file);
 
         try {
 
-            // Replace old image with new one
             employee.setProfilePhoto(file.getBytes());
             employee.setProfilePhotoName(file.getOriginalFilename());
             employee.setProfilePhotoType(file.getContentType());
@@ -371,40 +349,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeMapper.toResponse(savedEmployee);
     }
 
-
-
     //============================================================================================
-
 
     @Override
     public EmployeeResponse update(UpdateEmployeeByEmployeeRequest request) {
 
         Employee employee = getCurrentEmployee();
 
-//        if (!employee.getEmail().equalsIgnoreCase(request.getEmail())
-//                && employeeRepository.existsByEmail(request.getEmail())) {
-//
-//            throw new ValidationException(
-//                    "Email already exists.",
-//                    ErrorCode.VALIDATION_FAILED
-//            );
-//        }
-
-//        validateHierarchy(
-//                request.getDepartmentId(),
-//                request.getDesignationId(),
-//                request.getJobTitleId()
-//        );
-
-//        Department department = getDepartment(request.getDepartmentId());
-//
-//        Designation designation = getDesignation(request.getDesignationId());
-//
-//        JobTitle jobTitle = getJobTitle(request.getJobTitleId());
-
-//        Employee reportingManager =
-//                getReportingManager(request.getReportingManagerId());
-//
         employeeMapper.updateEntityByEmp(
                 employee,
                 request
@@ -498,7 +449,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.save(employee);
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public List<EmployeeDropdownResponse> getDropdown() {
@@ -506,6 +456,16 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.findByActiveTrueOrderByFirstNameAsc()
                 .stream()
                 .map(employeeMapper::toDropdownResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmployeeResponse> getBirthdaysToday() {
+
+        return employeeRepository.findEmployeesWithBirthdayToday()
+                .stream()
+                .map(employeeMapper::toResponse)
                 .toList();
     }
 
@@ -538,10 +498,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                                 ErrorCode.RESOURCE_NOT_FOUND
                         ));
     }
-
-
-
-
 
     private void validateProfilePhoto(MultipartFile file) {
 
@@ -579,4 +535,3 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
 }
-

@@ -181,8 +181,6 @@ public class EmployeeController {
         );
     }
 
-
-
     @GetMapping("/{id}/profile-photo")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> getProfilePhoto(@PathVariable Long id) {
@@ -198,5 +196,19 @@ public class EmployeeController {
                 .body(employee.getProfilePhoto());
     }
 
+    @GetMapping("/birthdays-today")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get employees with birthday today. Access: all authenticated roles",
+            description = "Returns a lightweight list of employees whose date of birth matches today's month and day.")
+    public ResponseEntity<ApiResponse<List<EmployeeResponse>>> getBirthdaysToday() {
+
+        return ResponseEntity.ok(
+                ApiResponse.<List<EmployeeResponse>>builder()
+                        .success(true)
+                        .message("Today's birthdays fetched successfully.")
+                        .data(employeeService.getBirthdaysToday())
+                        .build()
+        );
+    }
 
 }
