@@ -55,6 +55,7 @@ public class AttendanceSeeder {
                 continue;
             }
 
+
             Attendance attendance = Attendance.builder()
                     .employee(employee)
                     .attendanceDate(attendanceDate)

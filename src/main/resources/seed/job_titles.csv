@@ -1,10 +1,9 @@
 job_title,designation_code,description
-Junior Software Engineer,SWE,Entry level developer
-Senior Software Engineer,SWE,Senior developer
-Principal Engineer,SWE,Principal developer
-SRE I,SRE,Entry level SRE
-SRE II,SRE,Mid level SRE
-HR Manager,HRA,HR Manager
-Finance Lead,FINA,Finance Lead
-Marketing Director,MKTA,Marketing Director
-IT Manager,ITA,IT Manager
+JAVA,SWE,Develops and maintains Java based applications and backend services
+DATA ANALYST,DA,Analyzes business data creates reports and provides actionable insights
+PYTHON,SWE,Develops Python applications automation scripts and backend services
+FRONT END,SWE,Builds responsive user interfaces using modern frontend technologies
+UI/UX Designer,UID,Designs user interfaces wireframes prototypes and user experiences
+HR,HRA,Manages recruitment onboarding employee engagement and HR operations
+Technical Lead,TL,Manage the technical team and projects
+Junior Software Engineer,SWE,Junior Software Engineer

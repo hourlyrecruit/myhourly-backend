@@ -1,8 +1,48 @@
 employee_code,first_name,last_name,email,phone_number,gender,dob,doj,employment_type,department_code,designation_code,job_title,user_username
-EMP001,John,Doe,john.doe@example.com,1234567890,MALE,1990-01-01,2022-01-01,FULL_TIME,ENG,SWE,Junior Software Engineer,john.doe
-EMP002,Jane,Smith,jane.smith@example.com,2345678901,FEMALE,1985-05-15,2020-03-10,FULL_TIME,ENG,SWE,Senior Software Engineer,jane.smith
-EMP003,Alice,Jones,alice.jones@example.com,3456789012,FEMALE,1992-10-20,2023-06-01,FULL_TIME,FIN,FINA,Finance Lead,alice.jones
-EMP004,Bob,Brown,bob.brown@example.com,4567890123,MALE,1988-12-12,2021-11-15,FULL_TIME,HR,HRA,HR Manager,bob.brown
-EMP005,Charlie,Davis,charlie.davis@example.com,5678901234,MALE,1995-08-30,2024-02-01,CONTRACT,IT,ITA,IT Manager,charlie.davis
-EMP006,Anagha,Pothi,manager@myhourly.com,8975327582,FEMALE,1990-03-12,2020-01-05,FULL_TIME,IT,SWE,IT Manager,anagha
-EMP007,Harshitha,P,hr@myhourly.com,8975327682,FEMALE,1993-05-18,2021-02-07,FULL_TIME,HR,HRA,HR Manager,harshitha
+EMP001,Nachiketh,S,nachikeths1147@gmail.com,7411379828,MALE,2001-07-14,2026-04-07,FULL_TIME,IT,SWE,Junior Software Engineer,nachikeths1147
+EMP002,Preethi,P J,preethipj23@gmail.com,9353739605,FEMALE,2001-04-26,2026-05-18,FULL_TIME,IT,SWE,Junior Software Engineer,preethipj23
+EMP003,Vivek,M,vivekmprivate1908@gmail.com,6363366294,MALE,2004-08-19,2026-07-13,FULL_TIME,IT,SWE,Junior Software Engineer,vivekmprivate1908
+EMP004,Vikas,Balurgi,vikasbalurgi58@gmail.com,9886341287,MALE,2002-01-10,2026-03-15,FULL_TIME,IT,SWE,Junior Software Engineer,vikasbalurgi58
+EMP005,Yashodhar,G K,yashodhargk7@gmail.com,9876543210,MALE,2001-11-20,2026-05-10,FULL_TIME,IT,SWE,Junior Software Engineer,yashodhargk7
+EMP006,Aditya,Mahadimani,mahadimaniaditya@gmail.com,9012345678,MALE,2000-09-12,2026-06-20,FULL_TIME,IT,SWE,Junior Software Engineer,mahadimaniaditya
+EMP007,Anaiza,Anjum,anaizaanjum912@gmail.com,9871234567,FEMALE,2002-03-22,2026-04-18,FULL_TIME,IT,SWE,Junior Software Engineer,anaizaanjum912
+EMP008,Prince,Sharma,princekrsharma993@gmail.com,8765432109,MALE,2001-05-19,2026-07-01,FULL_TIME,IT,SWE,Junior Software Engineer,princekrsharma993
+EMP009,Ashutosh,Ark,ashutoshark08@gmail.com,9988776655,MALE,2000-12-15,2026-05-25,FULL_TIME,IT,SWE,Junior Software Engineer,ashutoshark08
+EMP010,Jitendra,Prajapati,jitendra.pra40@gmail.com,9123456789,MALE,2002-02-08,2026-06-10,FULL_TIME,IT,SWE,Junior Software Engineer,jitendra.pra40
+EMP011,Gangadhar,Hosamani,gangadharhosamani050@gmail.com,9988112233,MALE,2001-08-14,2026-03-30,FULL_TIME,IT,SWE,Junior Software Engineer,gangadharhosamani050
+EMP012,Nitin,Gowda,gowdanitin111@gmail.com,9876501234,MALE,2001-09-05,2026-04-22,FULL_TIME,IT,SWE,Junior Software Engineer,gowdanitin111
+EMP013,Likhitha,Suresh,likhithasuresh0508@gmail.com,9345612789,FEMALE,2002-01-28,2026-07-08,FULL_TIME,IT,SWE,Junior Software Engineer,likhithasuresh0508
+EMP014,Mohammad,Fayiz,mohammadfayiz028@gmail.com,9873412567,MALE,2000-04-10,2026-05-14,FULL_TIME,IT,SWE,Junior Software Engineer,mohammadfayiz028
+EMP015,Harsha,Naik,harshanaik8197@gmail.com,9988223344,FEMALE,2002-10-16,2026-06-17,FULL_TIME,IT,SWE,Junior Software Engineer,harshanaik8197
+EMP016,Rashmi,Angolkar,angolkarrashmi@gmail.com,9900112233,FEMALE,2001-06-21,2026-07-11,FULL_TIME,IT,SWE,Junior Software Engineer,angolkarrashmi
+EMP017,Majid,Abdul,majidkabdul83@gmail.com,9888776655,MALE,1999-11-30,2026-05-29,FULL_TIME,IT,SWE,Junior Software Engineer,majidkabdul83
+EMP018,Geeta,Mirashi,mirashigeeta03@gmail.com,9345678901,FEMALE,2001-12-09,2026-06-02,FULL_TIME,IT,SWE,Junior Software Engineer,mirashigeeta03
+EMP019,Ashok,C,cashok6345@gmail.com,9877776666,MALE,2000-07-25,2026-03-18,FULL_TIME,IT,SWE,Junior Software Engineer,cashok6345
+EMP020,Suryakala,R,suryakala232001@gmail.com,9988991122,FEMALE,2001-03-23,2026-04-28,FULL_TIME,IT,SWE,Junior Software Engineer,suryakala232001
+EMP021,Sachin,Gond,sachingond0880@gmail.com,9876123456,MALE,2002-05-11,2026-06-21,FULL_TIME,IT,SWE,Junior Software Engineer,sachingond0880
+EMP022,Lalsab,Huddar,lalsabhuddar913@gmail.com,9988332211,MALE,2001-08-01,2026-05-08,FULL_TIME,IT,SWE,Junior Software Engineer,lalsabhuddar913
+EMP023,Shiva,Kumar,kumarkshiva6@gmail.com,9876541200,MALE,2000-01-18,2026-04-12,FULL_TIME,IT,SWE,Junior Software Engineer,kumarkshiva6
+EMP024,Prajwal,R,prajwalr210502@gmail.com,9988007766,MALE,2002-05-02,2026-07-03,FULL_TIME,IT,SWE,Junior Software Engineer,prajwalr210502
+EMP025,Yashwanth,K,yashwanth1573458@gmail.com,9876543211,MALE,2002-07-15,2026-04-10,FULL_TIME,IT,SWE,Junior Software Engineer,yashwanth1573458
+EMP026,Hussain,P D,pdmhussain032001@gmail.com,9988771100,MALE,2001-03-20,2026-05-05,FULL_TIME,IT,SWE,Junior Software Engineer,pdmhussain032001
+EMP027,Amruthesh,K L,amrutheshkl04@gmail.com,9876001122,MALE,2001-04-12,2026-06-15,FULL_TIME,IT,SWE,Junior Software Engineer,amrutheshkl04
+EMP028,Mohith,Reddy,reddymohith2001@gmail.com,9988114455,MALE,2001-10-08,2026-07-02,FULL_TIME,IT,SWE,Junior Software Engineer,reddymohith2001
+EMP029,Naveen,G,naveeng1915@gmail.com,9345671234,MALE,2000-09-28,2026-05-19,FULL_TIME,IT,SWE,Junior Software Engineer,naveeng1915
+EMP030,James,J,jamesjckm1011@gmail.com,9877112233,MALE,2001-01-11,2026-04-16,FULL_TIME,IT,SWE,Junior Software Engineer,jamesjckm1011
+EMP031,Afreen,Ahmed,afreenahmed1412@gmail.com,9988225566,FEMALE,2002-02-14,2026-06-12,FULL_TIME,IT,SWE,Junior Software Engineer,afreenahmed1412
+EMP032,Sushmita,Sudhakar,sushmitasudhakar30@gmail.com,9877445566,FEMALE,2001-08-30,2026-05-27,FULL_TIME,IT,SWE,Junior Software Engineer,sushmitasudhakar30
+EMP033,Ranjana,Moharee,mohareeranjana@gmail.com,9988772233,FEMALE,2000-06-09,2026-04-22,FULL_TIME,IT,SWE,Junior Software Engineer,mohareeranjana
+EMP034,Veeksha,Macheri,veekshamacheri@gmail.com,9345612345,FEMALE,2002-11-18,2026-07-09,FULL_TIME,IT,SWE,Junior Software Engineer,veekshamacheri
+EMP035,Ranganatha,G,ranganathag75@gmail.com,9876129988,MALE,1999-12-02,2026-05-30,FULL_TIME,IT,SWE,Junior Software Engineer,ranganathag75
+EMP036,Vinay,Kumar,vinaykumar30@gmail.com,9988002233,MALE,2001-05-13,2026-06-06,FULL_TIME,IT,SWE,Junior Software Engineer,vinaykumar30
+EMP037,Thejaswini,H M,hmthejaswini3@gmail.com,9345670011,FEMALE,2002-09-17,2026-04-29,FULL_TIME,IT,SWE,Junior Software Engineer,hmthejaswini3
+EMP038,Sachin,H K,hksachin08@gmail.com,9876554433,MALE,2001-03-06,2026-05-13,FULL_TIME,IT,SWE,Junior Software Engineer,hksachin08
+EMP039,Shubham,Anand,anandshubham567@gmail.com,9988773344,MALE,2000-07-24,2026-06-18,FULL_TIME,IT,SWE,Junior Software Engineer,anandshubham567
+EMP040,Akash,Kulkarni,kulkarniakash4@gmail.com,9345609876,MALE,2002-04-27,2026-07-05,FULL_TIME,IT,SWE,Junior Software Engineer,kulkarniakash4
+EMP041,Spandana,R,spandana56321@gmail.com,9876110099,FEMALE,2001-10-09,2026-05-24,FULL_TIME,IT,SWE,Junior Software Engineer,spandana56321
+EMP042,Shambhavi,Ghorpade,ghorpadeshambhavi@gmail.com,9988123344,FEMALE,2002-08-01,2026-06-26,FULL_TIME,IT,SWE,Junior Software Engineer,ghorpadeshambhavi
+EMP043,Harshitha,Suresh,harshithasureshg@gmail.com,9345622110,FEMALE,2001-09-14,2026-04-20,FULL_TIME,IT,SWE,Junior Software Engineer,harshithasureshg
+EMP044,Shashank,G,shashankg885@gmail.com,9876443322,MALE,2000-11-22,2026-05-28,FULL_TIME,IT,SWE,Junior Software Engineer,shashankg885
+EMP045,Goutham,B R,gouthambraj66@gmail.com,9988336677,MALE,2001-12-18,2026-06-09,FULL_TIME,IT,SWE,Junior Software Engineer,gouthambraj66
+EMP046,Harshitha,P,harshitha@gmail.com,9345677788,FEMALE,2002-01-07,2026-07-01,FULL_TIME,IT,SWE,Junior Software Engineer,harshitha
+EMP047,Anagha,Pothi,manager@myhourly.com,8975327582,FEMALE,1990-03-12,2020-01-05,FULL_TIME,IT,TL,Technical Lead,anagha

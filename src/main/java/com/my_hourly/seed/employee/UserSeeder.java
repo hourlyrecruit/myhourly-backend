@@ -25,11 +25,6 @@ public class UserSeeder {
 
     @Transactional
     public void seed() {
-        if (userRepository.count() > 1) { // HR, Manager, Super Admin created in DataInitializer
-            log.info("Users already seeded. Skipping...");
-            return;
-        }
-
         List<Map<String, String>> records = csvReader.readCsv("seed/users.csv");
         for (Map<String, String> record : records) {
             String username = record.get("username");
@@ -47,4 +42,3 @@ public class UserSeeder {
         }
     }
 }
-

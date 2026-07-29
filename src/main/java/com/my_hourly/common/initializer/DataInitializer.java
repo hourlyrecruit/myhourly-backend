@@ -46,14 +46,14 @@ import org.springframework.core.annotation.Order;
 @RequiredArgsConstructor
 public class DataInitializer implements ApplicationRunner {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final DepartmentRepository departmentRepository;
-    private final DesignationRepository designationRepository;
-    private final JobTitleRepository jobTitleRepository;
-    private final DepartmentService departmentService;
-    private final DesignationService designationService;
-    private final JobTitleService jobTitleService;
+//    private final UserRepository userRepository;
+//    private final PasswordEncoder passwordEncoder;
+//    private final DepartmentRepository departmentRepository;
+//    private final DesignationRepository designationRepository;
+//    private final JobTitleRepository jobTitleRepository;
+//    private final DepartmentService departmentService;
+//    private final DesignationService designationService;
+//    private final JobTitleService jobTitleService;
     private final CompanySettingsRepository companySettingsRepository;
     private final AttendanceSettingsRepository attendanceSettingsRepository;
     private final LeaveSettingsRepository leaveSettingsRepository;
@@ -72,14 +72,14 @@ public class DataInitializer implements ApplicationRunner {
 //    @Value("${app.hr.password}")
 //    private String hrPassword;
 //====================================================
-    @Value("${app.super-admin.username}")
-    private String superAdminUsername;
-
+//    @Value("${app.super-admin.username}")
+//    private String superAdminUsername;
+//
     @Value("${app.super-admin.email}")
     private String superAdminEmail;
-
-    @Value("${app.super-admin.password}")
-    private String superAdminPassword;
+//
+//    @Value("${app.super-admin.password}")
+//    private String superAdminPassword;
 
 //    @Value("${app.manager.username}")
 //    private String managerUsername;
@@ -124,7 +124,7 @@ public class DataInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        seedSuperAdmin();
+       // seedSuperAdmin();
 //        seedManager();
 //        seedHr();
        // seedEmployees();
@@ -177,25 +177,25 @@ public class DataInitializer implements ApplicationRunner {
 //    }
 
 
-    private void seedSuperAdmin() {
-
-        if (userRepository.existsByUsername(superAdminUsername)) {
-            log.info("[DataInitializer] SUPER_ADMIN '{}' already exists — skipping.", superAdminUsername);
-            return;
-        }
-
-        User superAdmin = User.builder()
-                //.username(superAdminProperties.getUsername();)
-                .username(superAdminUsername)
-                .email(superAdminEmail)
-                .password(passwordEncoder.encode(superAdminPassword))
-                .userStatus(UserStatus.ACTIVE)
-                .role(RoleName.SUPER_ADMIN)
-                .build();
-
-        userRepository.save(superAdmin);
-
-    }
+//    private void seedSuperAdmin() {
+//
+//        if (userRepository.existsByUsername(superAdminUsername)) {
+//            log.info("[DataInitializer] SUPER_ADMIN '{}' already exists — skipping.", superAdminUsername);
+//            return;
+//        }
+//
+//        User superAdmin = User.builder()
+//                //.username(superAdminProperties.getUsername();)
+//                .username(superAdminUsername)
+//                .email(superAdminEmail)
+//                .password(passwordEncoder.encode(superAdminPassword))
+//                .userStatus(UserStatus.ACTIVE)
+//                .role(RoleName.SUPER_ADMIN)
+//                .build();
+//
+//        userRepository.save(superAdmin);
+//
+//    }
 
 
 //    private void seedDepartmentDesignationJobTitle(){

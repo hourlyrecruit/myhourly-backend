@@ -1,6 +1,5 @@
 department_code,department_name,description
-ENG,Engineering,Engineering Department
-HR,Human Resources,HR Department
-FIN,Finance,Finance Department
-MKT,Marketing,Marketing Department
-IT,Information Technology,IT Department
+IT,IT,Responsible for software development application support and technical operations
+HR,HR,Handles recruitment employee relations attendance payroll and HR operations
+DA,DA,Responsible for data analysis reporting business insights and dashboard development
+UID,UI/UX Design,Responsible for user interface and user experience design
