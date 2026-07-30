@@ -25,7 +25,7 @@ public class SalaryTemplateController {
     private final SalaryTemplateService salaryTemplateService;
 
     @PostMapping
-    @Operation(summary = "Create Salary Template")
+    @Operation(summary = "Create Salary Template, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
     public ResponseEntity<SalaryTemplateResponse> create(
             @Valid @RequestBody CreateSalaryTemplateRequest request) {
@@ -35,7 +35,7 @@ public class SalaryTemplateController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update Salary Template")
+    @Operation(summary = "Update Salary Template, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
     public ResponseEntity<SalaryTemplateResponse> update(
             @PathVariable Long id,
@@ -46,7 +46,7 @@ public class SalaryTemplateController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get Salary Template By Id")
+    @Operation(summary = "Get Salary Template By Id, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
     public ResponseEntity<SalaryTemplateResponse> getById(
             @PathVariable Long id) {
@@ -56,7 +56,7 @@ public class SalaryTemplateController {
     }
 
     @GetMapping("/employee-type/{employeeType}")
-    @Operation(summary = "Get Salary Template By Employee Type")
+    @Operation(summary = "Get Salary Template By Employee Type, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
     public ResponseEntity<SalaryTemplateResponse> getByEmployeeType(
             @PathVariable EmploymentType employeeType) {
@@ -66,7 +66,7 @@ public class SalaryTemplateController {
     }
 
     @GetMapping
-    @Operation(summary = "Get All Salary Templates")
+    @Operation(summary = "Get All Salary Templates, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
     public ResponseEntity<List<SalaryTemplateResponse>> getAll() {
 
@@ -75,7 +75,7 @@ public class SalaryTemplateController {
     }
 
     @GetMapping("/active")
-    @Operation(summary = "Get All Active Salary Templates")
+    @Operation(summary = "Get All Active Salary Templates, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
     public ResponseEntity<List<SalaryTemplateResponse>> getAllActive() {
 
@@ -84,7 +84,7 @@ public class SalaryTemplateController {
     }
 
     @PatchMapping("/{id}/activate")
-    @Operation(summary = "Activate Salary Template")
+    @Operation(summary = "Activate Salary Template, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
     public ResponseEntity<Void> activate(
             @PathVariable Long id) {
@@ -95,7 +95,7 @@ public class SalaryTemplateController {
     }
 
     @PatchMapping("/{id}/deactivate")
-    @Operation(summary = "Deactivate Salary Template")
+    @Operation(summary = "Deactivate Salary Template, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
     public ResponseEntity<Void> deactivate(
             @PathVariable Long id) {

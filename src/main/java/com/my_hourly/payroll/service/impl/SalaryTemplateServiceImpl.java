@@ -164,7 +164,7 @@ public class SalaryTemplateServiceImpl implements SalaryTemplateService {
         if (salaryTemplateRepository.existsByEmployeeType(employeeType)) {
             throw new DuplicateResourceException(
                     "Salary Template already exists for Employee Type: "
-                            + employeeType, ErrorCode.RESOURCE_NOT_FOUND);
+                            + employeeType, ErrorCode.SALARY_TEMPLATE_ALREADY_PRESENT);
         }
     }
 

@@ -22,7 +22,7 @@ public class EmployeePaymentDetailsController {
     private final EmployeePaymentDetailsService paymentDetailsService;
 
     @PostMapping
-    @Operation(summary = "Create Employee Payment Details")
+    @Operation(summary = "Create Employee Payment Details, 'HR_ADMIN', 'SUPER_ADMIN'")
     @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<EmployeePaymentDetailsResponse> create(
             @Valid @RequestBody CreateEmployeePaymentDetailsRequest request) {
@@ -32,7 +32,7 @@ public class EmployeePaymentDetailsController {
     }
 
     @PutMapping("/{employeeId}")
-    @Operation(summary = "Update Employee Payment Details")
+    @Operation(summary = "Update Employee Payment Details, 'HR_ADMIN', 'SUPER_ADMIN'")
     @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<EmployeePaymentDetailsResponse> update(
             @PathVariable Long employeeId,
@@ -43,7 +43,7 @@ public class EmployeePaymentDetailsController {
     }
 
     @GetMapping("/{employeeId}")
-    @Operation(summary = "Get Employee Payment Details")
+    @Operation(summary = "Get Employee Payment Details, 'EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<EmployeePaymentDetailsResponse> getByEmployeeId(
             @PathVariable Long employeeId) {
@@ -53,7 +53,7 @@ public class EmployeePaymentDetailsController {
     }
 
     @DeleteMapping("/{employeeId}")
-    @Operation(summary = "Delete Employee Payment Details")
+    @Operation(summary = "Delete Employee Payment Details, 'SUPER_ADMIN'")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Void> delete(
             @PathVariable Long employeeId) {

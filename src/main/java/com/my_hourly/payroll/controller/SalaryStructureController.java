@@ -23,7 +23,7 @@ public class SalaryStructureController {
     private final SalaryStructureService salaryStructureService;
 
     @PostMapping
-    @Operation(summary = "Create Initial Salary Structure")
+    @Operation(summary = "Create Initial Salary Structure, 'SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<SalaryStructureResponse> create(
             @Valid @RequestBody CreateSalaryStructureRequest request) {
@@ -33,7 +33,7 @@ public class SalaryStructureController {
     }
 
     @PostMapping("/revision")
-    @Operation(summary = "Create Salary Revision")
+    @Operation(summary = "Create Salary Revision, This marks the prior structure INACTIVE and sets its effectiveTo to one day before the new effectiveFrom., 'SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<SalaryStructureResponse> createRevision(
             @Valid @RequestBody CreateSalaryStructureRequest request) {
@@ -43,7 +43,7 @@ public class SalaryStructureController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get Salary Structure By Id")
+    @Operation(summary = "Get Salary Structure By Id, 'SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<SalaryStructureResponse> getById(
             @PathVariable Long id) {
@@ -53,7 +53,7 @@ public class SalaryStructureController {
     }
 
     @GetMapping("/employee/{employeeId}/active")
-    @Operation(summary = "Get Active Salary Structure")
+    @Operation(summary = "Get Active Salary Structure, 'SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<SalaryStructureResponse> getActiveSalary(
             @PathVariable Long employeeId) {
@@ -63,7 +63,7 @@ public class SalaryStructureController {
     }
 
     @GetMapping("/employee/{employeeId}/history")
-    @Operation(summary = "Get Salary History")
+    @Operation(summary = "Get Salary History, 'SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<List<SalaryStructureResponse>> getHistory(
             @PathVariable Long employeeId) {
@@ -73,7 +73,7 @@ public class SalaryStructureController {
     }
 
     @GetMapping("/active")
-    @Operation(summary = "Get All Active Salary Structures")
+    @Operation(summary = "Get All Active Salary Structures, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<List<SalaryStructureResponse>> getAllActive() {
 

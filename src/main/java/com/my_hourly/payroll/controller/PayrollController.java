@@ -104,15 +104,15 @@ public class PayrollController {
        Lifecycle Transitions
        ===================================================== */
 
-    @PutMapping("/{id}/draft")
+    @PutMapping("/{payrollId}/draft")
     @Operation(summary = "Update a DRAFT payroll before approval, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> updateDraft(
-            @PathVariable Long id,
+            @PathVariable Long payrollId,
             @Valid @RequestBody UpdateDraftPayrollRequest request) {
 
         return ResponseEntity.ok(
-                payrollService.updateDraft(id, request));
+                payrollService.updateDraft(payrollId, request));
     }
 
     @PatchMapping("/{id}/approve")

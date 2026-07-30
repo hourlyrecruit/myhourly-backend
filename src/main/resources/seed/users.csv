@@ -1,5 +1,5 @@
 username,email,password,role,user_status
 superadmin,superadmin@myhourly.com,Admin@1234,SUPER_ADMIN,ACTIVE
 anagha,manager@myhourly.com,Manager@1234,MANAGER,ACTIVE
-harshitha,Harshitha@gmail.com,password123,HR_ADMIN,ACTIVE
+harshitha,Harshitha@gmail.com,Hr@1234,HR_ADMIN,ACTIVE
 
