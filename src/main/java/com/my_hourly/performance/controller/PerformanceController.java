@@ -5,6 +5,9 @@ import com.my_hourly.performance.dto.request.PerformanceReviewFilterRequest;
 import com.my_hourly.performance.dto.request.UpdatePerformanceReviewRequest;
 import com.my_hourly.performance.dto.response.PerformanceReviewResponse;
 import com.my_hourly.performance.dto.response.PerformanceSummaryResponse;
+import com.my_hourly.performance.enums.PerformanceRating;
+import com.my_hourly.performance.enums.ReviewStatus;
+import com.my_hourly.performance.enums.ReviewType;
 import com.my_hourly.performance.service.PerformanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -67,27 +70,93 @@ public class PerformanceController {
 
     @PostMapping("/search")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
-    @Operation(summary = "Search Performance Reviews")
+    @Operation(summary = "Search Performance Reviews, 'EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'")
     public ResponseEntity<Page<PerformanceReviewResponse>> searchReviews(
-            @RequestBody PerformanceReviewFilterRequest request) {
+            @RequestParam(required = false) Long employeeId,
+            @RequestParam(required = false) Long reviewerId,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) ReviewType reviewType,
+            @RequestParam(required = false) Integer reviewMonth,
+            @RequestParam(required = false) Integer reviewYear,
+            @RequestParam(required = false) PerformanceRating rating,
+            @RequestParam(required = false) ReviewStatus status,
+            @RequestParam(required = false) Double minScore,
+            @RequestParam(required = false) Double maxScore,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(defaultValue = "reviewDate") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
+
+        PerformanceReviewFilterRequest request = buildFilterRequest(
+                employeeId, reviewerId, departmentId, reviewType, reviewMonth,
+                reviewYear, rating, status, minScore, maxScore, page, size,
+                sortBy, sortDir);
 
         return ResponseEntity.ok(
                 performanceService.getReviews(request));
     }
 
     @PostMapping("/get-summary")
-    @Operation(summary = "Performance Dashboard Summary, Fill the filter")
+    @Operation(summary = "Performance Dashboard Summary, Fill the filter, 'EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<PerformanceSummaryResponse> getSummary(
-            @RequestBody PerformanceReviewFilterRequest request) {
+            @RequestParam(required = false) Long employeeId,
+            @RequestParam(required = false) Long reviewerId,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) ReviewType reviewType,
+            @RequestParam(required = false) Integer reviewMonth,
+            @RequestParam(required = false) Integer reviewYear,
+            @RequestParam(required = false) PerformanceRating rating,
+            @RequestParam(required = false) ReviewStatus status,
+            @RequestParam(required = false) Double minScore,
+            @RequestParam(required = false) Double maxScore) {
+
+        PerformanceReviewFilterRequest request = buildFilterRequest(
+                employeeId, reviewerId, departmentId, reviewType, reviewMonth,
+                reviewYear, rating, status, minScore, maxScore, 0, 10,
+                "reviewDate", "DESC");
 
         return ResponseEntity.ok(
                 performanceService.getSummary(request));
     }
 
+    private PerformanceReviewFilterRequest buildFilterRequest(
+            Long employeeId,
+            Long reviewerId,
+            Long departmentId,
+            ReviewType reviewType,
+            Integer reviewMonth,
+            Integer reviewYear,
+            PerformanceRating rating,
+            ReviewStatus status,
+            Double minScore,
+            Double maxScore,
+            Integer page,
+            Integer size,
+            String sortBy,
+            String sortDir) {
+
+        return PerformanceReviewFilterRequest.builder()
+                .employeeId(employeeId)
+                .reviewerId(reviewerId)
+                .departmentId(departmentId)
+                .reviewType(reviewType)
+                .reviewMonth(reviewMonth)
+                .reviewYear(reviewYear)
+                .rating(rating)
+                .status(status)
+                .minScore(minScore)
+                .maxScore(maxScore)
+                .page(page)
+                .size(size)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+    }
+
     @DeleteMapping("/{reviewId}")
     @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
-    @Operation(summary = "Delete Performance Review")
+    @Operation(summary = "Delete Performance Review, 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteReview(
             @PathVariable Long reviewId) {
 
