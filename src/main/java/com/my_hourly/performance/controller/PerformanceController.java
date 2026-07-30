@@ -10,6 +10,7 @@ import com.my_hourly.performance.enums.ReviewStatus;
 import com.my_hourly.performance.enums.ReviewType;
 import com.my_hourly.performance.service.PerformanceService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -72,15 +73,35 @@ public class PerformanceController {
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Search Performance Reviews, 'EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'")
     public ResponseEntity<Page<PerformanceReviewResponse>> searchReviews(
+            @Parameter(description = "Employee ID - 1,2,3...")
             @RequestParam(required = false) Long employeeId,
+            @Parameter(description = "Reviewer ID - Manager who is reviewing the employee")
             @RequestParam(required = false) Long reviewerId,
+            @Parameter(description = "Department ID - 1, 2, 3...")
             @RequestParam(required = false) Long departmentId,
+            @Parameter(description = "Review Type -   MONTHLY or YEARLY")
             @RequestParam(required = false) ReviewType reviewType,
+            @Parameter(description = "Review Month - Valid values: 1-12")
             @RequestParam(required = false) Integer reviewMonth,
+            @Parameter(description = "Review Year - Valid values: 20__ - 20__")
             @RequestParam(required = false) Integer reviewYear,
+            @Parameter(description = "Rating | Valid values: EXCELLENT, VERY_GOOD, GOOD, AVERAGE, NEEDS_IMPROVEMENT")
             @RequestParam(required = false) PerformanceRating rating,
+            @Parameter(description = "Review Status - Valid values: DRAFT, COMPLETED")
             @RequestParam(required = false) ReviewStatus status,
+            @Parameter(description = "Rating | Valid score " +
+                    "EXCELLENT -> 90–100 " +
+                    "VERY_GOOD -> 80–89.99 " +
+                    "GOOD -> 70–79.99 " +
+                    "AVERAGE -> 60–69.99 " +
+                    "NEEDS_IMPROVEMENT below 60 ")
             @RequestParam(required = false) Double minScore,
+            @Parameter(description = "Rating | Valid score " +
+                    "EXCELLENT -> 90–100 " +
+                    "VERY_GOOD -> 80–89.99 " +
+                    "GOOD -> 70–79.99 " +
+                    "AVERAGE -> 60–69.99 " +
+                    "NEEDS_IMPROVEMENT below 60 ")
             @RequestParam(required = false) Double maxScore,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
@@ -100,15 +121,37 @@ public class PerformanceController {
     @Operation(summary = "Performance Dashboard Summary, Fill the filter, 'EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<PerformanceSummaryResponse> getSummary(
+            @Parameter(description = "Employee ID - 1, 2, 3...")
             @RequestParam(required = false) Long employeeId,
+            @Parameter(description = "Reviewer ID - Manager who is reviewing the employee")
             @RequestParam(required = false) Long reviewerId,
+            @Parameter
+(description = "Department ID - 1, 2, 3...")
             @RequestParam(required = false) Long departmentId,
+            @Parameter(description = "Review Type -   MONTHLY or YEARLY")
             @RequestParam(required = false) ReviewType reviewType,
+            @Parameter(description = "Review Month - Valid values: 1-12")
             @RequestParam(required = false) Integer reviewMonth,
+            @Parameter(description = "Review Year - Valid values: 20__ - 20__")
             @RequestParam(required = false) Integer reviewYear,
+            @Parameter
+(description = "Rating | Valid values: EXCELLENT, VERY_GOOD, GOOD, AVERAGE, NEEDS_IMPROVEMENT")
             @RequestParam(required = false) PerformanceRating rating,
+            @Parameter(description = "Review Status - Valid values: DRAFT, COMPLETED")
             @RequestParam(required = false) ReviewStatus status,
+            @Parameter(description = "Rating | Valid score " +
+                    "EXCELLENT -> 90–100 " +
+                    "VERY_GOOD -> 80–89.99 " +
+                    "GOOD -> 70–79.99 " +
+                    "AVERAGE -> 60–69.99 " +
+                    "NEEDS_IMPROVEMENT below 60 ")
             @RequestParam(required = false) Double minScore,
+            @Parameter(description = "Rating | Valid score " +
+                    "EXCELLENT -> 90–100 " +
+                    "VERY_GOOD -> 80–89.99 " +
+                    "GOOD -> 70–79.99 " +
+                    "AVERAGE -> 60–69.99 " +
+                    "NEEDS_IMPROVEMENT below 60 ")
             @RequestParam(required = false) Double maxScore) {
 
         PerformanceReviewFilterRequest request = buildFilterRequest(
