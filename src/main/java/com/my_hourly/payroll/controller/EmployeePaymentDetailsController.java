@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/payroll/payment-details")
-@Tag(name = "Employee Payment Details", description = "Employee Payment Details Management APIs")
+@Tag(name = "17-Employee Payment Details", description = "Employee Payment Details Management APIs")
 public class EmployeePaymentDetailsController {
 
     private final EmployeePaymentDetailsService paymentDetailsService;

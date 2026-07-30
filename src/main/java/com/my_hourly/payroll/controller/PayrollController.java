@@ -24,7 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/payroll")
 @RequiredArgsConstructor
-@Tag(name = "Payroll", description = "Payroll Management APIs")
+@Tag(name = "20-Payroll", description = "Payroll Management APIs")
 public class PayrollController {
 
     private final PayrollService payrollService;

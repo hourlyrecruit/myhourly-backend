@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/payroll/salary-structures")
 @RequiredArgsConstructor
-@Tag(name = "Salary Structure", description = "Salary Structure Management APIs")
+@Tag(name = "19-Salary Structure", description = "Salary Structure Management APIs")
 public class SalaryStructureController {
 
     private final SalaryStructureService salaryStructureService;

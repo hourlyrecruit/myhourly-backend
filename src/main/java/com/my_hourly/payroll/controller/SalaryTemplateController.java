@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/payroll/salary-templates")
 @RequiredArgsConstructor
-@Tag(name = "Salary Template", description = "Salary Template Management APIs")
+@Tag(name = "18-Salary Template", description = "Salary Template Management APIs")
 public class SalaryTemplateController {
 
     private final SalaryTemplateService salaryTemplateService;
