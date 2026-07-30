@@ -27,19 +27,19 @@ public class SeedRunner implements ApplicationRunner {
     private final DepartmentSeeder departmentSeeder;
     private final DesignationSeeder designationSeeder;
     private final JobTitleSeeder jobTitleSeeder;
-    private final HolidaySeeder holidaySeeder;
+//    private final HolidaySeeder holidaySeeder;
 
     // Users and Employees
     private final UserSeeder userSeeder;
-    private final EmployeeSeeder employeeSeeder;
+   // private final EmployeeSeeder employeeSeeder;
 
     // Leave
     private final LeaveTypeSeeder leaveTypeSeeder;
-    private final LeaveBalanceSeeder leaveBalanceSeeder;
-    private final LeaveRequestSeeder leaveRequestSeeder;
+//    private final LeaveBalanceSeeder leaveBalanceSeeder;
+//    private final LeaveRequestSeeder leaveRequestSeeder;
 
     // Attendance
-    private final AttendanceSeeder attendanceSeeder;
+//    private final AttendanceSeeder attendanceSeeder;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -49,19 +49,19 @@ public class SeedRunner implements ApplicationRunner {
         departmentSeeder.seed();
         designationSeeder.seed();
         jobTitleSeeder.seed();
-        holidaySeeder.seed();
+        //holidaySeeder.seed();
 
         // Step 2: Users and Employees (depends on master data)
         userSeeder.seed();
-        employeeSeeder.seed();
+     //   employeeSeeder.seed();
 
         // Step 3: Leave types and balances (depends on employees)
         leaveTypeSeeder.seed();
-        leaveBalanceSeeder.seed();
-        leaveRequestSeeder.seed();
+//        leaveBalanceSeeder.seed();
+//        leaveRequestSeeder.seed();
 
         // Step 4: Attendance (depends on employees)
-        attendanceSeeder.seed();
+//        attendanceSeeder.seed();
 
         log.info("========== [SeedRunner] Data seeding complete ==========");
     }

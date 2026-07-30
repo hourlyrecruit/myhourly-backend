@@ -72,7 +72,7 @@ public class CalendarController {
         return ResponseEntity.ok(
                 ApiResponse.<CalendarResponse>builder()
                         .success(true)
-                        .message("Holidays fetched successfully.")
+                        .message("Events fetched successfully.")
                         .timestamp(LocalDateTime.now())
                         .data(response)
                         .build()
