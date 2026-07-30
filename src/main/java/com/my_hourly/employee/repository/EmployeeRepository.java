@@ -24,12 +24,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     Optional<Employee> findTopByOrderByEmployeeCodeDesc();
 
-    // Numeric-safe lookup for the highest employee code (e.g. EMP001, EMP002 ... EMP999, EMP1000)
-    @Query(value = "SELECT * FROM employees " +
-            "ORDER BY CAST(SUBSTRING(employee_code, 4) AS UNSIGNED) DESC " +
-            "LIMIT 1", nativeQuery = true)
-    Optional<Employee> findEmployeeWithHighestCode();
-
     List<Employee> findByActiveTrueOrderByFirstNameAsc();
 
     Optional<Employee> findByUser(User user);
@@ -46,9 +40,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     List<Employee> findByUserIdIn(List<Long> userIds);
 
-    @Query("SELECT e FROM Employee e WHERE e.active = true " +
-            "AND MONTH(e.dateOfBirth) = MONTH(CURRENT_DATE) " +
-            "AND DAY(e.dateOfBirth) = DAY(CURRENT_DATE)")
-    List<Employee> findEmployeesWithBirthdayToday();
 
 }

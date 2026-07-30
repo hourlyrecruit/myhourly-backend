@@ -7,7 +7,6 @@ import com.my_hourly.employee.api.request.UpdateEmployeeByEmployeeRequest;
 import com.my_hourly.employee.api.request.UpdateEmployeeRequest;
 import com.my_hourly.employee.api.response.EmployeeDropdownResponse;
 import com.my_hourly.employee.api.response.EmployeeResponse;
-import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,7 +14,6 @@ import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -54,7 +52,7 @@ public class EmployeeController {
 //        return ResponseEntity.status(HttpStatus.CREATED)
 //                .body(ApiResponse.<EmployeeResponse>builder()
 //                        .success(true)
-//                        .message("Employee created successfgit ully.")
+//                        .message("Employee created successfully.")
 //                        .data(response)
 //                        .build());
 //    }
@@ -181,34 +179,22 @@ public class EmployeeController {
         );
     }
 
-    @GetMapping("/{id}/profile-photo")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<byte[]> getProfilePhoto(@PathVariable Long id) {
 
-        Employee employee = employeeService.getEmployeeEntityById(id);
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(employee.getProfilePhotoType()))
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + employee.getProfilePhotoName() + "\""
-                )
-                .body(employee.getProfilePhoto());
-    }
-
-    @GetMapping("/birthdays-today")
-    @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Get employees with birthday today. Access: all authenticated roles",
-            description = "Returns a lightweight list of employees whose date of birth matches today's month and day.")
-    public ResponseEntity<ApiResponse<List<EmployeeResponse>>> getBirthdaysToday() {
-
-        return ResponseEntity.ok(
-                ApiResponse.<List<EmployeeResponse>>builder()
-                        .success(true)
-                        .message("Today's birthdays fetched successfully.")
-                        .data(employeeService.getBirthdaysToday())
-                        .build()
-        );
-    }
+//    @GetMapping("/{id}/profile-photo")
+//    @PreAuthorize("isAuthenticated()")
+//    public ResponseEntity<byte[]> getProfilePhoto(
+//            @PathVariable Long id) {
+//
+//        Employee employee = employeeService.getEmployee(id);
+//
+//        return ResponseEntity.ok()
+//                .contentType(MediaType.parseMediaType(employee.getProfilePhotoType()))
+//                .header(
+//                        HttpHeaders.CONTENT_DISPOSITION,
+//                        "inline; filename=\"" + employee.getProfilePhotoName() + "\""
+//                )
+//                .body(employee.getProfilePhoto());
+//    }
 
 }
