@@ -236,6 +236,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
+    @Transactional
     public BreakEndResponse endBreak() {
 
         log.info("END BREAK API CALLED");
