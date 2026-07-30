@@ -57,7 +57,7 @@ public class AttendanceMapper {
 
         return BreakEndResponse.builder()
                 .id(attendanceBreak.getId())
-                .breakEndTime(DateTimeUtil.formatTime(attendanceBreak.getBreakStartTime()))
+                .breakEndTime(DateTimeUtil.formatTime(attendanceBreak.getBreakEndTime()))
                 .date(attendanceBreak.getAttendance().getAttendanceDate())
                 .breakMinutes(attendanceBreak.getBreakMinutes())
                 .employeeStatus(attendanceBreak.getAttendance().getEmployeeStatus())
