@@ -249,13 +249,13 @@ public class AttendanceServiceImpl implements AttendanceService {
         AttendanceBreak attendanceBreak =
                 getActiveBreak(attendance);
 
-        if (attendanceBreak == null) {
-
-            throw new ValidationException(
-                    "No active break found.",
-                    ErrorCode.VALIDATION_FAILED
-            );
-        }
+//        if (attendanceBreak == null) {
+//
+//            throw new ValidationException(
+//                    "No active break found.",
+//                    ErrorCode.VALIDATION_FAILED
+//            );
+//        }
 
         LocalDateTime breakEnd = LocalDateTime.now();
 

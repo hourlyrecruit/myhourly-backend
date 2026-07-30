@@ -35,7 +35,7 @@ public class PayrollController {
        ===================================================== */
 
     @PostMapping("/generate")
-    @Operation(summary = "Generate Payroll for one or more employees")
+    @Operation(summary = "Generate Payroll for one or more employees, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollSummaryResponse> generatePayroll(
             @Valid @RequestBody CreatePayrollRequest request) {
@@ -49,7 +49,7 @@ public class PayrollController {
        ===================================================== */
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get Payroll by ID")
+    @Operation(summary = "Get Payroll by ID, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> getById(
             @PathVariable Long id) {
@@ -59,7 +59,7 @@ public class PayrollController {
     }
 
     @GetMapping("/number/{payrollNumber}")
-    @Operation(summary = "Get Payroll by Payroll Number")
+    @Operation(summary = "Get Payroll by Payroll Number, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> getByPayrollNumber(
             @PathVariable String payrollNumber) {
@@ -69,7 +69,7 @@ public class PayrollController {
     }
 
     @GetMapping("/employee/{employeeId}")
-    @Operation(summary = "Employee Payroll History (all versions, all months)")
+    @Operation(summary = "Employee Payroll History (all versions, all months), 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN','EMPLOYEE')")
     public ResponseEntity<List<PayrollResponse>> getByEmployee(
             @PathVariable Long employeeId) {
@@ -79,7 +79,7 @@ public class PayrollController {
     }
 
     @GetMapping("/month")
-    @Operation(summary = "Get all Payrolls for a given month")
+    @Operation(summary = "Get all Payrolls for a given month, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<List<PayrollResponse>> getByMonth(
             @RequestParam
@@ -91,7 +91,7 @@ public class PayrollController {
     }
 
     @GetMapping("/status")
-    @Operation(summary = "Get Payrolls by Status")
+    @Operation(summary = "Get Payrolls by Status, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<List<PayrollResponse>> getByStatus(
             @RequestParam PayrollStatus status) {
@@ -105,7 +105,7 @@ public class PayrollController {
        ===================================================== */
 
     @PutMapping("/{id}/draft")
-    @Operation(summary = "Update a DRAFT payroll before approval")
+    @Operation(summary = "Update a DRAFT payroll before approval, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> updateDraft(
             @PathVariable Long id,
@@ -116,7 +116,7 @@ public class PayrollController {
     }
 
     @PatchMapping("/{id}/approve")
-    @Operation(summary = "Approve a GENERATED payroll")
+    @Operation(summary = "Approve a GENERATED payroll, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> approve(
             @PathVariable Long id) {
@@ -126,7 +126,7 @@ public class PayrollController {
     }
 
     @PatchMapping("/{id}/pay")
-    @Operation(summary = "Mark an APPROVED payroll as PAID")
+    @Operation(summary = "Mark an APPROVED payroll as PAID, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> markAsPaid(
             @PathVariable Long id,
@@ -137,7 +137,7 @@ public class PayrollController {
     }
 
     @PatchMapping("/{id}/cancel")
-    @Operation(summary = "Cancel a DRAFT or GENERATED payroll")
+    @Operation(summary = "Cancel a DRAFT or GENERATED payroll, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> cancel(
             @PathVariable Long id) {
@@ -147,7 +147,7 @@ public class PayrollController {
     }
 
     @PostMapping("/{id}/regenerate")
-    @Operation(summary = "Supersede the current payroll and create a new version")
+    @Operation(summary = "Supersede the current payroll and create a new version, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> regenerate(
             @PathVariable Long id) {
@@ -161,7 +161,7 @@ public class PayrollController {
        ===================================================== */
 
     @GetMapping("/{id}/payslip")
-    @Operation(summary = "Download Payslip PDF (APPROVED or PAID only)")
+    @Operation(summary = "Download Payslip PDF (APPROVED or PAID only), 'EMPLOYEE','HR_ADMIN','SUPER_ADMIN'")
     @PreAuthorize("hasAnyRole('EMPLOYEE','HR_ADMIN','PAYROLL_ADMIN','SUPER_ADMIN')")
     public ResponseEntity<byte[]> downloadPayslip(
             @PathVariable Long id) {
