@@ -19,6 +19,7 @@ import com.my_hourly.leave.entity.LeaveRequest;
 import com.my_hourly.settings.attendance.entity.AttendanceSettings;
 import com.my_hourly.settings.attendance.service.AttendanceSettingsService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AttendanceServiceImpl implements AttendanceService {
     private static final java.util.Set<String> ALLOWED_SORT_FIELDS = java.util.Set.of(
             "id", "attendanceDate", "checkInTime", "checkOutTime", "workingMinutes",
@@ -236,6 +238,8 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     public BreakEndResponse endBreak() {
 
+        log.info("END BREAK API CALLED");
+        log.info("Time = {}", LocalDateTime.now());
         Employee employee = employeeService.getCurrentEmployee();
 
         Attendance attendance = getTodayAttendance(employee);
@@ -243,13 +247,12 @@ public class AttendanceServiceImpl implements AttendanceService {
 //        if(attendance.getAttendanceStatus()==AttendanceStatus.LEAVE){
 //            throw new ValidationException("You are on leave today", ErrorCode.ON_LEAVE);
 //        }
+        log.info("Before validation");
+        attendanceValidationService.validateBreakEnd(attendance);
+        log.info("After validation");
+        AttendanceBreak attendanceBreak = getActiveBreak(attendance);
+        log.info("Attendance Break = {}", attendanceBreak);
 
-
-
-        AttendanceBreak attendanceBreak =
-                getActiveBreak(attendance);
-//
-//        attendanceValidationService.validateBreakEnd(attendance);
 
 //        if (attendanceBreak == null) {
 //
