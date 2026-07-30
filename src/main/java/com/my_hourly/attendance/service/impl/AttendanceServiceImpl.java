@@ -244,10 +244,12 @@ public class AttendanceServiceImpl implements AttendanceService {
 //            throw new ValidationException("You are on leave today", ErrorCode.ON_LEAVE);
 //        }
 
-        attendanceValidationService.validateBreakEnd(attendance);
+
 
         AttendanceBreak attendanceBreak =
                 getActiveBreak(attendance);
+//
+//        attendanceValidationService.validateBreakEnd(attendance);
 
 //        if (attendanceBreak == null) {
 //
