@@ -248,12 +248,14 @@ public class PayrollServiceImpl implements PayrollService {
 
         if (request.getRemarks() != null) payroll.setRemarks(request.getRemarks());
 
+        payroll.setStatus(PayrollStatus.GENERATED);
+
         payrollRepository.save(payroll);
 
         payrollHistoryService.saveHistory(
                 payroll,
-                PayrollHistoryAction.UPDATED,
-                "Draft payroll updated.");
+                PayrollHistoryAction.GENERATED,
+                "Draft payroll finalized and generated.");
 
         return mapToResponse(payroll);
     }

@@ -105,7 +105,7 @@ public class PayrollController {
        ===================================================== */
 
     @PutMapping("/{payrollId}/draft")
-    @Operation(summary = "Update a DRAFT payroll before approval, 'SUPER_ADMIN','HR_ADMIN'")
+    @Operation(summary = "Finalize a DRAFT payroll as GENERATED before approval, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> updateDraft(
             @PathVariable Long payrollId,
