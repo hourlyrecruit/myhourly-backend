@@ -40,15 +40,14 @@ public interface EmployeeService {
 
     List<EmployeeDropdownResponse> getDropdown();
 
+    List<EmployeeResponse> getBirthdaysToday();
+
     EmployeeResponse getMyProfile();
 
     Employee getCurrentEmployee();
 
-
     EmployeeResponse uploadProfilePhoto(MultipartFile file, Employee employee);
 
     EmployeeResponse updateProfilePhoto(MultipartFile file);
-
-
 
 }
