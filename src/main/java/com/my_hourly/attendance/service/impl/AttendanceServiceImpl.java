@@ -246,10 +246,10 @@ public class AttendanceServiceImpl implements AttendanceService {
 
 
 
+        attendanceValidationService.validateBreakEnd(attendance);
+
         AttendanceBreak attendanceBreak =
                 getActiveBreak(attendance);
-//
-//        attendanceValidationService.validateBreakEnd(attendance);
 
 //        if (attendanceBreak == null) {
 //
