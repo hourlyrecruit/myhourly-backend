@@ -22,6 +22,10 @@ public interface AuthenticationService {
             ChangePasswordRequest request
     );
 
+    void forgotPassword(ForgotPasswordRequest request);
+
+    void resetPassword(ResetPasswordRequest request);
+
     UserProfileResponse getCurrentUser();
 }
 

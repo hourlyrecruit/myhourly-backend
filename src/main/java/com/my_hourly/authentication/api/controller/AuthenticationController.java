@@ -2,8 +2,10 @@ package com.my_hourly.authentication.api.controller;
 
 import com.my_hourly.authentication.api.request.ChangePasswordRequest;
 import com.my_hourly.authentication.api.request.EmployeeRegisterRequest;
+import com.my_hourly.authentication.api.request.ForgotPasswordRequest;
 import com.my_hourly.authentication.api.request.LoginRequest;
 import com.my_hourly.authentication.api.request.RefreshTokenRequest;
+import com.my_hourly.authentication.api.request.ResetPasswordRequest;
 import com.my_hourly.authentication.api.response.LoginResponse;
 import com.my_hourly.authentication.api.response.RefreshTokenResponse;
 import com.my_hourly.authentication.api.response.RegisterResponse;
@@ -120,6 +122,32 @@ public class AuthenticationController {
                         .message("Password changed successfully.")
                         .build()
         );
+    }
+
+    @Operation(summary = "Request a password reset link. Access: Public")
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request
+    ) {
+        authenticationService.forgotPassword(request);
+
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .success(true)
+                .message("If an account exists for this email, a password reset link has been sent.")
+                .build());
+    }
+
+    @Operation(summary = "Reset a password using a password reset token. Access: Public")
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request
+    ) {
+        authenticationService.resetPassword(request);
+
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .success(true)
+                .message("Password reset successfully.")
+                .build());
     }
 
     @Operation(summary = "Get Current logged in User Details: employeeId, username, email, userStatus, role, permissions. Access: Authenticated Users")

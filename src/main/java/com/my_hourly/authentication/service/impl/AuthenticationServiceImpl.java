@@ -4,6 +4,8 @@ import com.my_hourly.authentication.api.request.ChangePasswordRequest;
 import com.my_hourly.authentication.api.request.EmployeeRegisterRequest;
 import com.my_hourly.authentication.api.request.LoginRequest;
 import com.my_hourly.authentication.api.request.RefreshTokenRequest;
+import com.my_hourly.authentication.api.request.ForgotPasswordRequest;
+import com.my_hourly.authentication.api.request.ResetPasswordRequest;
 import com.my_hourly.authentication.api.response.LoginResponse;
 import com.my_hourly.authentication.api.response.RefreshTokenResponse;
 import com.my_hourly.authentication.api.response.RegisterResponse;
@@ -15,10 +17,13 @@ import com.my_hourly.authentication.repository.RefreshTokenRepository;
 import com.my_hourly.authentication.repository.RevokedTokenRepository;
 import com.my_hourly.authentication.entity.RevokedToken;
 import com.my_hourly.authentication.repository.UserRepository;
+import com.my_hourly.authentication.repository.PasswordResetTokenRepository;
 import com.my_hourly.authentication.service.AuthenticationService;
+import com.my_hourly.authentication.service.PasswordResetEmailService;
 import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.authentication.entity.RoleName;
 import com.my_hourly.common.exception.DuplicateResourceException;
+import com.my_hourly.common.exception.BadRequestException;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.common.exception.UnauthorizedException;
 import com.my_hourly.common.exception.ValidationException;
@@ -36,6 +41,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.*;
 
 @Service
@@ -54,6 +63,11 @@ public class AuthenticationServiceImpl
     private final AuthenticationMapper authenticationMapper;
     private final UserMapper userMapper;
     private final JwtProperties jwtProperties;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final PasswordResetEmailService passwordResetEmailService;
+
+    @org.springframework.beans.factory.annotation.Value("${app.password-reset.token-expiration-minutes}")
+    private long passwordResetTokenExpirationMinutes;
 
 
     private void authenticate(LoginRequest request) {
@@ -433,6 +447,62 @@ public class AuthenticationServiceImpl
 
         refreshTokenRepository.saveAll(tokens);
 
+    }
+
+    @Override
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        Optional<User> user = userRepository.findByEmail(request.getEmail());
+        if (user.isEmpty()) {
+            return;
+        }
+
+        String token = generatePasswordResetToken();
+        passwordResetTokenRepository.deleteByUser(user.get());
+        passwordResetTokenRepository.save(PasswordResetToken.builder()
+                .user(user.get())
+                .tokenHash(hashToken(token))
+                .expiresAt(LocalDateTime.now().plusMinutes(passwordResetTokenExpirationMinutes))
+                .build());
+
+        passwordResetEmailService.sendResetLink(user.get().getEmail(), token);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenHash(hashToken(request.getToken()))
+                .orElseThrow(this::invalidPasswordResetToken);
+
+        if (resetToken.getUsedAt() != null || !resetToken.getExpiresAt().isAfter(LocalDateTime.now())) {
+            throw invalidPasswordResetToken();
+        }
+
+        User user = resetToken.getUser();
+        updatePassword(user, request.getPassword());
+        revokeAllRefreshTokens(user);
+        resetToken.setUsedAt(LocalDateTime.now());
+        passwordResetTokenRepository.save(resetToken);
+    }
+
+    private String generatePasswordResetToken() {
+        byte[] tokenBytes = new byte[32];
+        new SecureRandom().nextBytes(tokenBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
+    }
+
+    private String hashToken(String token) {
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 is not available.", exception);
+        }
+    }
+
+    private BadRequestException invalidPasswordResetToken() {
+        return new BadRequestException("Password reset token is invalid or has expired.",
+                ErrorCode.INVALID_PASSWORD_RESET_TOKEN);
     }
 
     @Override
