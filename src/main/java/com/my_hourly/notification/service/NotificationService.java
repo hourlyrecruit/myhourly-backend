@@ -3,6 +3,9 @@ package com.my_hourly.notification.service;
 import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.notification.api.request.AnnouncementRequest;
 import com.my_hourly.notification.api.response.NotificationResponse;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface NotificationService {
 
@@ -35,7 +38,8 @@ public interface NotificationService {
      * HR Announcement.
      */
     void createAnnouncement(
-            AnnouncementRequest request
+            AnnouncementRequest request,
+            List<MultipartFile> attachments
     );
 
     /**

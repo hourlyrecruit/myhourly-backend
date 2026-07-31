@@ -9,8 +9,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -81,12 +85,13 @@ public class NotificationController {
 
     @Operation(summary = "Create an announcement. Access: 'MANAGER','HR_ADMIN','SUPER_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','MANAGER')")
-    @PostMapping("/announcement")
+    @PostMapping(value = "/announcement", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Void> createAnnouncement(
-            @Valid @RequestBody AnnouncementRequest request
+            @Valid @RequestPart("request") AnnouncementRequest request,
+            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
 
-        notificationService.createAnnouncement(request);
+        notificationService.createAnnouncement(request, attachments);
 
         return ApiResponse.<Void>builder()
                 .success(true)

@@ -12,13 +12,16 @@ import com.my_hourly.holiday.repository.HolidayRepository;
 import com.my_hourly.attendance.repository.AttendanceRepository;
 import com.my_hourly.leave.entity.LeaveRequest;
 import com.my_hourly.leave.repository.LeaveRequestRepository;
+import com.my_hourly.common.service.FileStorageService;
 import com.my_hourly.notification.api.request.AnnouncementRequest;
 import com.my_hourly.notification.api.response.NotificationResponse;
+import com.my_hourly.notification.entity.Announcement;
 import com.my_hourly.notification.entity.Notification;
 import com.my_hourly.notification.enums.NotificationPriority;
 import com.my_hourly.notification.enums.NotificationType;
 import com.my_hourly.notification.enums.ReferenceType;
 import com.my_hourly.notification.mapper.NotificationMapper;
+import com.my_hourly.notification.repository.AnnouncementRepository;
 import com.my_hourly.notification.repository.NotificationRepository;
 import com.my_hourly.notification.service.NotificationService;
 import jakarta.transaction.Transactional;
@@ -27,10 +30,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +56,9 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final HolidayRepository holidayRepository;
     private final EmployeeService employeeService;
+
+    private final AnnouncementRepository announcementRepository;
+    private final FileStorageService fileStorageService;
 
     private Employee getCurrentEmployee() {
         Employee currentEmployee = employeeService.getCurrentEmployee();
@@ -74,11 +82,30 @@ public class NotificationServiceImpl implements NotificationService {
                         pageable
                 );
 
+        Set<Long> announcementIds = notifications.getContent().stream()
+                .filter(n -> ReferenceType.ANNOUNCEMENT.equals(n.getReferenceType()) && n.getReferenceId() != null && n.getReferenceId() > 0)
+                .map(Notification::getReferenceId)
+                .collect(Collectors.toSet());
+
+        Map<Long, List<String>> announcementAttachmentMap = new HashMap<>();
+        if (!announcementIds.isEmpty()) {
+            List<Announcement> announcements = announcementRepository.findAllById(announcementIds);
+            for (Announcement announcement : announcements) {
+                announcementAttachmentMap.put(announcement.getId(), announcement.getAttachmentUrls());
+            }
+        }
+
         return PageResponse.<NotificationResponse>builder()
                 .content(
                         notifications.getContent()
                                 .stream()
-                                .map(notificationMapper::toResponse)
+                                .map(notification -> {
+                                    List<String> urls = null;
+                                    if (ReferenceType.ANNOUNCEMENT.equals(notification.getReferenceType()) && notification.getReferenceId() != null) {
+                                        urls = announcementAttachmentMap.getOrDefault(notification.getReferenceId(), Collections.emptyList());
+                                    }
+                                    return notificationMapper.toResponse(notification, urls);
+                                })
                                 .toList()
                 )
                 .page(notifications.getNumber())
@@ -171,7 +198,25 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void createAnnouncement(AnnouncementRequest request) {
+    public void createAnnouncement(AnnouncementRequest request, List<MultipartFile> attachments) {
+
+        List<String> attachmentUrls = new ArrayList<>();
+        if (attachments != null && !attachments.isEmpty()) {
+            for (MultipartFile file : attachments) {
+                if (file != null && !file.isEmpty()) {
+                    String fileUrl = fileStorageService.upload(file, "announcements");
+                    attachmentUrls.add(fileUrl);
+                }
+            }
+        }
+
+        Announcement announcement = Announcement.builder()
+                .title(request.getTitle())
+                .message(request.getMessage())
+                .attachmentUrls(attachmentUrls)
+                .build();
+
+        announcement = announcementRepository.save(announcement);
 
         List<Employee> employees = employeeRepository.findAll();
 
@@ -184,7 +229,7 @@ public class NotificationServiceImpl implements NotificationService {
                     NotificationType.ANNOUNCEMENT,
                     NotificationPriority.HIGH,
                     ReferenceType.ANNOUNCEMENT,
-                    0L
+                    announcement.getId()
             );
         }
     }

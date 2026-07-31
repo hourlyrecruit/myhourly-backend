@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -25,6 +26,8 @@ public class NotificationResponse {
     private ReferenceType referenceType;
 
     private Long referenceId;
+
+    private List<String> attachmentUrls;
 
     private Boolean isRead;
 
