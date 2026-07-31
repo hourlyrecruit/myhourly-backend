@@ -6,6 +6,8 @@ import com.my_hourly.notification.api.request.AnnouncementRequest;
 import com.my_hourly.notification.api.response.NotificationResponse;
 import com.my_hourly.notification.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -86,6 +88,15 @@ public class NotificationController {
     @Operation(summary = "Create an announcement. Access: 'MANAGER','HR_ADMIN','SUPER_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','MANAGER')")
     @PostMapping(value = "/announcement", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                    encoding = {
+                            @Encoding(name = "request", contentType = MediaType.APPLICATION_JSON_VALUE),
+                            @Encoding(name = "attachments", contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+                    }
+            )
+    )
     public ApiResponse<Void> createAnnouncement(
             @Valid @RequestPart("request") AnnouncementRequest request,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
