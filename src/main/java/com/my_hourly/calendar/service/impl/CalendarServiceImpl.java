@@ -330,7 +330,7 @@ public class CalendarServiceImpl implements CalendarService {
         } else {
 
             leaveRequests = leaveRequestRepository.findCalendarLeaves(
-                    LeaveStatus.HR_APPROVED,
+                    LeaveStatus.APPROVED,
                     startDate,
                     endDate
             );

@@ -114,9 +114,9 @@ public class LeaveValidationServiceImpl
                         .existsByEmployeeAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                                 employee,
                                 List.of(
-                                        LeaveStatus.PENDING,
-                                        LeaveStatus.MANAGER_APPROVED,
-                                        LeaveStatus.HR_APPROVED
+                                        LeaveStatus.PENDING
+//                                        LeaveStatus.MANAGER_APPROVED,
+//                                        LeaveStatus.HR_APPROVED
                                 ),
                                 endDate,
                                 startDate);

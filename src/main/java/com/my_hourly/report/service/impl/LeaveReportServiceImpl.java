@@ -185,13 +185,13 @@ public class LeaveReportServiceImpl implements LeaveReportService {
                 leaves,
                 LeaveStatus.PENDING);
 
-        long managerApproved = countByStatus(
-                leaves,
-                LeaveStatus.MANAGER_APPROVED);
+//        long managerApproved = countByStatus(
+//                leaves,
+//                LeaveStatus.MANAGER_APPROVED);
 
-        long hrApproved = countByStatus(
-                leaves,
-                LeaveStatus.HR_APPROVED);
+//        long hrApproved = countByStatus(
+//                leaves,
+//                LeaveStatus.HR_APPROVED);
 
         long approved = countByStatus(
                 leaves,
@@ -221,7 +221,7 @@ public class LeaveReportServiceImpl implements LeaveReportService {
         return LeaveSummaryResponse.builder()
                 .totalLeaves(total)
                 //.approvedLeaves(managerApproved + hrApproved)
-                .approvedLeaves(managerApproved)
+                .approvedLeaves(approved)
                 .pendingLeaves(pending)
                 .rejectedLeaves(rejected)
                 .cancelledLeaves(cancelled)

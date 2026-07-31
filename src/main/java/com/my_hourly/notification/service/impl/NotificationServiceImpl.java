@@ -306,21 +306,21 @@ public class NotificationServiceImpl implements NotificationService {
                         "Your leave request has been approved by your manager."
                 );
 
-                case MANAGER_APPROVED -> createLeaveNotification(
-                        leaveRequest,
-                        NotificationType.LEAVE_MANAGER_APPROVED,
-                        NotificationPriority.MEDIUM,
-                        "Leave Approved",
-                        "Your leave request has been approved by your manager."
-                );
+//                case MANAGER_APPROVED -> createLeaveNotification(
+//                        leaveRequest,
+//                        NotificationType.LEAVE_MANAGER_APPROVED,
+//                        NotificationPriority.MEDIUM,
+//                        "Leave Approved",
+//                        "Your leave request has been approved by your manager."
+//                );
 
-                case HR_APPROVED -> createLeaveNotification(
-                        leaveRequest,
-                        NotificationType.LEAVE_HR_APPROVED,
-                        NotificationPriority.MEDIUM,
-                        "Leave Approved",
-                        "Your leave request has been approved by HR."
-                );
+//                case HR_APPROVED -> createLeaveNotification(
+//                        leaveRequest,
+//                        NotificationType.LEAVE_HR_APPROVED,
+//                        NotificationPriority.MEDIUM,
+//                        "Leave Approved",
+//                        "Your leave request has been approved by HR."
+//                );
 
                 case REJECTED -> createLeaveNotification(
                         leaveRequest,

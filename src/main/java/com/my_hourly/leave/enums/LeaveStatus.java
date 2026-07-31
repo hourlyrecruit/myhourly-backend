@@ -4,12 +4,14 @@ public enum LeaveStatus {
 
     PENDING,
 
-    MANAGER_APPROVED,
+//    MANAGER_APPROVED,
 
-    HR_APPROVED,
+//    HR_APPROVED,
 
     REJECTED,
 
-    APPROVED, CANCELLED
+    APPROVED,
+
+    CANCELLED
 
 }

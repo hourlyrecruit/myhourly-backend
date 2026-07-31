@@ -286,7 +286,8 @@ public class LeaveRequestServiceImpl
                 attendanceService.markLeaveAttendance(leaveRequest);
 
                 // Update leave status
-                leaveRequest.setStatus(LeaveStatus.MANAGER_APPROVED);
+               // leaveRequest.setStatus(LeaveStatus.MANAGER_APPROVED);
+                leaveRequest.setStatus(LeaveStatus.APPROVED);
 
                 // Save approval history
                 leaveApprovalService.createApproval(
