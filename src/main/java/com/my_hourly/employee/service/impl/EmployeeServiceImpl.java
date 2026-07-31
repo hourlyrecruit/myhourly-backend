@@ -567,12 +567,12 @@ public class EmployeeServiceImpl implements EmployeeService {
             );
         }
 
-        long maxSize = 2 * 1024 * 1024;
+        long maxSize = 1024 * 1024;
 
         if (file.getSize() > maxSize) {
 
             throw new ValidationException(
-                    "Profile photo size cannot exceed 2 MB.",
+                    "Profile photo size cannot exceed 1 MB.",
                     ErrorCode.VALIDATION_FAILED
             );
         }

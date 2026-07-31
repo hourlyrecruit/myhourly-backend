@@ -25,7 +25,7 @@ public class CloudinaryFileStorageServiceImpl implements FileStorageService {
             "pdf", "png", "jpg", "jpeg"
     );
 
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 5MB
 
     @Override
     public String upload(MultipartFile file, String subFolder) {
