@@ -18,6 +18,7 @@ import com.my_hourly.employee.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -38,6 +39,7 @@ public class CalendarServiceImpl implements CalendarService {
 
 
     @Override
+    @Transactional
     public CalendarResponse getCalendar(
             Integer month,
             Integer year,
