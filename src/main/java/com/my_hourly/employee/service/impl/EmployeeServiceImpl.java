@@ -342,6 +342,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 
     @Override
+    @Transactional
     public EmployeeResponse updateProfilePhoto(
             MultipartFile file
     ) {
