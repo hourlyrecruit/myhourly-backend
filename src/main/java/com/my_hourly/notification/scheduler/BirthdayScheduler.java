@@ -23,7 +23,7 @@ public class BirthdayScheduler {
     private final EmployeeRepository employeeRepository;
     private final NotificationService notificationService;
 
-    @Scheduled(cron = "*/15 * * * * *")
+    @Scheduled(cron = "0 0 8 * * *")
     @Transactional
     public void sendBirthdayNotifications() {
 
@@ -74,7 +74,7 @@ public class BirthdayScheduler {
                 notificationService.createNotification(
                         employee,
                         "Birthday Celebration 🎂",
-                        employeeName + " is celebrating a birthday today. Don't forget to wish them!",
+                        employeeName + " is celebrating a birthday today. Don't forget to wish him/her!",
                         NotificationType.BIRTHDAY,
                         NotificationPriority.LOW,
                         ReferenceType.EMPLOYEE,

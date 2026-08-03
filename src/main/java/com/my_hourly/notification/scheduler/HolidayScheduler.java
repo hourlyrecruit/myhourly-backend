@@ -29,7 +29,7 @@ public class HolidayScheduler {
      * Today's Holiday Notification
      * Runs every day at 09:00 AM
      */
-    @Scheduled(cron = "*/15 * * * * *")
+    @Scheduled(cron = "0 0 8 * * *")
     @Transactional
     public void sendTodayHolidayNotification() {
 
@@ -66,7 +66,7 @@ public class HolidayScheduler {
      * Tomorrow Holiday Reminder
      * Runs every day at 06:00 PM
      */
-    @Scheduled(cron = "* */5 * * * *")
+    @Scheduled(cron = "0 0 18 * * *")
     @Transactional
     public void sendTomorrowHolidayReminder() {
 
