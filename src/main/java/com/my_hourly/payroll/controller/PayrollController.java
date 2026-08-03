@@ -175,4 +175,25 @@ public class PayrollController {
                 .body(pdf);
     }
 
+
+    @GetMapping("/employee/month")
+    @Operation(summary = "Download Own Payslip PDF for the given month/year, 'EMPLOYEE', 'HR_ADMIN', 'MANAGER'")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'HR_ADMIN', 'MANAGER')")
+    public ResponseEntity<byte[]> getPayslipByEmployeeAndMonth(
+            @RequestParam int month,
+            @RequestParam int year) {
+
+        byte[] pdfBytes = payslipPdfService.generatePayslip(month, year);
+
+        String filename = "payslip_" + month + "_" + year + ".pdf";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
+
+
+
 }

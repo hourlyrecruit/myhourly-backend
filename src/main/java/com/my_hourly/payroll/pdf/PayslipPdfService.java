@@ -4,4 +4,8 @@ public interface PayslipPdfService {
 
     byte[] generatePayslip(Long payrollId);
 
+    byte[] generatePayslip(int month, int year);
+
+
+
 }

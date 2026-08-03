@@ -19,11 +19,11 @@ public class UpdateDraftPayrollRequest {
        Attendance
        ========================== */
 
-    @Schema(description = "Total working days in the month", example = "22")
+    @Schema(description = "Total working days in the month", example = "30")
     @Min(value = 1, message = "Total working days must be at least 1.")
     private Integer totalWorkingDays;
 
-    @Schema(description = "Number of days the employee worked", example = "20")
+    @Schema(description = "Number of days the employee worked", example = "28")
     @Min(value = 0, message = "Worked days cannot be negative.")
     private Integer workedDays;
 

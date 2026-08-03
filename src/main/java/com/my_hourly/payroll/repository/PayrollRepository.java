@@ -3,6 +3,7 @@ package com.my_hourly.payroll.repository;
 import com.my_hourly.payroll.entity.Payroll;
 import com.my_hourly.payroll.enums.PayrollStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -87,8 +88,8 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
     /**
      * Get the active payroll for employee in month.
      */
-    Optional<Payroll> findFirstByEmployeeIdAndPayrollMonthAndActiveTrue(
+    Optional<Payroll> findFirstByEmployeeIdAndPayrollMonthBetweenAndActiveTrue(
             Long employeeId,
-            LocalDate payrollMonth);
-
+            LocalDate startDate,
+            LocalDate endDate);
 }

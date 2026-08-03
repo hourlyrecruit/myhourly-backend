@@ -1,18 +1,16 @@
 package com.my_hourly.notification.service.impl;
 
 import com.my_hourly.attendance.entity.Attendance;
-import com.my_hourly.authentication.service.AuthenticationService;
 import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.common.payload.response.PageResponse;
+import com.my_hourly.common.service.FileStorageServiceB2;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.employee.service.EmployeeService;
-import com.my_hourly.holiday.repository.HolidayRepository;
 import com.my_hourly.attendance.repository.AttendanceRepository;
 import com.my_hourly.leave.entity.LeaveRequest;
 import com.my_hourly.leave.repository.LeaveRequestRepository;
-import com.my_hourly.common.service.FileStorageService;
 import com.my_hourly.notification.api.request.AnnouncementRequest;
 import com.my_hourly.notification.api.response.NotificationResponse;
 import com.my_hourly.notification.entity.Announcement;
@@ -43,22 +41,13 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
-
     private final NotificationMapper notificationMapper;
-
-    private final AuthenticationService authenticationService;
-
     private final AttendanceRepository attendanceRepository;
-
     private final LeaveRequestRepository leaveRequestRepository;
-
     private final EmployeeRepository employeeRepository;
-
-    private final HolidayRepository holidayRepository;
     private final EmployeeService employeeService;
-
     private final AnnouncementRepository announcementRepository;
-    private final FileStorageService fileStorageService;
+    private final FileStorageServiceB2 fileStorageServiceB2;
 
     private Employee getCurrentEmployee() {
         Employee currentEmployee = employeeService.getCurrentEmployee();
@@ -204,7 +193,7 @@ public class NotificationServiceImpl implements NotificationService {
         if (attachments != null && !attachments.isEmpty()) {
             for (MultipartFile file : attachments) {
                 if (file != null && !file.isEmpty()) {
-                    String fileUrl = fileStorageService.upload(file, "announcements");
+                    String fileUrl = fileStorageServiceB2.upload(file, "announcements");
                     attachmentUrls.add(fileUrl);
                 }
             }

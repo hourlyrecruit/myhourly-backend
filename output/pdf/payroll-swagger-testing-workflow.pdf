@@ -1,5 +1,5 @@
 %PDF-1.4
-%“Œ‹ž ReportLab Generated PDF document (opensource)
+%ï¿½ï¿½ï¿½ï¿½ ReportLab Generated PDF document (opensource)
 1 0 obj
 <<
 /F1 2 0 R /F2 3 0 R /F3 5 0 R
@@ -87,7 +87,180 @@ endobj
 >> /Rotate 0 /Trans <<
 
 >> 
-  /Type /Page
+  /Type /PageCreate a comprehensive design documentation file at `docs/MODULE_DESIGN_DOCUMENTATION.md` in the project `c:/Users/User/Desktop/Desktop/project3/my_hourly`. 
+
+The documentation must cover ALL modules of this Spring Boot HRMS application called "MyHourly". Here is the complete analysis of every module:
+
+## Project Overview
+- **Application**: MyHourly - HRMS (Human Resource Management System)
+- **Tech Stack**: Spring Boot 4.0.7, Java 21, Spring Data JPA, Spring Security, Spring Mail, PostgreSQL/MySQL
+- **Architecture**: Layered (Controller â†’ Service â†’ Repository â†’ Entity) with DTO pattern
+- **Base Entity**: All entities extend `BaseEntity` (id, createdAt, updatedAt)
+- **API Base Path**: `/api/v1/`
+- **Auth**: JWT-based with Access/Refresh tokens, Role-based access (SUPER_ADMIN, HR_ADMIN, MANAGER, EMPLOYEE, PAYROLL_ADMIN, CLIENT)
+
+## Modules to Document:
+
+### 1. Authentication Module (`com.my_hourly.authentication`)
+- **Entities**: User, RefreshToken, RevokedToken, PasswordResetToken
+- **Enums**: RoleName (SUPER_ADMIN, HR_ADMIN, MANAGER, EMPLOYEE, PAYROLL_ADMIN, CLIENT), UserStatus
+- **Controllers**: AuthenticationController (`/api/v1/auth`) - login, logout, refresh token, change password, forgot/reset password, get current user; AdminController - admin operations
+- **Services**: AuthenticationService, AdminService, PasswordResetEmailService
+- **Repositories**: UserRepository, RefreshTokenRepository, RevokedTokenRepository, PasswordResetTokenRepository
+- **Mappers**: AuthenticationMapper, UserMapper
+- **DTOs**: LoginRequest/Response, RefreshTokenRequest/Response, RegisterResponse, UserProfileResponse, ChangePasswordRequest, ForgotPasswordRequest, ResetPasswordRequest, AdminRegisterRequest, GrantRoleRequest, UpdateUserStatusRequest
+
+### 2. Security Module (`com.my_hourly.security`)
+- **Config**: SecurityConfig (stateless JWT, CORS, CSRF disabled), SecurityConstants (public endpoints), PasswordConfig, WebConfig
+- **JWT**: JwtService interface, JwtServiceImpl, JwtAuthenticationFilter, JwtProperties, TokenType enum
+- **User Details**: CustomUserDetailsService (loads user, assigns authorities based on role), CustomUserDetails
+- **Handlers**: JwtAuthenticationEntryPoint, JwtAccessDeniedHandler
+- **Util**: SecurityUtils
+
+### 3. Master Module (`com.my_hourly.master`)
+- **Entities**: Department (code, name, description, active), Designation (code, name, department FK, description, active), JobTitle (code, title, designation FK, active)
+- **Hierarchy**: Department â†’ Designation â†’ JobTitle
+- **Controllers**: (via service layer, no dedicated controllers)
+- **Services**: DepartmentService, DesignationService, JobTitleService + Impl classes
+- **Repositories**: DepartmentRepository, DesignationRepository, JobTitleRepository
+- **Mappers**: DepartmentMapper, DesignationMapper, JobTitleMapper
+
+### 4. Employee Module (`com.my_hourly.employee`)
+- **Entity**: Employee (employeeCode, firstName, lastName, email, phone, gender, DOB, DOJ, employmentType, department FK, designation FK, jobTitle FK, reportingManager FK, profilePhoto, user FK, roleName, active)
+- **Enums**: EmploymentType, Gender
+- **Controller**: EmployeeController (`/api/v1/employees`) - CRUD, profile photo upload, dropdown, search with specification
+- **Service**: EmployeeService + EmployeeServiceImpl
+- **Repository**: EmployeeRepository
+- **Mapper**: EmployeeMapper
+- **DTOs**: CreateEmployeeRequest, UpdateEmployeeRequest, UpdateEmployeeByEmployeeRequest, EmployeeResponse, EmployeeDropdownResponse
+- **Specification**: EmployeeSpecification
+- **Validator**: MultipartFileValidator
+
+### 5. Attendance Module (`com.my_hourly.attendance`)
+- **Entity**: Attendance (employee FK, attendanceDate, checkInTime, checkOutTime, workingMinutes, totalBreakMinutes, attendanceStatus, employeeStatus, geo-location, lateMinutes, earlyExitMinutes, overtimeMinutes, breaks list)
+- **Supporting Entity**: AttendanceBreak
+- **Enums**: AttendanceStatus, BreakType, EmployeeStatus
+- **Controller**: AttendanceController (`/api/v1/attendance`) - check-in, check-out, break start/end, get by date/month, monthly summary, dashboard, calendar
+- **Services**: AttendanceService + AttendanceServiceImpl, AttendanceValidationService + AttendanceValidationServiceImpl
+- **Repositories**: AttendanceRepository, AttendanceBreakRepository
+- **Mapper**: AttendanceMapper
+- **DTOs**: CheckInRequest/Response, CheckOutRequest/Response, BreakStartRequest/Response, BreakEndResponse, AttendanceResponse, AttendanceMonthlySummaryResponse, AttendanceDashboardResponse, AttendanceCalendarResponse
+- **Specification**: AttendanceSpecification
+- **Scheduler**: AttendanceScheduler (auto check-out)
+- **Utils**: DateTimeUtil, TimeUtil
+
+### 6. Leave Module (`com.my_hourly.leave`)
+- **Entities**: LeaveRequest (employee FK, leaveType FK, startDate, endDate, totalDays, reason, status), LeaveType, LeaveBalance, LeaveApproval, LeaveTransaction
+- **Enums**: LeaveStatus, LeaveAction, LeaveAllocationType, LeaveTransactionType, ApprovalLevel, MonthType
+- **Controllers**: LeaveRequestController, LeaveTypeController, LeaveBalanceController, LeaveApprovalController, LeaveAllocationController, LeaveTransactionController
+- **Services**: LeaveRequestService, LeaveTypeService, LeaveBalanceService, LeaveApprovalService, LeaveAllocationService, LeaveTransactionService, LeaveValidationService, LeaveAuthorizationService, LeaveExpiryService + Impl classes
+- **Repositories**: LeaveRequestRepository, LeaveTypeRepository, LeaveBalanceRepository, LeaveApprovalRepository, LeaveTransactionRepository
+- **Mappers**: LeaveRequestMapper, LeaveTypeMapper, LeaveBalanceMapper, LeaveApprovalMapper, LeaveTransactionMapper
+- **DTOs**: LeaveRequestRequest/Response, LeaveTypeRequest/Response, LeaveBalanceResponse, LeaveApprovalResponse, LeaveTransactionResponse, LeaveActionRequest
+- **Specification**: LeaveSpecification
+- **Scheduler**: LeaveScheduler
+- **Context**: LeaveApplicationContext
+
+### 7. Holiday Module (`com.my_hourly.holiday`)
+- **Entity**: Holiday (holidayDate, holidayName, holidayType, description, attendanceAllowed, active, recurring)
+- **Enum**: HolidayType
+- **Controller**: HolidayController (`/api/v1/holidays`) - CRUD
+- **Service**: HolidayService + HolidayServiceImpl
+- **Repository**: HolidayRepository
+- **Mapper**: HolidayMapper
+- **DTOs**: CreateHolidayRequest, UpdateHolidayRequest, HolidayResponse, HolidayCalendarResponse
+- **Specification**: HolidaySpecification
+
+### 8. Payroll Module (`com.my_hourly.payroll`)
+- **Entities**: Payroll (payrollNumber, version, active, employee FK, salaryStructure FK, payrollMonth, employee snapshot fields, earnings, deductions, netPay, status, paymentDate, paymentReference), PayrollHistory, SalaryStructure (employee FK, template FK, effective dates, earnings, deductions, gross/net), SalaryTemplate, EmployeePaymentDetails
+- **Enums**: PayrollStatus (DRAFT, GENERATED, APPROVED, PAID, SUPERSEDED, CANCELLED), SalaryComponentType (EARNING, DEDUCTION), SalaryStructureStatus, PaymentMode, PayrollAction, PayrollHistoryAction
+- **Controllers**: PayrollController (`/api/v1/payroll`), SalaryStructureController, SalaryTemplateController, EmployeePaymentDetailsController
+- **Services**: PayrollService + PayrollServiceImpl, PayrollHistoryService + PayrollHistoryServiceImpl, SalaryStructureService + SalaryStructureServiceImpl, SalaryTemplateService + SalaryTemplateServiceImpl, EmployeePaymentDetailsService + EmployeePaymentDetailsServiceImpl
+- **Repositories**: PayrollRepository, PayrollHistoryRepository, SalaryStructureRepository, SalaryTemplateRepository, EmployeePaymentDetailsRepository
+- **PDF**: PayslipGenerator, PayslipPdfService + PayslipPdfServiceImpl
+- **DTOs**: CreatePayrollRequest, UpdateDraftPayrollRequest, MarkPayrollPaidRequest, PayrollResponse, PayrollSummaryResponse, PayrollHistoryResponse, FailedPayroll, CreateSalaryStructureRequest, SalaryStructureResponse, CreateSalaryTemplateRequest/Response, UpdateSalaryTemplateRequest, CreateEmployeePaymentDetailsRequest/Response, UpdateEmployeePaymentDetailsRequest, CreateSalaryRevisionRequest
+
+### 9. Performance Module (`com.my_hourly.performance`)
+- **Entity**: PerformanceReview (employee FK, reviewer FK, reviewType, reviewMonth, reviewYear, rating, score, strengths, improvements, managerFeedback, employeeComment, reviewDate, status)
+- **Enums**: PerformanceRating (EXCELLENT, VERY_GOOD, GOOD, AVERAGE, NEEDS_IMPROVEMENT), ReviewStatus (DRAFT, COMPLETED), ReviewType (MONTHLY, YEARLY)
+- **Controller**: PerformanceController (`/api/v1/performance`) - CRUD, complete review, search with filters
+- **Service**: PerformanceService + PerformanceServiceImpl
+- **Repository**: PerformanceReviewRepository
+- **Specification**: PerformanceReviewSpecification
+- **DTOs**: CreatePerformanceReviewRequest, UpdatePerformanceReviewRequest, PerformanceReviewFilterRequest, PerformanceReviewResponse, PerformanceSummaryResponse
+
+### 10. Report Module (`com.my_hourly.report`)
+- **Controllers**: ReportController (`/api/v1/reports`) - attendance report, leave report with JSON/Excel/PDF format support
+- **Services**: AttendanceReportService + AttendanceReportServiceImpl, LeaveReportService + LeaveReportServiceImpl
+- **Exporters**: AttendanceExcelExporter, AttendancePdfExporter, LeaveExcelExporter, LeavePdfExporter
+- **Specifications**: AttendanceReportSpecification, LeaveReportSpecification
+- **DTOs**: AttendanceReportRequest, AttendanceReportResponse, AttendanceReportPageResponse, AttendanceSummaryResponse, LeaveReportRequest, LeaveReportResponse, LeaveReportPageResponse, LeaveSummaryResponse
+
+### 11. Settings Module (`com.my_hourly.settings`)
+- **Base Class**: BaseSettings
+- **Sub-modules**: AttendanceSettings, LeaveSettings, CompanySettings, NotificationSettings, WorkLogSettings
+- **Each sub-module has**: Entity, Repository, Service + Impl, Mapper, DTOs (Request/Response)
+- **Controller**: SettingController (`/api/v1/settings`) - unified CRUD for all settings types
+- **Access**: SUPER_ADMIN, HR_ADMIN, MANAGER
+
+### 12. Calendar Module (`com.my_hourly.calendar`)
+- **Enums**: CalendarEventType (HOLIDAY, BIRTHDAY, WORK_ANNIVERSARY, LEAVE, ATTENDANCE), CalendarView (PERSONAL, ORGANIZATION)
+- **Controller**: CalendarController (`/api/v1/calendar`) - get calendar events by month/year/view/eventTypes
+- **Service**: CalendarService + CalendarServiceImpl
+- **DTOs**: CalendarResponse, CalendarEventResponse
+
+### 13. Notification Module (`com.my_hourly.notification`)
+- **Entities**: Notification (employee FK, title, message, notificationType, priority, referenceType, referenceId, isRead), Announcement
+- **Enums**: NotificationType, NotificationPriority, ReferenceType
+- **Controller**: NotificationController
+- **Service**: NotificationService + NotificationServiceImpl
+- **Repositories**: NotificationRepository, AnnouncementRepository
+- **Mapper**: NotificationMapper
+- **Schedulers**: BirthdayScheduler, HolidayScheduler, WorkAnniversaryScheduler, NotificationScheduler
+- **DTOs**: AnnouncementRequest, NotificationResponse
+
+### 14. Project Module (`com.my_hourly.project`)
+- **Status**: STUB/PLACEHOLDER - entities (Project, Client, EmployeeAllocation, ProjectMember) and controllers (ProjectController, ClientController) are empty skeletons
+
+### 15. Timesheet Module (`com.my_hourly.timesheet`)
+- **Status**: STUB/PLACEHOLDER - entities (Timesheet, TimesheetEntry, TimesheetApproval) and controller (TimesheetController) are empty skeletons
+
+### 16. Common Module (`com.my_hourly.common`)
+- **Entity**: BaseEntity (id, createdAt, updatedAt) - base for all entities
+- **Config**: JacksonConfig, R2Config, StringToEnumConverterFactory, CloudinaryConfig
+- **Constants**: AppConstants
+- **Enums**: EmployeeStatus, ErrorCode
+- **Exceptions**: GlobalExceptionHandler, ResourceNotFoundException, BadRequestException, BusinessException, DuplicateResourceException, ForbiddenException, UnauthorizedException, ValidationException, ErrorResponseFactory
+- **Payload**: ApiResponse, ApiError, PageResponse
+- **Services**: FileStorageService, FileStorageServiceCloudFlare, CloudinaryFileStorageServiceImpl, R2FileStorageServiceImpl
+- **Swagger**: SwaggerConfig
+- **Initializer**: DataInitializer
+
+### 17. Seed Module (`com.my_hourly.seed`)
+- **Runner**: SeedRunner
+- **Seeders**: DepartmentSeeder, DesignationSeeder, JobTitleSeeder, EmployeeSeeder, UserSeeder, AttendanceSeeder, HolidaySeeder, LeaveTypeSeeder, LeaveBalanceSeeder, LeaveRequestSeeder
+- **Config**: CsvReader
+- **Data Sources**: CSV files in resources/seed/
+
+### 18. Audit Module (`com.my_hourly.audit`)
+- (List files if any exist)
+
+### 19. Lookup Module (`com.my_hourly.lookup`)
+- (List files if any exist)
+
+### 20. Util Module (`com.my_hourly.util`)
+- Utils: SecurityUtils, StringUtils, ValidationUtils
+
+Write the documentation in a professional format with:
+- Module overview and purpose
+- Package structure
+- Entity relationship diagrams (text-based)
+- API endpoints summary
+- Key design patterns used
+- Dependencies between modules
+- Security/access control for each module
+
+Use proper markdown formatting with headers, tables, code blocks, and lists.
 >>
 endobj
 12 0 obj
