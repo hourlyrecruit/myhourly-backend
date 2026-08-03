@@ -1,7 +1,7 @@
 package com.my_hourly.notification.service.impl;
 
 import com.my_hourly.common.payload.response.PageResponse;
-import com.my_hourly.common.service.FileStorageService;
+import com.my_hourly.common.service.FileStorageServiceB2;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.employee.service.EmployeeService;
@@ -57,7 +57,7 @@ class NotificationServiceImplTest {
     private AnnouncementRepository announcementRepository;
 
     @Mock
-    private FileStorageService fileStorageService;
+    private FileStorageServiceB2 fileStorageService;
 
     @InjectMocks
     private NotificationServiceImpl notificationService;
