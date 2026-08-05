@@ -5,6 +5,7 @@ import com.my_hourly.common.exception.BadRequestException;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.repository.EmployeeRepository;
+import com.my_hourly.employee.service.EmployeeService;
 import com.my_hourly.payroll.dto.request.CreatePayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdateDraftPayrollRequest;
 import com.my_hourly.payroll.dto.response.FailedPayroll;
@@ -21,6 +22,7 @@ import com.my_hourly.payroll.repository.PayrollRepository;
 import com.my_hourly.payroll.repository.SalaryStructureRepository;
 import com.my_hourly.payroll.service.PayrollHistoryService;
 import com.my_hourly.payroll.service.PayrollService;
+import com.my_hourly.security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +44,7 @@ public class PayrollServiceImpl implements PayrollService {
     private final SalaryStructureRepository salaryStructureRepository;
     private final EmployeePaymentDetailsRepository paymentDetailsRepository;
     private final PayrollHistoryService payrollHistoryService;
+    private final EmployeeService employeeService;
 
     /* =========================================================
        Generate Payroll
@@ -273,7 +276,7 @@ public class PayrollServiceImpl implements PayrollService {
 
         payroll.setStatus(PayrollStatus.APPROVED);
         payroll.setApprovedDate(LocalDate.now());
-        // payroll.setApprovedBy(SecurityUtils.getCurrentEmployee()); // TODO: wire in security context
+        payroll.setApprovedBy(employeeService.getCurrentEmployee()); // TODO: wire in security context
 
         payrollRepository.save(payroll);
 
@@ -295,17 +298,24 @@ public class PayrollServiceImpl implements PayrollService {
 
         payroll.setStatus(PayrollStatus.PAID);
         payroll.setPaymentDate(LocalDate.now());
-        payroll.setPaymentReference(paymentReference);
 
-        payrollRepository.save(payroll);
+        //String paymentReference = generatePaymentReference(payroll);
+        payroll.setPaymentReference(paymentReference);
+        Payroll saved = payrollRepository.save(payroll);
+
 
         payrollHistoryService.saveHistory(
                 payroll,
                 PayrollHistoryAction.PAID,
-                "Payroll marked as PAID. Reference: " + paymentReference);
+                "Payroll marked as PAID. Reference: " + saved.getStatus());
 
         return mapToResponse(payroll);
     }
+
+//    private String generatePaymentReference(Payroll payroll){
+//        payroll.getPayrollNumber() + "-" + payroll.getVersion();
+//    }
+
 
     @Override
     public PayrollResponse cancel(Long payrollId) {

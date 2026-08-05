@@ -1,0 +1,42 @@
+Based on the project's [`pom.xml`](pom.xml:32) dependencies and the environment configuration files, here is the complete list of services used in this project.
+
+## External / Cloud Services
+
+| Service | Purpose | Where configured |
+|---------|---------|------------------|
+| **PostgreSQL (Aiven)** | Primary production database | [`application-prod.properties`](src/main/resources/application-prod.properties:5) |
+| **PostgreSQL (local)** | Development database | [`application-dev.properties`](src/main/resources/application-dev.properties:14) |
+| **MySQL** | Alternative database (commented out, driver still included) | [`application-dev.properties`](src/main/resources/application-dev.properties:1) |
+| **Gmail SMTP** | Email sending (password reset, notifications) | [`application-dev.properties`](src/main/resources/application-dev.properties:24) |
+| **Backblaze B2** | Object/file storage (S3-compatible) | [`application-dev.properties`](src/main/resources/application-dev.properties:42), [`B2StorageConfig.java`](src/main/java/com/my_hourly/common/configStorage/B2StorageConfig.java) |
+| **Cloudinary** | Image/file storage (currently commented out) | [`CloudinaryConfig.java`](src/main/java/com/my_hourly/common/configStorage/CloudinaryConfig.java) |
+
+## Framework / Library Services (from [`pom.xml`](pom.xml:32))
+
+| Dependency | Purpose |
+|------------|---------|
+| **Spring Boot Web** | REST API / web layer |
+| **Spring Data JPA** | ORM / persistence |
+| **Spring Security** | Authentication & authorization |
+| **Spring Mail** | Email service |
+| **springdoc-openapi (Swagger UI)** | API documentation |
+| **JJWT (io.jsonwebtoken)** | JWT token generation/validation |
+| **Apache POI (poi-ooxml)** | Excel export (report module) |
+| **OpenPDF (librepdf)** | PDF export (report module) |
+| **Apache Tika** | File content type detection |
+| **AWS SDK S3** | S3-compatible storage client (used for Backblaze B2) |
+| **Cloudinary SDK** | Cloudinary storage client |
+| **dotenv-java** | Environment variable loading |
+| **Lombok** | Boilerplate code reduction |
+| **Commons IO** | File I/O utilities |
+
+## Summary of Active Services
+
+The project currently **actively uses** these external services:
+1. **PostgreSQL** — database (Aiven in prod, local in dev)
+2. **Gmail SMTP** — email delivery
+3. **Backblaze B2** — file/object storage (via AWS S3 SDK)
+
+**Inactive/optional** (dependencies present but commented out in config): **MySQL**, **Cloudinary**, and **Cloudflare R2** (referenced in commented config in [`application-prod.properties`](src/main/resources/application-prod.properties:46)).
+
+The file storage layer is abstracted through [`FileStorageService`](src/main/java/com/my_hourly/common/service/FileStorageService.java) and [`FileStorageServiceB2`](src/main/java/com/my_hourly/common/service/FileStorageServiceB2.java), with two implementations — [`B2FileStorageServiceImpl`](src/main/java/com/my_hourly/common/service/impl/B2FileStorageServiceImpl.java) (active) and [`CloudinaryFileStorageServiceImpl`](src/main/java/com/my_hourly/common/service/impl/CloudinaryFileStorageServiceImpl.java) (available but not currently configured).
