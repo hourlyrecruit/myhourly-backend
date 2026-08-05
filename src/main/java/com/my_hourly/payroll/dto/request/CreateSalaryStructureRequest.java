@@ -26,6 +26,10 @@ public class CreateSalaryStructureRequest {
     @Schema(example = "2026-08-01")
     private LocalDate effectiveFrom;
 
+    @Schema(example = "2027-08-01")
+    @Builder.Default
+    private LocalDate effectiveTo = null;
+
     @Schema(example = "Annual Salary Revision")
     private String remarks;
 }

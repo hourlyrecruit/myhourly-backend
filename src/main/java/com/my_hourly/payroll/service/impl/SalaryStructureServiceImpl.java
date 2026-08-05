@@ -179,7 +179,7 @@ public class SalaryStructureServiceImpl implements SalaryStructureService {
                 .salaryTemplate(template)
 
                 .effectiveFrom(request.getEffectiveFrom())
-                .effectiveTo(null)
+                .effectiveTo(request.getEffectiveTo())
 
                 .basicSalary(template.getBasicSalary())
                 .hra(template.getHra())
