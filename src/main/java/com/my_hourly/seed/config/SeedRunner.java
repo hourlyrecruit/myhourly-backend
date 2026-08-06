@@ -24,9 +24,9 @@ import org.springframework.stereotype.Component;
 public class SeedRunner implements ApplicationRunner {
 
     // Master data
-    private final DepartmentSeeder departmentSeeder;
-    private final DesignationSeeder designationSeeder;
-    private final JobTitleSeeder jobTitleSeeder;
+//    private final DepartmentSeeder departmentSeeder;
+//    private final DesignationSeeder designationSeeder;
+//    private final JobTitleSeeder jobTitleSeeder;
 //    private final HolidaySeeder holidaySeeder;
 
     // Users and Employees
@@ -34,7 +34,7 @@ public class SeedRunner implements ApplicationRunner {
    // private final EmployeeSeeder employeeSeeder;
 
     // Leave
-    private final LeaveTypeSeeder leaveTypeSeeder;
+//    private final LeaveTypeSeeder leaveTypeSeeder;
 //    private final LeaveBalanceSeeder leaveBalanceSeeder;
 //    private final LeaveRequestSeeder leaveRequestSeeder;
 
@@ -46,9 +46,9 @@ public class SeedRunner implements ApplicationRunner {
         log.info("========== [SeedRunner] Starting data seeding ==========");
 
         // Step 1: Master data (no dependencies)
-        departmentSeeder.seed();
-        designationSeeder.seed();
-        jobTitleSeeder.seed();
+//        departmentSeeder.seed();
+//        designationSeeder.seed();
+//        jobTitleSeeder.seed();
         //holidaySeeder.seed();
 
         // Step 2: Users and Employees (depends on master data)
@@ -56,7 +56,7 @@ public class SeedRunner implements ApplicationRunner {
      //   employeeSeeder.seed();
 
         // Step 3: Leave types and balances (depends on employees)
-        leaveTypeSeeder.seed();
+//        leaveTypeSeeder.seed();
 //        leaveBalanceSeeder.seed();
 //        leaveRequestSeeder.seed();
 
