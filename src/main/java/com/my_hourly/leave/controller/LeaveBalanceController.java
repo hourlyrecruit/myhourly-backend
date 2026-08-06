@@ -22,7 +22,7 @@ public class LeaveBalanceController {
 
     @Operation(summary = "Get My Leave Balances. Access: EMPLOYEE")
     @GetMapping("/my")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<LeaveBalanceResponse>>> getMyLeaveBalances() {
 
         return ResponseEntity.ok(

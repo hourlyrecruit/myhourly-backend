@@ -17,8 +17,16 @@ public final class AttendanceSpecification {
             Employee employee
     ) {
 
-        return (root, query, cb) ->
-                cb.equal(root.get("employee"), employee);
+        if (employee == null) {
+            return null;
+        }
+
+        return (root, query, cb) -> {
+            if (query != null && Long.class != query.getResultType()) {
+                root.fetch("employee", jakarta.persistence.criteria.JoinType.LEFT);
+            }
+            return cb.equal(root.get("employee").get("id"), employee.getId());
+        };
     }
 
     public static Specification<Attendance> hasStatus(
@@ -26,7 +34,7 @@ public final class AttendanceSpecification {
     ) {
 
         if (status == null) {
-            return null;
+            return (root, query, cb) -> cb.conjunction();
         }
 
         return (root, query, cb) ->
@@ -38,7 +46,7 @@ public final class AttendanceSpecification {
     ) {
 
         if (fromDate == null) {
-            return null;
+            return (root, query, cb) -> cb.conjunction();
         }
 
         return (root, query, cb) ->
@@ -53,7 +61,7 @@ public final class AttendanceSpecification {
     ) {
 
         if (toDate == null) {
-            return null;
+            return (root, query, cb) -> cb.conjunction();
         }
 
         return (root, query, cb) ->

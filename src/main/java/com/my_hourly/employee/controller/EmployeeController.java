@@ -61,7 +61,7 @@ public class EmployeeController {
             value = "/profile-photo",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Change Profile Photo: image/jpeg, image/jpg, image/png. Access: EMPLOYEE")
     public ResponseEntity<ApiResponse<EmployeeResponse>> uploadProfilePhoto(
             @RequestParam("file") MultipartFile file) {
@@ -78,7 +78,7 @@ public class EmployeeController {
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Update employee profile. Access: EMPLOYEE")
     public ResponseEntity<ApiResponse<EmployeeResponse>> update(
             @Valid @RequestBody UpdateEmployeeByEmployeeRequest request) {
@@ -94,7 +94,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER', 'SUPER_ADMIN')")
     @Operation(summary = "Get employee BY ID. Access: 'HR_ADMIN', 'MANAGER'", description = "HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<EmployeeResponse>> getById(
             @PathVariable Long id) {
@@ -110,7 +110,7 @@ public class EmployeeController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER', 'SUPER_ADMIN')")
     @Operation(summary = "Get all employees. Access: 'HR_ADMIN', 'MANAGER", description = "Only Access by 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<PageResponse<EmployeeResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
@@ -137,7 +137,7 @@ public class EmployeeController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER', 'SUPER_ADMIN')")
     @Operation(summary = "Change the employee Profile Status: true=Active or false=Inactive. Access: 'HR_ADMIN', 'MANAGER'", description = "Only Access 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<Void>> changeStatus(
             @PathVariable Long id,
@@ -152,7 +152,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/dropdown")
-    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER', 'SUPER_ADMIN')")
     @Operation(summary = "Get All Employees ID and Name. Access: 'HR_ADMIN', 'MANAGER')", description = "Access by 'HR_ADMIN', 'MANAGER'")
     public ResponseEntity<ApiResponse<List<EmployeeDropdownResponse>>> getDropdown() {
 
@@ -166,7 +166,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Get Logged in employee's profile. Access: EMPLOYEE")
     public ResponseEntity<ApiResponse<EmployeeResponse>> getMyProfile() {
 

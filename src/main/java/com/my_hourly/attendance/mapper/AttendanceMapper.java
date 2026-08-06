@@ -76,18 +76,24 @@ public class AttendanceMapper {
             BreakType currentBreakType
     ) {
 
+        Long empId = null;
+        String empName = null;
+        if (attendance.getEmployee() != null) {
+            empId = attendance.getEmployee().getId();
+            empName = attendance.getEmployee().getFirstName();
+            if (attendance.getEmployee().getLastName() != null && !attendance.getEmployee().getLastName().isBlank()) {
+                empName = (empName != null ? empName : "") + " " + attendance.getEmployee().getLastName();
+            }
+        }
+
         return AttendanceResponse.builder()
                 .AttendanceId(attendance.getId())
-                .employeeId(attendance.getEmployee().getId())
-                .employeeName(attendance.getEmployee().getFirstName())
+                .employeeId(empId)
+                .employeeName(empName)
                 .attendanceDate(attendance.getAttendanceDate())
-                //.checkInTime(attendance.getCheckInTime())
                 .checkInTime(DateTimeUtil.formatTime(attendance.getCheckInTime()))
                 .checkOutTime(DateTimeUtil.formatTime(attendance.getCheckOutTime()))
-                //.checkOutTime(attendance.getCheckOutTime())
-//                .workingMinutes(attendance.getWorkingMinutes())
                 .todayWorkingHours(TimeUtil.formatMinutes(attendance.getWorkingMinutes()))
-//                .totalBreakMinutes(attendance.getTotalBreakMinutes())
                 .todayBreakHours(TimeUtil.formatMinutes(attendance.getTotalBreakMinutes()))
                 .attendanceStatus(attendance.getAttendanceStatus())
                 .workingStatus(attendance.getEmployeeStatus())

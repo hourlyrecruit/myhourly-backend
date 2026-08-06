@@ -108,9 +108,10 @@ public class GlobalExceptionHandler {
             Exception exception,
             HttpServletRequest request) {
         exception.printStackTrace(); // Log the unexpected exception details
+        String errorMsg = exception.getMessage() != null ? exception.getClass().getSimpleName() + ": " + exception.getMessage() : exception.getClass().getSimpleName();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseFactory.build(
-                        "An unexpected error occurred.",
+                        "An unexpected error occurred. (" + errorMsg + ")",
                         ErrorCode.INTERNAL_SERVER_ERROR,
                         request.getRequestURI()));
     }

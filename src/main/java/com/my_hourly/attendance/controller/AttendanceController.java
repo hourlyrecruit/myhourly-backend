@@ -31,7 +31,7 @@ public class AttendanceController {
 
     @Operation(summary = "Check in. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @PostMapping("/check-in")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<CheckInResponse>> checkIn(
             @Valid @RequestBody CheckInRequest request) {
 
@@ -49,7 +49,7 @@ public class AttendanceController {
 
     @Operation(summary = "Start break. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @PostMapping("/break-start")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<BreakStartResponse>> startBreak(
             @Valid @RequestBody BreakStartRequest request) {
 
@@ -67,7 +67,7 @@ public class AttendanceController {
 
     @Operation(summary = "End break. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @PostMapping("/break-end")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<BreakEndResponse>> endBreak() {
 
         BreakEndResponse response = attendanceService.endBreak();
@@ -84,7 +84,7 @@ public class AttendanceController {
 
     @Operation(summary = "Check out. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @PostMapping("/check-out")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<CheckOutResponse>> checkOut(
             @Valid @RequestBody CheckOutRequest request) {
 
@@ -117,7 +117,7 @@ public class AttendanceController {
 
     @Operation(summary = "Get today's attendance. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @GetMapping("/today")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<AttendanceResponse>> getTodayAttendance() {
 
         AttendanceResponse response = attendanceService.getTodayAttendance();
@@ -134,7 +134,7 @@ public class AttendanceController {
 
     @Operation(summary = "Get attendance history. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @GetMapping("/history")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<PageResponse<AttendanceResponse>>> getAttendanceHistory(
 
             @RequestParam(defaultValue = "0") int page,
@@ -180,7 +180,7 @@ public class AttendanceController {
 
     @Operation(summary = "Get monthly attendance summary. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @GetMapping("/monthly-summary")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<AttendanceMonthlySummaryResponse>> getMonthlySummary(
 
             @RequestParam(required = false) Integer month,
@@ -203,7 +203,7 @@ public class AttendanceController {
 
     @Operation(summary = "Get attendance calendar. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @GetMapping("/calendar")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<AttendanceCalendarResponse>>> getAttendanceCalendar(
 
             @RequestParam(required = false) Integer month,
@@ -229,7 +229,7 @@ public class AttendanceController {
 
     @Operation(summary = "Get attendance dashboard. Access: EMPLOYEE, HR_ADMIN, MANAGER")
     @GetMapping("/dashboard")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<AttendanceDashboardResponse>> getDashboard() {
 
         AttendanceDashboardResponse response =

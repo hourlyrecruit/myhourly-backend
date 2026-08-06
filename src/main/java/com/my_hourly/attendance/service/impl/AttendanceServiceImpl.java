@@ -371,9 +371,13 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Specification<Attendance> specification = Specification.where(AttendanceSpecification.hasEmployee(employee))
-                .and(AttendanceSpecification.fromDate(fromDate))
-                .and(AttendanceSpecification.toDate(toDate));
+        Specification<Attendance> specification = Specification.where(AttendanceSpecification.hasEmployee(employee));
+        if (fromDate != null) {
+            specification = specification.and(AttendanceSpecification.fromDate(fromDate));
+        }
+        if (toDate != null) {
+            specification = specification.and(AttendanceSpecification.toDate(toDate));
+        }
         if (status != null) {
             specification = specification.and(AttendanceSpecification.hasStatus(status));
         }
@@ -455,10 +459,13 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Specification<Attendance> specification = Specification
-                .where(AttendanceSpecification.fromDate(fromDate))
-                .and(AttendanceSpecification.toDate(toDate));
-
+        Specification<Attendance> specification = Specification.where((root, query, cb) -> cb.conjunction());
+        if (fromDate != null) {
+            specification = specification.and(AttendanceSpecification.fromDate(fromDate));
+        }
+        if (toDate != null) {
+            specification = specification.and(AttendanceSpecification.toDate(toDate));
+        }
         if (status != null) {
             specification = specification.and(AttendanceSpecification.hasStatus(status));
         }
@@ -546,9 +553,13 @@ public class AttendanceServiceImpl implements AttendanceService {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Specification<Attendance> specification = Specification.where(
-                AttendanceSpecification.hasEmployee(employee))
-                .and(AttendanceSpecification.fromDate(fromDate))
-                .and(AttendanceSpecification.toDate(toDate));
+                AttendanceSpecification.hasEmployee(employee));
+        if (fromDate != null) {
+            specification = specification.and(AttendanceSpecification.fromDate(fromDate));
+        }
+        if (toDate != null) {
+            specification = specification.and(AttendanceSpecification.toDate(toDate));
+        }
         if (status != null) {
             specification = specification.and(AttendanceSpecification.hasStatus(status));
         }
