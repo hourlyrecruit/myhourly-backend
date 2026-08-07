@@ -58,6 +58,7 @@ public class BirthdayScheduler {
             notificationService.createNotification(
                     birthdayEmployee,
                 "Happy Birthday 🎉 " + employeeName + "! Enjoy",
+                    "Birthday",
                     "Wishing you a wonderful birthday and a fantastic year ahead!",
                     NotificationType.BIRTHDAY,
                     NotificationPriority.MEDIUM,
@@ -75,6 +76,7 @@ public class BirthdayScheduler {
                 notificationService.createNotification(
                         employee,
                         "Birthday Celebration 🎂",
+                        "Birthday",
                         employeeName + " is celebrating a birthday today. Don't forget to wish him/her!",
                         NotificationType.BIRTHDAY,
                         NotificationPriority.LOW,

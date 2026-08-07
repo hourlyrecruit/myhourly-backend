@@ -47,6 +47,7 @@ public class HolidayScheduler {
                         notificationService.createNotification(
                                 employee,
                                 "Holiday Today 🎉",
+                                "Holiday",
                                 "Today is " + holiday.getHolidayName()
                                         + ". Enjoy your holiday!",
                                 NotificationType.HOLIDAY,
@@ -85,6 +86,7 @@ public class HolidayScheduler {
                         notificationService.createNotification(
                                 employee,
                                 "Upcoming Holiday 📅",
+                                "Holiday",
                                 "Tomorrow is " + holiday.getHolidayName()
                                         + ". Plan your work accordingly.",
                                 NotificationType.HOLIDAY,

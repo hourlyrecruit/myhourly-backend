@@ -58,6 +58,7 @@ public class WorkAnniversaryScheduler {
             notificationService.createNotification(
                     anniversaryEmployee,
                     "Happy Work Anniversary 🎉",
+                    "WorkAnniversay",
                     "Congratulations on your work anniversary! Thank you for being a valuable part of the organization.",
                     NotificationType.WORK_ANNIVERSARY,
                     NotificationPriority.MEDIUM,
@@ -75,6 +76,7 @@ public class WorkAnniversaryScheduler {
                 notificationService.createNotification(
                         employee,
                         "Work Anniversary 🎊",
+                        "WorkAnniversary",
                         employeeName + " is celebrating a work anniversary today. Wish them well!",
                         NotificationType.WORK_ANNIVERSARY,
                         NotificationPriority.LOW,

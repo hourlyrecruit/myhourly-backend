@@ -48,6 +48,7 @@ public interface NotificationService {
     void createNotification(
             com.my_hourly.employee.entity.Employee employee,
             String title,
+            String postType,
             String message,
             com.my_hourly.notification.enums.NotificationType notificationType,
             com.my_hourly.notification.enums.NotificationPriority priority,
