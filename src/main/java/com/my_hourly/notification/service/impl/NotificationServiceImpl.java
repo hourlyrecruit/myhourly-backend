@@ -149,6 +149,7 @@ public class NotificationServiceImpl implements NotificationService {
     public void createNotification(
             Employee employee,
             String title,
+            String postType,
             String message,
             NotificationType notificationType,
             NotificationPriority priority,
@@ -201,6 +202,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         Announcement announcement = Announcement.builder()
                 .title(request.getTitle())
+                .uploadType(request.getUploadType())
                 .message(request.getMessage())
                 .attachmentUrls(attachmentUrls)
                 .build();
@@ -214,6 +216,7 @@ public class NotificationServiceImpl implements NotificationService {
             createNotification(
                     employee,
                     request.getTitle(),
+                    request.getUploadType().toString(),
                     request.getMessage(),
                     NotificationType.ANNOUNCEMENT,
                     NotificationPriority.HIGH,
@@ -279,6 +282,7 @@ public class NotificationServiceImpl implements NotificationService {
         createNotification(
                 attendance.getEmployee(),
                 title,
+                "Attendance",
                 message,
                 type,
                 priority,
@@ -309,6 +313,7 @@ public class NotificationServiceImpl implements NotificationService {
                         + " has "
                         + title.toLowerCase()
                         + ".",
+                "Attendance",
                 NotificationType.GENERAL,
                 NotificationPriority.MEDIUM,
                 ReferenceType.ATTENDANCE,
@@ -390,6 +395,7 @@ public class NotificationServiceImpl implements NotificationService {
         createNotification(
                 leaveRequest.getEmployee(),
                 title,
+                "leave",
                 message,
                 notificationType,
                 priority,
@@ -435,6 +441,7 @@ public class NotificationServiceImpl implements NotificationService {
         createNotification(
                 manager,
                 "Leave Update",
+                "leave",
                 message,
                 NotificationType.GENERAL,
                 NotificationPriority.MEDIUM,

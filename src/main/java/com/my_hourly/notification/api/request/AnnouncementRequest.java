@@ -1,5 +1,6 @@
 package com.my_hourly.notification.api.request;
 
+import com.my_hourly.notification.enums.UploadType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -16,4 +17,7 @@ public class AnnouncementRequest {
     @NotBlank(message = "Message is required.")
     @Size(max = 1000, message = "Message cannot exceed 1000 characters.")
     private String message;
+
+    @NotBlank(message = "Message is required.")
+    private UploadType uploadType;
 }

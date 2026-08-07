@@ -1,6 +1,7 @@
 package com.my_hourly.notification.entity;
 
 import com.my_hourly.common.entity.BaseEntity;
+import com.my_hourly.notification.enums.UploadType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +16,9 @@ import java.util.List;
 @Entity
 @Table(name = "announcements")
 public class Announcement extends BaseEntity {
+
+    @Enumerated(EnumType.STRING)
+    private UploadType uploadType;
 
     @Column(nullable = false, length = 150)
     private String title;

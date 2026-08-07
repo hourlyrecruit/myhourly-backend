@@ -29,7 +29,8 @@ public class HolidayScheduler {
      * Today's Holiday Notification
      * Runs every day at 09:00 AM
      */
-    @Scheduled(cron = "0 0 8 * * *")
+   // @Scheduled(cron = "0 0 8 * * *")
+    @Scheduled(cron = "*/5 * * * * *")
     @Transactional
     public void sendTodayHolidayNotification() {
 
@@ -46,6 +47,7 @@ public class HolidayScheduler {
                         notificationService.createNotification(
                                 employee,
                                 "Holiday Today 🎉",
+                                "Holiday",
                                 "Today is " + holiday.getHolidayName()
                                         + ". Enjoy your holiday!",
                                 NotificationType.HOLIDAY,
@@ -66,7 +68,8 @@ public class HolidayScheduler {
      * Tomorrow Holiday Reminder
      * Runs every day at 06:00 PM
      */
-    @Scheduled(cron = "0 0 18 * * *")
+    //@Scheduled(cron = "0 0 18 * * *")
+    @Scheduled(cron = "*/5 * * * * *")
     @Transactional
     public void sendTomorrowHolidayReminder() {
 
@@ -83,6 +86,7 @@ public class HolidayScheduler {
                         notificationService.createNotification(
                                 employee,
                                 "Upcoming Holiday 📅",
+                                "Holiday",
                                 "Tomorrow is " + holiday.getHolidayName()
                                         + ". Plan your work accordingly.",
                                 NotificationType.HOLIDAY,

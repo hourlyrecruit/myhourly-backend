@@ -23,7 +23,8 @@ public class WorkAnniversaryScheduler {
     private final EmployeeRepository employeeRepository;
     private final NotificationService notificationService;
 
-    @Scheduled(cron = "0 0 8 * * *")
+    //@Scheduled(cron = "0 0 8 * * *")
+    @Scheduled(cron = "*/5 * * * * *")
     @Transactional
     public void sendWorkAnniversaryNotifications() {
 
@@ -57,6 +58,7 @@ public class WorkAnniversaryScheduler {
             notificationService.createNotification(
                     anniversaryEmployee,
                     "Happy Work Anniversary 🎉",
+                    "WorkAnniversay",
                     "Congratulations on your work anniversary! Thank you for being a valuable part of the organization.",
                     NotificationType.WORK_ANNIVERSARY,
                     NotificationPriority.MEDIUM,
@@ -74,6 +76,7 @@ public class WorkAnniversaryScheduler {
                 notificationService.createNotification(
                         employee,
                         "Work Anniversary 🎊",
+                        "WorkAnniversary",
                         employeeName + " is celebrating a work anniversary today. Wish them well!",
                         NotificationType.WORK_ANNIVERSARY,
                         NotificationPriority.LOW,
