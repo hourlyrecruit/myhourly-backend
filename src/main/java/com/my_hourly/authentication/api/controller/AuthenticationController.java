@@ -133,7 +133,7 @@ public class AuthenticationController {
 
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .success(true)
-                .message("If an account exists for this email, a password reset link has been sent.")
+                .message("Password reset link has been sent.")
                 .build());
     }
 
