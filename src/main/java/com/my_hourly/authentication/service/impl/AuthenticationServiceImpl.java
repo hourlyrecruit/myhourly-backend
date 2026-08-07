@@ -454,7 +454,8 @@ public class AuthenticationServiceImpl
     public void forgotPassword(ForgotPasswordRequest request) {
         Optional<User> user = userRepository.findByEmail(request.getEmail());
         if (user.isEmpty()) {
-            return;
+            throw new ResourceNotFoundException("User with email " + request.getEmail() + " does not exist.",
+                    ErrorCode.RESOURCE_NOT_FOUND);
         }
 
         String token = generatePasswordResetToken();
