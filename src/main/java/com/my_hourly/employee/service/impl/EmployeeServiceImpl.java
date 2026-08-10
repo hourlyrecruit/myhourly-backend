@@ -209,7 +209,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeResponse createUserProfileByAdmin(Long userId, CreateEmployeeRequest request, MultipartFile file) {
 
-       // User user = SecurityUtils.getCurrentUser();
+        // User user = SecurityUtils.getCurrentUser();
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id :" + userId, ErrorCode.USER_NOT_FOUND));
@@ -372,6 +372,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeMapper.toResponse(savedEmployee);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Employee getEmployee(Long id) {
+        return getEmployeeEntityById(id);
+    }
 
 
     //============================================================================================
@@ -580,4 +585,3 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
 }
-

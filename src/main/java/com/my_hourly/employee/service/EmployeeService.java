@@ -50,5 +50,5 @@ public interface EmployeeService {
     EmployeeResponse updateProfilePhoto(MultipartFile file);
 
 
-
+    Employee getEmployee(Long id);
 }
