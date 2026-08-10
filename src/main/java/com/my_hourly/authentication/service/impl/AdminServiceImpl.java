@@ -32,6 +32,7 @@ public class AdminServiceImpl implements AdminService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -60,6 +61,13 @@ public class AdminServiceImpl implements AdminService {
                 .build();
 
         userRepository.save(user);
+
+        // Send welcome email
+        emailService.sendWelcomeEmail(
+                user.getEmail(),
+                user.getUsername(),
+                request.getPassword()
+        );
 
         return RegisterResponse.builder()
                 .userId(user.getId())
