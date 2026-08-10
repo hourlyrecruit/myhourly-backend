@@ -926,4 +926,48 @@ public class AttendanceServiceImpl implements AttendanceService {
                 checkoutTime
         ).toMinutes();
     }
+
+
+
+    @Transactional
+    @Override
+    public void markMissedCheckouts() {
+
+        AttendanceSettings settings =
+                attendanceSettingsService.getSettings();
+
+        LocalDate today = LocalDate.now();
+
+        LocalDateTime cutoffTime =
+                LocalDateTime.of(
+                        today,
+                        settings.getOfficeEndTime()
+                ).plusMinutes(
+                        settings.getCheckoutCutoffMinutes()
+                );
+
+        // Cutoff time has not been reached yet
+        if (LocalDateTime.now().isBefore(cutoffTime)) {
+            return;
+        }
+
+        List<Attendance> attendances =
+                attendanceRepository
+                        .findByAttendanceDateAndCheckInTimeIsNotNullAndCheckOutTimeIsNull(
+                                today
+                        );
+
+        for (Attendance attendance : attendances) {
+
+            if (attendance.getAttendanceStatus() == AttendanceStatus.LEAVE) {
+                continue;
+            }
+
+            attendance.setAttendanceStatus(
+                    AttendanceStatus.MISSED_CHECKOUT
+            );
+        }
+
+        attendanceRepository.saveAll(attendances);
+    }
 }
