@@ -5,13 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-//@Component
+@Component
 @RequiredArgsConstructor
 public class AttendanceScheduler {
-private final AttendanceService attendanceService;
+    private final AttendanceService attendanceService;
 
-    @Scheduled(cron = "0 */10 * * * *")
-    public void autoCheckoutEmployees() {
-       // attendanceService.autoCheckoutEmployees();
+
+    @Scheduled(fixedRate = 60000) // runs every 1 minute
+    public void checkMissedCheckouts() {
+
+        attendanceService.markMissedCheckouts();
     }
 }

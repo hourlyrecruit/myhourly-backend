@@ -70,4 +70,6 @@ public interface AttendanceService {
     void removeLeaveAttendance(LeaveRequest leaveRequest);
 
     //void autoCheckoutEmployees();
+
+    void markMissedCheckouts();
 }
