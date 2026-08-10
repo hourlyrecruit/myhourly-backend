@@ -101,20 +101,26 @@ public class LeaveRequestServiceImpl
         }
 
         if (leaveRequest.getStatus() == LeaveStatus.APPROVED) {
-
-            LeaveBalance leaveBalance =
-                    leaveBalanceService.getLeaveBalanceEntity(
-                            leaveRequest.getEmployee(),
-                            leaveRequest.getLeaveType(),
-                            leaveRequest.getStartDate());
-
-            leaveBalanceService.restoreLeaveBalance(
-                    leaveBalance,
-                    leaveRequest);
-
-            // Optional: restore attendance
-            attendanceService.removeLeaveAttendance(leaveRequest);
+            throw new BadRequestException(
+                    "Approved leave cannot be cancelled.",
+                    ErrorCode.NOT_ALLOWED);
         }
+//
+//        if (leaveRequest.getStatus() == LeaveStatus.APPROVED) {
+//
+//            LeaveBalance leaveBalance =
+//                    leaveBalanceService.getLeaveBalanceEntity(
+//                            leaveRequest.getEmployee(),
+//                            leaveRequest.getLeaveType(),
+//                            leaveRequest.getStartDate());
+//
+//            leaveBalanceService.restoreLeaveBalance(
+//                    leaveBalance,
+//                    leaveRequest);
+//
+//            // Optional: restore attendance
+//            attendanceService.removeLeaveAttendance(leaveRequest);
+//        }
 
         LeaveBalance leaveBalance =
                 leaveBalanceService.getLeaveBalanceEntity(
