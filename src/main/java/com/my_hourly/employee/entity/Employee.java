@@ -66,9 +66,8 @@ public class Employee extends BaseEntity {
     private Employee reportingManager;
 
     @Lob
-    @Column(name = "profile_photo")
+    @Column(name = "profile_photo", columnDefinition = "LONGBLOB")
     private byte[] profilePhoto;
-
     @Column(name = "profile_photo_name")
     private String profilePhotoName;
 

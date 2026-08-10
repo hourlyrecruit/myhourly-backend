@@ -4,6 +4,8 @@ import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.notification.api.request.AnnouncementRequest;
 import com.my_hourly.notification.api.response.NotificationResponse;
+import com.my_hourly.notification.entity.Announcement;
+import com.my_hourly.notification.service.AnnouncementService;
 import com.my_hourly.notification.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +28,7 @@ import java.util.List;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final AnnouncementService announcementService;
 
     @Operation(summary = "Get logged-in employee notifications, Access: EMPLOYEE','MANAGER','HR_ADMIN','SUPER_ADMIN'")
     @PreAuthorize("hasAnyRole('EMPLOYEE','MANAGER','HR_ADMIN','SUPER_ADMIN')")
@@ -109,4 +113,24 @@ public class NotificationController {
                 .message("Announcement sent successfully.")
                 .build();
     }
+
+    @GetMapping("/announcement/today")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
+    @Operation(
+            summary = "Get Today's Announcements",
+            description = "Fetches all announcements created today."
+    )
+    public ResponseEntity<ApiResponse<List<Announcement>>> getAnnouncementsForToday() {
+
+        List<Announcement> announcements = announcementService.getAnnouncementsForToday();
+        return ResponseEntity.ok(
+                ApiResponse.<List<Announcement>>builder()
+                        .success(true)
+                        .message("Today's announcements fetched successfully")
+                        .data(announcements)
+                        .build()
+        );
+    }
 }
+
+
