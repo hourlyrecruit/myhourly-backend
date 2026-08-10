@@ -100,21 +100,22 @@ public class LeaveRequestServiceImpl
                     ErrorCode.NOT_ALLOWED);
         }
 
-//        if (leaveRequest.getStatus() == LeaveStatus.HR_APPROVED) {
-//
-//            LeaveBalance leaveBalance =
-//                    leaveBalanceService.getLeaveBalanceEntity(
-//                            leaveRequest.getEmployee(),
-//                            leaveRequest.getLeaveType(),
-//                            leaveRequest.getStartDate());
-//
-//            leaveBalanceService.restoreLeaveBalance(
-//                    leaveBalance,
-//                    leaveRequest);
-//
-//            // Optional: restore attendance
-//            attendanceService.removeLeaveAttendance(leaveRequest);
-//        }
+        if (leaveRequest.getStatus() == LeaveStatus.APPROVED) {
+
+            LeaveBalance leaveBalance =
+                    leaveBalanceService.getLeaveBalanceEntity(
+                            leaveRequest.getEmployee(),
+                            leaveRequest.getLeaveType(),
+                            leaveRequest.getStartDate());
+
+            leaveBalanceService.restoreLeaveBalance(
+                    leaveBalance,
+                    leaveRequest);
+
+            // Optional: restore attendance
+            attendanceService.removeLeaveAttendance(leaveRequest);
+        }
+
         LeaveBalance leaveBalance =
                 leaveBalanceService.getLeaveBalanceEntity(
                         leaveRequest.getEmployee(),
