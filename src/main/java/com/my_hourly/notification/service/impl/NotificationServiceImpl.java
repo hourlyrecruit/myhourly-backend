@@ -1,6 +1,9 @@
 package com.my_hourly.notification.service.impl;
 
 import com.my_hourly.attendance.entity.Attendance;
+import com.my_hourly.attendance.entity.AttendanceStatus;
+import com.my_hourly.settings.attendance.entity.AttendanceSettings;
+import com.my_hourly.settings.attendance.service.AttendanceSettingsService;
 import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.common.payload.response.PageResponse;
@@ -48,6 +51,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final EmployeeService employeeService;
     private final AnnouncementRepository announcementRepository;
     private final FileStorageServiceB2 fileStorageServiceB2;
+    private final AttendanceSettingsService attendanceSettingsService;
 
     private Employee getCurrentEmployee() {
         Employee currentEmployee = employeeService.getCurrentEmployee();
@@ -268,6 +272,35 @@ public class NotificationServiceImpl implements NotificationService {
                     // No notification required
                 }
             }
+        }
+    }
+
+    @Override
+    public void processCheckoutReminderNotifications() {
+
+        LocalDate today = LocalDate.now();
+
+        AttendanceSettings settings = attendanceSettingsService.getSettings();
+        String officeEndTime = settings.getOfficeEndTime().toString(); // e.g. "18:00"
+
+        List<Attendance> attendances =
+                attendanceRepository.findByAttendanceDateAndCheckInTimeIsNotNullAndCheckOutTimeIsNull(today);
+
+        for (Attendance attendance : attendances) {
+
+            if (attendance.getAttendanceStatus() == AttendanceStatus.MISSED_CHECKOUT
+                    || attendance.getAttendanceStatus() == AttendanceStatus.LEAVE
+                    || attendance.getAttendanceStatus() == AttendanceStatus.ABSENT) {
+                continue;
+            }
+
+            createAttendanceNotification(
+                    attendance,
+                    NotificationType.CHECKOUT_REMINDER,
+                    NotificationPriority.MEDIUM,
+                    "Checkout Reminder",
+                    "Your work day ended at " + officeEndTime + ". Please don't forget to check out."
+            );
         }
     }
 

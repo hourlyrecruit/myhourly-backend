@@ -23,8 +23,8 @@ public class BirthdayScheduler {
     private final EmployeeRepository employeeRepository;
     private final NotificationService notificationService;
 
-   // @Scheduled(cron = "0 0 8 * * *")
-    @Scheduled(cron = "*/5 * * * * *")
+    @Scheduled(cron = "0 0 10 * * *")
+   // @Scheduled(cron = "*/5 * * * * *")
     @Transactional
     public void sendBirthdayNotifications() {
 

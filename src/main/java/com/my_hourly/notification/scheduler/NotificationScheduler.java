@@ -14,11 +14,11 @@ public class NotificationScheduler {
     private final NotificationService notificationService;
 
     /**
-     * Process attendance and leave notifications.
-     * Runs every 5 minutes.
+     * Process attendance (late/absent/missed-checkout) and leave notifications.
+     * Dev: every 5 seconds. Prod: every 5 minutes.
      */
-//@Scheduled(cron = "0 */5 * * * *")
-@Scheduled(cron = "*/5 * * * * *")
+    //@Scheduled(cron = "0 */5 * * * *")   // prod: every 5 minutes
+    @Scheduled(cron = "0 */5 * * * *")     // dev:  every 5 seconds
     public void processEventNotifications() {
 
         log.info("Processing attendance notifications...");
@@ -26,6 +26,21 @@ public class NotificationScheduler {
 
         log.info("Processing leave notifications...");
         notificationService.processLeaveNotifications();
+    }
+
+    /**
+     * Send a checkout reminder to all employees who have checked in but not yet checked out.
+     * Runs once a day at 5:30 PM (30 min before the default office end time of 6:00 PM).
+     * Adjust the cron expression if your officeEndTime differs.
+     *
+     * Cron: second minute hour day month weekday
+     *   "0 30 17 * * MON-FRI" = 5:30 PM, Monday to Friday only
+     */
+    @Scheduled(cron = "0 30 20 * * MON-FRI")
+    public void processCheckoutReminder() {
+
+        log.info("Sending checkout reminders...");
+        notificationService.processCheckoutReminderNotifications();
     }
 
     /**

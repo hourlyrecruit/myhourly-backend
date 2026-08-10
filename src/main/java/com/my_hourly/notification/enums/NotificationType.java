@@ -13,6 +13,7 @@ public enum NotificationType {
     LATE_CHECK_IN,
     ABSENT,
     MISSED_CHECKOUT,
+    CHECKOUT_REMINDER,
 
     // Calendar Notifications
     HOLIDAY,

@@ -64,6 +64,12 @@ public interface NotificationService {
 
     void processLeaveNotifications();
 
+    /**
+     * Sends a checkout reminder to all employees who have checked in but not yet checked out.
+     * Intended to run once near the end of the work day.
+     */
+    void processCheckoutReminderNotifications();
+
 //    void processBirthdayNotifications();
 //
 //    void processWorkAnniversaryNotifications();
