@@ -3,6 +3,7 @@ package com.my_hourly.notification.service;
 import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.notification.api.request.AnnouncementRequest;
 import com.my_hourly.notification.api.response.NotificationResponse;
+import com.my_hourly.notification.entity.Announcement;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -68,5 +69,6 @@ public interface NotificationService {
 //    void processWorkAnniversaryNotifications();
 //
 //    void processHolidayNotifications();
+
 
 }

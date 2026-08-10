@@ -1,6 +1,8 @@
 package com.my_hourly.notification.repository;
 
 import com.my_hourly.employee.entity.Employee;
+import com.my_hourly.notification.api.response.NotificationResponse;
+import com.my_hourly.notification.entity.Announcement;
 import com.my_hourly.notification.entity.Notification;
 import com.my_hourly.notification.enums.NotificationType;
 import com.my_hourly.notification.enums.ReferenceType;
@@ -11,6 +13,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
@@ -77,4 +82,10 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             @Param("employee") Employee employee
     );
 
+
+    List<Notification> findByCreatedAtGreaterThanEqualAndCreatedAtLessThanAndReferenceTypeNotIn(
+            LocalDateTime startOfDay,
+            LocalDateTime endOfDay,
+            List<ReferenceType> excludedTypes
+    );
 }

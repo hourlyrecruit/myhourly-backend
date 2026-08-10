@@ -5,6 +5,7 @@ import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.notification.api.request.AnnouncementRequest;
 import com.my_hourly.notification.api.response.NotificationResponse;
 import com.my_hourly.notification.entity.Announcement;
+import com.my_hourly.notification.entity.Notification;
 import com.my_hourly.notification.service.AnnouncementService;
 import com.my_hourly.notification.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -128,6 +129,26 @@ public class NotificationController {
                         .success(true)
                         .message("Today's announcements fetched successfully")
                         .data(announcements)
+                        .build()
+        );
+    }
+
+    @GetMapping("/celebration-wall/today")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
+    @Operation(
+            summary = "Get Today's Celebration Wall",
+            description = "Fetches today's celebration wall notifications excluding Attendance and Leave, with announcement attachments."
+    )
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getCelebrationWallForToday() {
+
+        List<NotificationResponse> notifications =
+                announcementService.getCelebrationWallForToday();
+
+        return ResponseEntity.ok(
+                ApiResponse.<List<NotificationResponse>>builder()
+                        .success(true)
+                        .message("Today's celebration wall fetched successfully")
+                        .data(notifications)
                         .build()
         );
     }
