@@ -29,4 +29,15 @@ public class EmployeeSpecification {
             );
         };
     }
+
+
+    public static Specification<Employee> reportingManager(
+            Employee manager) {
+
+        return (root, query, cb) ->
+                cb.equal(
+                        root.get("reportingManager"),
+                        manager
+                );
+    }
 }

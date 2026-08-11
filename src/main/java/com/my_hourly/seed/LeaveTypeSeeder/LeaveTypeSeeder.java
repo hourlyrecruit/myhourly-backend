@@ -27,7 +27,7 @@ public class LeaveTypeSeeder {
         }
 
         // Seed standard leave types
-        seedLeaveType("Annual Leave", "Paid annual leave entitlement", true, 24, 2, false);
+        //seedLeaveType("Annual Leave", "Paid annual leave entitlement", true, 24, 2, false);
         seedLeaveType("Sick Leave", "Paid sick leave for medical reasons", true, 12, 1, false);
         seedLeaveType("Casual Leave", "Short-notice personal leave", false, 12, 1, false);
 //        seedLeaveType("Maternity Leave", "Paid leave for maternity purposes", true, 90, 0, true);

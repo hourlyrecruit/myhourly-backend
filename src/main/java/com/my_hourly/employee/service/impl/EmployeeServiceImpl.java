@@ -457,27 +457,36 @@ public class EmployeeServiceImpl implements EmployeeService {
             String sortDirection
     ) {
 
+        Employee manager = getCurrentEmployee();
+
         Sort sort = sortDirection.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Employee> employees;
+        // Filter by logged-in manager
+        Specification<Employee> specification =
+                EmployeeSpecification.reportingManager(manager);
 
-        Specification<Employee> specification = Specification
-                .where(EmployeeSpecification.search(search));
-
-        if (search == null || search.isBlank()) {
-            employees = employeeRepository.findAll(pageable);
-        } else {
-            employees = employeeRepository.findAll(specification, pageable);
+        // Add search condition
+        if (search != null && !search.isBlank()) {
+            specification = specification.and(
+                    EmployeeSpecification.search(search)
+            );
         }
 
-        List<EmployeeResponse> responses = employees.getContent()
-                .stream()
-                .map(employeeMapper::toResponse)
-                .toList();
+        Page<Employee> employees =
+                employeeRepository.findAll(
+                        specification,
+                        pageable
+                );
+
+        List<EmployeeResponse> responses =
+                employees.getContent()
+                        .stream()
+                        .map(employeeMapper::toResponse)
+                        .toList();
 
         return PageResponse.<EmployeeResponse>builder()
                 .content(responses)
