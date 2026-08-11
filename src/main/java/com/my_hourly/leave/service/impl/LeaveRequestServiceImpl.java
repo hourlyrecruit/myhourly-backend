@@ -12,6 +12,7 @@ import com.my_hourly.leave.api.request.LeaveActionRequest;
 import com.my_hourly.leave.api.request.LeaveRequestRequest;
 import com.my_hourly.leave.api.response.LeaveRequestResponse;
 import com.my_hourly.leave.context.LeaveApplicationContext;
+import com.my_hourly.leave.email.LeaveEmailService;
 import com.my_hourly.leave.entity.LeaveBalance;
 import com.my_hourly.leave.entity.LeaveRequest;
 import com.my_hourly.leave.enums.ApprovalLevel;
@@ -21,6 +22,7 @@ import com.my_hourly.leave.mapper.LeaveRequestMapper;
 import com.my_hourly.leave.repository.LeaveRequestRepository;
 import com.my_hourly.leave.service.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class LeaveRequestServiceImpl
         implements LeaveRequestService {
 
@@ -42,7 +45,7 @@ public class LeaveRequestServiceImpl
     private final AttendanceService attendanceService;
     private final LeaveApprovalService leaveApprovalService;
     private final AttendanceRepository attendanceRepository;
-
+    private final LeaveEmailService leaveEmailService;
 
 
     @Override
@@ -71,6 +74,14 @@ public class LeaveRequestServiceImpl
         LeaveRequest saved =
                 leaveRequestRepository.save(leaveRequest);
 
+        try {
+            leaveEmailService.sendLeaveApplicationEmail(saved);
+        } catch (Exception e) {
+            log.error(
+                    "Failed to send leave application email",
+                    e
+            );
+        }
         return leaveRequestMapper.toResponse(saved);
     }
 
@@ -80,31 +91,41 @@ public class LeaveRequestServiceImpl
 
         Employee employee = employeeService.getCurrentEmployee();
 
-        LeaveRequest leaveRequest = getLeaveRequestEntity(leaveRequestId);
+        LeaveRequest leaveRequest =
+                getLeaveRequestEntity(leaveRequestId);
 
+        // Employee can cancel only their own leave
         if (!leaveRequest.getEmployee().getId().equals(employee.getId())) {
             throw new BadRequestException(
                     "You cannot cancel another employee's leave.",
-                    ErrorCode.NOT_ALLOWED);
+                    ErrorCode.NOT_ALLOWED
+            );
         }
 
+        // Already cancelled
         if (leaveRequest.getStatus() == LeaveStatus.CANCELLED) {
             throw new BadRequestException(
                     "Leave request is already cancelled.",
-                    ErrorCode.LEAVE_ALREADY_CANCELLED);
+                    ErrorCode.LEAVE_ALREADY_CANCELLED
+            );
         }
 
+        // Rejected leave cannot be cancelled
         if (leaveRequest.getStatus() == LeaveStatus.REJECTED) {
             throw new BadRequestException(
                     "Rejected leave cannot be cancelled.",
-                    ErrorCode.NOT_ALLOWED);
+                    ErrorCode.NOT_ALLOWED
+            );
         }
 
+        // Approved leave cannot be cancelled
         if (leaveRequest.getStatus() == LeaveStatus.APPROVED) {
             throw new BadRequestException(
                     "Approved leave cannot be cancelled.",
-                    ErrorCode.NOT_ALLOWED);
+                    ErrorCode.NOT_ALLOWED
+            );
         }
+
 //
 //        if (leaveRequest.getStatus() == LeaveStatus.APPROVED) {
 //
@@ -122,23 +143,44 @@ public class LeaveRequestServiceImpl
 //            attendanceService.removeLeaveAttendance(leaveRequest);
 //        }
 
+        /*
+         * Leave is currently PENDING.
+         * Restore the balance that was deducted when
+         * the leave was applied.
+         */
         LeaveBalance leaveBalance =
                 leaveBalanceService.getLeaveBalanceEntity(
                         leaveRequest.getEmployee(),
                         leaveRequest.getLeaveType(),
-                        leaveRequest.getStartDate());
+                        leaveRequest.getStartDate()
+                );
 
         leaveBalanceService.restoreLeaveBalance(
                 leaveBalance,
-                leaveRequest);
+                leaveRequest
+        );
 
-        // Optional: restore attendance
+        // Remove attendance created for the leave, if any
         attendanceService.removeLeaveAttendance(leaveRequest);
 
+        // Update leave status
         leaveRequest.setStatus(LeaveStatus.CANCELLED);
 
         LeaveRequest savedLeaveRequest =
                 leaveRequestRepository.save(leaveRequest);
+
+        // Notify reporting manager
+        try {
+            leaveEmailService.sendLeaveCancellationEmail(
+                    savedLeaveRequest
+            );
+        } catch (Exception e) {
+            log.error(
+                    "Failed to send leave cancellation email for leave request ID: {}",
+                    savedLeaveRequest.getId(),
+                    e
+            );
+        }
 
         return leaveRequestMapper.toResponse(savedLeaveRequest);
     }
@@ -219,29 +261,34 @@ public class LeaveRequestServiceImpl
 
 
     @Override
+    @Transactional
     public LeaveRequestResponse managerAction(
             Long leaveRequestId,
             LeaveActionRequest request) {
 
-        Employee manager = employeeService.getCurrentEmployee();
+        Employee manager =
+                employeeService.getCurrentEmployee();
 
-        LeaveRequest leaveRequest = getLeaveRequestEntity(leaveRequestId);
+        LeaveRequest leaveRequest =
+                getLeaveRequestEntity(leaveRequestId);
 
         // Leave must be pending
         if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
             throw new BadRequestException(
                     "Leave request has already been processed.",
-                    ErrorCode.LEAVE_ALREADY_PROCESSED);
+                    ErrorCode.LEAVE_ALREADY_PROCESSED
+            );
         }
 
         // Manager cannot approve own leave
         if (leaveRequest.getEmployee().getId().equals(manager.getId())) {
             throw new BadRequestException(
                     "You cannot approve your own leave.",
-                    ErrorCode.NOT_ALLOWED);
+                    ErrorCode.NOT_ALLOWED
+            );
         }
 
-
+        // Check attendance for each leave date
         LocalDate date = leaveRequest.getStartDate();
 
         while (!date.isAfter(leaveRequest.getEndDate())) {
@@ -260,41 +307,40 @@ public class LeaveRequestServiceImpl
             date = date.plusDays(1);
         }
 
-
-                // Optional validation
-                if (leaveRequest.getStartDate().isBefore(LocalDate.now())) {
-                    throw new BadRequestException(
-                            "Leave cannot be approved after its start date.",
-                            ErrorCode.INVALID_DATE);
-                }
-
-
-
-
+        // Leave cannot be approved after its start date
+        if (leaveRequest.getStartDate().isBefore(LocalDate.now())) {
+            throw new BadRequestException(
+                    "Leave cannot be approved after its start date.",
+                    ErrorCode.INVALID_DATE
+            );
+        }
 
         switch (request.getAction()) {
 
             case APPROVE -> {
 
-
-
                 LeaveBalance leaveBalance =
                         leaveBalanceService.getLeaveBalanceEntity(
                                 leaveRequest.getEmployee(),
                                 leaveRequest.getLeaveType(),
-                                leaveRequest.getStartDate());
+                                leaveRequest.getStartDate()
+                        );
 
-                // Deduct leave balance (also creates leave transaction)
+                // Deduct leave balance
                 leaveBalanceService.deductLeaveBalance(
                         leaveBalance,
-                        leaveRequest);
+                        leaveRequest
+                );
 
-                // Mark attendance
-                attendanceService.markLeaveAttendance(leaveRequest);
+                // Mark attendance as leave
+                attendanceService.markLeaveAttendance(
+                        leaveRequest
+                );
 
-                // Update leave status
-               // leaveRequest.setStatus(LeaveStatus.MANAGER_APPROVED);
-                leaveRequest.setStatus(LeaveStatus.APPROVED);
+                // Update status
+                leaveRequest.setStatus(
+                        LeaveStatus.APPROVED
+                );
 
                 // Save approval history
                 leaveApprovalService.createApproval(
@@ -302,7 +348,8 @@ public class LeaveRequestServiceImpl
                         manager,
                         ApprovalLevel.MANAGER,
                         LeaveAction.APPROVE,
-                        request.getReason());
+                        request.getReason()
+                );
             }
 
             case REJECT -> {
@@ -312,34 +359,55 @@ public class LeaveRequestServiceImpl
 
                     throw new BadRequestException(
                             "Rejection reason is required.",
-                            ErrorCode.REASON_REQUIRED);
+                            ErrorCode.REASON_REQUIRED
+                    );
                 }
 
-                leaveRequest.setStatus(LeaveStatus.REJECTED);
+                leaveRequest.setStatus(
+                        LeaveStatus.REJECTED
+                );
 
+                // Save rejection history
                 leaveApprovalService.createApproval(
                         leaveRequest,
                         manager,
                         ApprovalLevel.MANAGER,
                         LeaveAction.REJECT,
-                        request.getReason());
+                        request.getReason()
+                );
             }
 
             default -> throw new BadRequestException(
                     "Invalid leave action.",
-                    ErrorCode.INVALID_REQUEST);
+                    ErrorCode.INVALID_REQUEST
+            );
         }
-
-
 
         LeaveRequest savedLeaveRequest =
                 leaveRequestRepository.save(leaveRequest);
 
-        return leaveRequestMapper.toResponse(savedLeaveRequest);
+        // Send email to employee
+        try {
+
+            leaveEmailService.sendManagerLeaveActionEmail(
+                    savedLeaveRequest,
+                    manager,
+                    request
+            );
+
+        } catch (Exception e) {
+
+            log.error(
+                    "Failed to send leave action email for leave request ID: {}",
+                    savedLeaveRequest.getId(),
+                    e
+            );
+        }
+
+        return leaveRequestMapper.toResponse(
+                savedLeaveRequest
+        );
     }
-
-
-
 
 
 
