@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.http.converter.HttpMessageConverters;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,14 +33,13 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        for (HttpMessageConverter<?> converter : converters) {
-            if (converter instanceof MappingJackson2HttpMessageConverter jacksonConverter) {
-                List<MediaType> supportedMediaTypes = new ArrayList<>(jacksonConverter.getSupportedMediaTypes());
-                supportedMediaTypes.add(MediaType.APPLICATION_OCTET_STREAM);
-                jacksonConverter.setSupportedMediaTypes(supportedMediaTypes);
-            }
-        }
+    public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
+        JacksonJsonHttpMessageConverter jsonConverter = new JacksonJsonHttpMessageConverter();
+
+        List<MediaType> supportedMediaTypes = new ArrayList<>(jsonConverter.getSupportedMediaTypes());
+        supportedMediaTypes.add(MediaType.APPLICATION_OCTET_STREAM);
+        jsonConverter.setSupportedMediaTypes(supportedMediaTypes);
+
+        builder.withJsonConverter(jsonConverter);
     }
 }
