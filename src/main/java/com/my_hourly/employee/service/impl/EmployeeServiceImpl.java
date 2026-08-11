@@ -555,9 +555,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
 
-
-
-
     private void validateProfilePhoto(MultipartFile file) {
 
         if (file == null || file.isEmpty()) {
