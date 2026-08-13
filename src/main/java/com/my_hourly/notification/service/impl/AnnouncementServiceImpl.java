@@ -31,10 +31,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
 
-        return announcementRepository.findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(
-                startOfDay,
-                endOfDay
-        );
+        return announcementRepository
+                .findByCreatedAtGreaterThanEqualAndCreatedAtLessThanOrderByCreatedAtDesc(
+                        startOfDay,
+                        endOfDay
+                );
     }
 
     @Override
@@ -53,7 +54,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         List<Notification> notifications =
                 notificationRepository
-                        .findByCreatedAtGreaterThanEqualAndCreatedAtLessThanAndReferenceTypeNotIn(
+                        .findByCreatedAtGreaterThanEqualAndCreatedAtLessThanAndReferenceTypeNotInOrderByCreatedAtDesc(
                                 startOfDay,
                                 endOfDay,
                                 excludedTypes

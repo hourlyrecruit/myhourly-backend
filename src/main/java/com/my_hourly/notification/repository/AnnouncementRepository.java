@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface AnnouncementRepository extends JpaRepository<Announcement, Long> {
-    List<Announcement> findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(
+    List<Announcement> findByCreatedAtGreaterThanEqualAndCreatedAtLessThanOrderByCreatedAtDesc(
             LocalDateTime startOfDay,
             LocalDateTime endOfDay
     );
