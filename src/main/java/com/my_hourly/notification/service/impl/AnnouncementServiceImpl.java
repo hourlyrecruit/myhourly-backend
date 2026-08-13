@@ -4,6 +4,7 @@ import com.my_hourly.notification.api.response.NotificationResponse;
 import com.my_hourly.notification.entity.Announcement;
 import com.my_hourly.notification.entity.Notification;
 import com.my_hourly.notification.enums.ReferenceType;
+import com.my_hourly.notification.enums.UploadType;
 import com.my_hourly.notification.mapper.NotificationMapper;
 import com.my_hourly.notification.repository.AnnouncementRepository;
 import com.my_hourly.notification.repository.NotificationRepository;
@@ -58,6 +59,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                                 excludedTypes
                         );
 
+        Map<String, Notification> dedupMap = new LinkedHashMap<>();
+        for (Notification notification : notifications) {
+            String key = notification.getReferenceType() + "_" + notification.getReferenceId();
+            dedupMap.putIfAbsent(key, notification);
+        }
+        notifications = new ArrayList<>(dedupMap.values());
+
         // Get announcement IDs
         Set<Long> announcementIds = notifications.stream()
                 .filter(notification ->
@@ -68,8 +76,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .map(Notification::getReferenceId)
                 .collect(Collectors.toSet());
 
-        // Fetch announcements and their attachments
+        // Fetch announcements and keep only POST type; filter out MAGAZINE from notifications
         Map<Long, List<String>> announcementAttachmentMap = new HashMap<>();
+        Set<Long> postAnnouncementIds = new HashSet<>();
 
         if (!announcementIds.isEmpty()) {
 
@@ -77,11 +86,21 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                     announcementRepository.findAllById(announcementIds);
 
             for (Announcement announcement : announcements) {
-                announcementAttachmentMap.put(
-                        announcement.getId(),
-                        announcement.getAttachmentUrls()
-                );
+                if (UploadType.POST.equals(announcement.getUploadType())) {
+                    postAnnouncementIds.add(announcement.getId());
+                    announcementAttachmentMap.put(
+                            announcement.getId(),
+                            announcement.getAttachmentUrls()
+                    );
+                }
             }
+
+            Long[] postAnnouncementIdsArr = postAnnouncementIds.toArray(new Long[0]);
+            notifications.removeIf(notification ->
+                    ReferenceType.ANNOUNCEMENT.equals(notification.getReferenceType())
+                            && notification.getReferenceId() != null
+                            && !Arrays.asList(postAnnouncementIdsArr).contains(notification.getReferenceId())
+            );
         }
 
         // Convert Notification → NotificationResponse
