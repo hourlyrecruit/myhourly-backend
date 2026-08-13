@@ -58,6 +58,35 @@ public interface NotificationService {
     );
 
     /**
+     * Bulk notification creation for schedulers and broadcasts.
+     *
+     * <p>Performs the same duplicate check as {@link #createNotification} (an
+     * existing notification for the same employee, reference type, reference id
+     * and notification type is skipped), but for the whole batch at once, then
+     * inserts only the missing notifications with a single batch save. Keeps the
+     * exact same end state as calling {@link #createNotification} per recipient.</p>
+     */
+    void createNotificationsBulk(
+            java.util.List<NotificationItem> items
+    );
+
+    /**
+     * One notification to create. The recipient, title, message, type, priority,
+     * reference type and reference id map 1:1 to {@link #createNotification}'s
+     * parameters (the {@code postType} parameter is not persisted).
+     */
+    record NotificationItem(
+            com.my_hourly.employee.entity.Employee employee,
+            String title,
+            String message,
+            com.my_hourly.notification.enums.NotificationType notificationType,
+            com.my_hourly.notification.enums.NotificationPriority priority,
+            com.my_hourly.notification.enums.ReferenceType referenceType,
+            Long referenceId
+    ) {
+    }
+
+    /**
      * Scheduler Methods
      */
     void processAttendanceNotifications();

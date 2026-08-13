@@ -195,6 +195,101 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
+    public void createNotificationsBulk(List<NotificationItem> items) {
+
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+
+        // Dedupe within the batch with first-wins semantics, matching the
+        // per-call exists-check of createNotification.
+        Set<String> seen = new HashSet<>();
+        List<NotificationItem> uniqueItems = new ArrayList<>();
+
+        for (NotificationItem item : items) {
+            if (item.employee() == null || item.referenceId() == null) {
+                continue;
+            }
+            String key = item.employee().getId()
+                    + "|" + item.referenceType()
+                    + "|" + item.notificationType()
+                    + "|" + item.referenceId();
+            if (seen.add(key)) {
+                uniqueItems.add(item);
+            }
+        }
+
+        if (uniqueItems.isEmpty()) {
+            return;
+        }
+
+        // Group by (referenceType, notificationType) so the duplicate check runs
+        // once per group instead of once per recipient.
+        Map<NotificationGroupKey, List<NotificationItem>> groups = uniqueItems.stream()
+                .collect(Collectors.groupingBy(
+                        item -> new NotificationGroupKey(
+                                item.referenceType(),
+                                item.notificationType()
+                        )
+                ));
+
+        Set<String> existingKeys = new HashSet<>();
+
+        for (Map.Entry<NotificationGroupKey, List<NotificationItem>> entry
+                : groups.entrySet()) {
+
+            NotificationGroupKey key = entry.getKey();
+
+            List<Long> employeeIds = entry.getValue().stream()
+                    .map(item -> item.employee().getId())
+                    .distinct()
+                    .toList();
+
+            List<Long> referenceIds = entry.getValue().stream()
+                    .map(NotificationItem::referenceId)
+                    .distinct()
+                    .toList();
+
+            for (Object[] row : notificationRepository
+                    .findExistingEmployeeIdAndReferenceId(
+                            employeeIds,
+                            key.referenceType(),
+                            key.notificationType(),
+                            referenceIds
+                    )) {
+
+                existingKeys.add(row[0] + "|" + row[1]);
+            }
+        }
+
+        List<Notification> toCreate = uniqueItems.stream()
+                .filter(item -> !existingKeys.contains(
+                        item.employee().getId() + "|" + item.referenceId()))
+                .map(item -> Notification.builder()
+                        .employee(item.employee())
+                        .title(item.title())
+                        .message(item.message())
+                        .notificationType(item.notificationType())
+                        .priority(item.priority())
+                        .referenceType(item.referenceType())
+                        .referenceId(item.referenceId())
+                        .isRead(false)
+                        .build())
+                .toList();
+
+        if (!toCreate.isEmpty()) {
+            notificationRepository.saveAll(toCreate);
+        }
+    }
+
+    private record NotificationGroupKey(
+            ReferenceType referenceType,
+            NotificationType notificationType
+    ) {
+    }
+
+    @Override
     public void createAnnouncement(AnnouncementRequest request, List<MultipartFile> attachments) {
 
         List<String> attachmentUrls = new ArrayList<>();
@@ -220,23 +315,23 @@ public class NotificationServiceImpl implements NotificationService {
                 .attachmentUrls(attachmentUrls)
                 .build();
 
-        announcement = announcementRepository.save(announcement);
+        Announcement savedAnnouncement = announcementRepository.save(announcement);
 
         List<Employee> employees = employeeRepository.findAll();
 
-        for (Employee employee : employees) {
+        List<NotificationItem> items = employees.stream()
+                .map(employee -> new NotificationItem(
+                        employee,
+                        request.getTitle(),
+                        request.getMessage(),
+                        NotificationType.ANNOUNCEMENT,
+                        NotificationPriority.HIGH,
+                        ReferenceType.ANNOUNCEMENT,
+                        savedAnnouncement.getId()
+                ))
+                .toList();
 
-            createNotification(
-                    employee,
-                    request.getTitle(),
-                    request.getUploadType().toString(),
-                    request.getMessage(),
-                    NotificationType.ANNOUNCEMENT,
-                    NotificationPriority.HIGH,
-                    ReferenceType.ANNOUNCEMENT,
-                    announcement.getId()
-            );
-        }
+        createNotificationsBulk(items);
     }
 
     @Override
@@ -245,14 +340,25 @@ public class NotificationServiceImpl implements NotificationService {
 
         LocalDate today = LocalDate.now();
 
+        // Only rows that can produce a notification; avoids scanning every
+        // attendance record of the day every 5 minutes.
         List<Attendance> attendances =
-                attendanceRepository.findByAttendanceDate(today);
+                attendanceRepository.findByAttendanceDateAndAttendanceStatusIn(
+                        today,
+                        List.of(
+                                AttendanceStatus.LATE,
+                                AttendanceStatus.ABSENT,
+                                AttendanceStatus.MISSED_CHECKOUT
+                        )
+                );
+
+        List<NotificationItem> items = new ArrayList<>();
 
         for (Attendance attendance : attendances) {
 
             switch (attendance.getAttendanceStatus()) {
 
-                case LATE -> createAttendanceNotification(
+                case LATE -> items.addAll(attendanceNotificationItems(
                         attendance,
                         NotificationType.LATE_CHECK_IN,
                         NotificationPriority.MEDIUM,
@@ -260,29 +366,31 @@ public class NotificationServiceImpl implements NotificationService {
                         "You checked in "
                                 + attendance.getLateMinutes()
                                 + " minutes late today."
-                );
+                ));
 
-                case ABSENT -> createAttendanceNotification(
+                case ABSENT -> items.addAll(attendanceNotificationItems(
                         attendance,
                         NotificationType.ABSENT,
                         NotificationPriority.HIGH,
                         "Absent",
                         "You are marked absent today."
-                );
+                ));
 
-                case MISSED_CHECKOUT -> createAttendanceNotification(
+                case MISSED_CHECKOUT -> items.addAll(attendanceNotificationItems(
                         attendance,
                         NotificationType.MISSED_CHECKOUT,
                         NotificationPriority.HIGH,
                         "Missed Checkout",
                         "You forgot to checkout today."
-                );
+                ));
 
                 default -> {
                     // No notification required
                 }
             }
         }
+
+        createNotificationsBulk(items);
     }
 
     @Override
@@ -297,6 +405,8 @@ public class NotificationServiceImpl implements NotificationService {
         List<Attendance> attendances =
                 attendanceRepository.findByAttendanceDateAndCheckInTimeIsNotNullAndCheckOutTimeIsNull(today);
 
+        List<NotificationItem> items = new ArrayList<>();
+
         for (Attendance attendance : attendances) {
 
             if (attendance.getAttendanceStatus() == AttendanceStatus.MISSED_CHECKOUT
@@ -305,17 +415,19 @@ public class NotificationServiceImpl implements NotificationService {
                 continue;
             }
 
-            createAttendanceNotification(
+            items.addAll(attendanceNotificationItems(
                     attendance,
                     NotificationType.CHECKOUT_REMINDER,
                     NotificationPriority.MEDIUM,
                     "Checkout Reminder",
                     "Your work day ended at " + officeEndTime + ". Please don't forget to check out."
-            );
+            ));
         }
+
+        createNotificationsBulk(items);
     }
 
-    private void createAttendanceNotification(
+    private List<NotificationItem> attendanceNotificationItems(
             Attendance attendance,
             NotificationType type,
             NotificationPriority priority,
@@ -323,46 +435,34 @@ public class NotificationServiceImpl implements NotificationService {
             String message
     ) {
 
-        createNotification(
+        List<NotificationItem> items = new ArrayList<>();
+
+        items.add(new NotificationItem(
                 attendance.getEmployee(),
                 title,
-                "Attendance",
                 message,
                 type,
                 priority,
                 ReferenceType.ATTENDANCE,
                 attendance.getId()
-        );
-
-        notifyReportingManager(attendance, title);
-    }
-
-    private void notifyReportingManager(
-            Attendance attendance,
-            String title
-    ) {
+        ));
 
         Employee manager = attendance.getEmployee().getReportingManager();
 
-        if (manager == null) {
-            return;
+        if (manager != null) {
+
+            items.add(new NotificationItem(
+                    manager,
+                    title,
+                    "Attendance",
+                    NotificationType.GENERAL,
+                    NotificationPriority.MEDIUM,
+                    ReferenceType.ATTENDANCE,
+                    attendance.getId()
+            ));
         }
 
-        createNotification(
-                manager,
-                title,
-                attendance.getEmployee().getFirstName()
-                        + " "
-                        + attendance.getEmployee().getLastName()
-                        + " has "
-                        + title.toLowerCase()
-                        + ".",
-                "Attendance",
-                NotificationType.GENERAL,
-                NotificationPriority.MEDIUM,
-                ReferenceType.ATTENDANCE,
-                attendance.getId()
-        );
+        return items;
     }
 
     @Override
@@ -378,58 +478,62 @@ public class NotificationServiceImpl implements NotificationService {
                         endTime
                 );
 
+        List<NotificationItem> items = new ArrayList<>();
+
         for (LeaveRequest leaveRequest : leaveRequests) {
 
             switch (leaveRequest.getStatus()) {
 
-                case APPROVED -> createLeaveNotification(
+                case APPROVED -> items.addAll(leaveNotificationItems(
                         leaveRequest,
                         NotificationType.APPROVED,
                         NotificationPriority.MEDIUM,
                         "Leave Approved",
                         "Your leave request has been approved by your manager."
-                );
+                ));
 
-//                case MANAGER_APPROVED -> createLeaveNotification(
+//                case MANAGER_APPROVED -> items.addAll(leaveNotificationItems(
 //                        leaveRequest,
 //                        NotificationType.LEAVE_MANAGER_APPROVED,
 //                        NotificationPriority.MEDIUM,
 //                        "Leave Approved",
 //                        "Your leave request has been approved by your manager."
-//                );
+//                ));
 
-//                case HR_APPROVED -> createLeaveNotification(
+//                case HR_APPROVED -> items.addAll(leaveNotificationItems(
 //                        leaveRequest,
 //                        NotificationType.LEAVE_HR_APPROVED,
 //                        NotificationPriority.MEDIUM,
 //                        "Leave Approved",
 //                        "Your leave request has been approved by HR."
-//                );
+//                ));
 
-                case REJECTED -> createLeaveNotification(
+                case REJECTED -> items.addAll(leaveNotificationItems(
                         leaveRequest,
                         NotificationType.LEAVE_REJECTED,
                         NotificationPriority.HIGH,
                         "Leave Rejected",
                         "Your leave request has been rejected."
-                );
+                ));
 
-                case CANCELLED -> createLeaveNotification(
+                case CANCELLED -> items.addAll(leaveNotificationItems(
                         leaveRequest,
                         NotificationType.LEAVE_CANCELLED,
                         NotificationPriority.MEDIUM,
                         "Leave Cancelled",
                         "Your leave request has been cancelled."
-                );
+                ));
 
                 default -> {
                     // Ignore PENDING and other statuses
                 }
             }
         }
+
+        createNotificationsBulk(items);
     }
 
-    private void createLeaveNotification(
+    private List<NotificationItem> leaveNotificationItems(
             LeaveRequest leaveRequest,
             NotificationType notificationType,
             NotificationPriority priority,
@@ -437,32 +541,25 @@ public class NotificationServiceImpl implements NotificationService {
             String message
     ) {
 
-        createNotification(
+        List<NotificationItem> items = new ArrayList<>();
+
+        items.add(new NotificationItem(
                 leaveRequest.getEmployee(),
                 title,
-                "leave",
                 message,
                 notificationType,
                 priority,
                 ReferenceType.LEAVE,
                 leaveRequest.getId()
-        );
-
-        notifyManagerForLeave(leaveRequest, notificationType);
-    }
-
-    private void notifyManagerForLeave(
-            LeaveRequest leaveRequest,
-            NotificationType notificationType
-    ) {
+        ));
 
         Employee manager = leaveRequest.getEmployee().getReportingManager();
 
         if (manager == null) {
-            return;
+            return items;
         }
 
-        String message = switch (notificationType) {
+        String managerMessage = switch (notificationType) {
 
             case APPROVED, LEAVE_MANAGER_APPROVED -> leaveRequest.getEmployee().getFirstName()
                     + " leave request has been approved by the manager.";
@@ -479,20 +576,21 @@ public class NotificationServiceImpl implements NotificationService {
             default -> null;
         };
 
-        if (message == null) {
-            return;
+        if (managerMessage == null) {
+            return items;
         }
 
-        createNotification(
+        items.add(new NotificationItem(
                 manager,
                 "Leave Update",
-                "leave",
-                message,
+                managerMessage,
                 NotificationType.GENERAL,
                 NotificationPriority.MEDIUM,
                 ReferenceType.LEAVE,
                 leaveRequest.getId()
-        );
+        ));
+
+        return items;
     }
 
 //    @Override

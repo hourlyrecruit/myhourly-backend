@@ -55,5 +55,16 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long>,
             LocalDate attendanceDate
     );
 
+    /**
+     * Rows that still need a missed-checkout auto-marking: checked in, not
+     * checked out, and not already marked missed-checkout / on leave.
+     * Used by the 1-minute scheduler so already-processed rows are skipped.
+     */
+    List<Attendance>
+    findByAttendanceDateAndCheckInTimeIsNotNullAndCheckOutTimeIsNullAndAttendanceStatusNotIn(
+            LocalDate attendanceDate,
+            Collection<AttendanceStatus> statuses
+    );
+
 
 }

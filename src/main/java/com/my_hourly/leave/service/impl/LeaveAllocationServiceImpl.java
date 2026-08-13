@@ -18,7 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -53,21 +55,46 @@ public class LeaveAllocationServiceImpl implements LeaveAllocationService {
     @Override
     public void allocateForAllEmployees() {
 
-        List<Employee> employees = employeeRepository.findByActiveTrue();
-
-        for (Employee employee : employees) {
-            allocateForEmployee(employee.getId());
-        }
+        allocateForAllEmployeesBatched();
     }
 
     @Override
     @Transactional
     public void allocateYearlyLeaves() {
 
+        allocateForAllEmployeesBatched();
+    }
+
+    /**
+     * Allocates / adjusts the current year's balance for every active employee
+     * and active leave type. Loads the leave types and the year's existing
+     * balances once, instead of querying them once per employee / leave type.
+     */
+    private void allocateForAllEmployeesBatched() {
+
+        int year = LocalDate.now().getYear();
+
         List<Employee> employees = employeeRepository.findByActiveTrue();
+        List<LeaveType> leaveTypes = leaveTypeRepository.findByActiveTrue();
+
+        Map<Long, Map<Long, LeaveBalance>> balancesByEmployeeAndType = new HashMap<>();
+        for (LeaveBalance balance : leaveBalanceRepository.findByYear(year)) {
+            balancesByEmployeeAndType
+                    .computeIfAbsent(balance.getEmployee().getId(), k -> new HashMap<>())
+                    .put(balance.getLeaveType().getId(), balance);
+        }
 
         for (Employee employee : employees) {
-            allocateYearlyLeaveForEmployee(employee);
+            for (LeaveType leaveType : leaveTypes) {
+                allocateAnnualBalance(
+                        employee,
+                        leaveType,
+                        year,
+                        balancesByEmployeeAndType
+                                .getOrDefault(employee.getId(), Map.of())
+                                .get(leaveType.getId())
+                );
+            }
         }
     }
 
@@ -95,13 +122,15 @@ public class LeaveAllocationServiceImpl implements LeaveAllocationService {
     // Private helpers
     // -----------------------------------------------------------------------
 
-    private void allocateYearlyLeaveForEmployee(Employee employee) {
+    private void allocateAnnualBalance(Employee employee, LeaveType leaveType) {
 
-        List<LeaveType> leaveTypes = leaveTypeRepository.findByActiveTrue();
+        int year = LocalDate.now().getYear();
 
-        for (LeaveType leaveType : leaveTypes) {
-            allocateAnnualBalance(employee, leaveType);
-        }
+        LeaveBalance existingBalance = leaveBalanceRepository
+                .findByEmployeeAndLeaveTypeAndYear(employee, leaveType, year)
+                .orElse(null);
+
+        allocateAnnualBalance(employee, leaveType, year, existingBalance);
     }
 
     /**
@@ -109,16 +138,15 @@ public class LeaveAllocationServiceImpl implements LeaveAllocationService {
      * or adjusts the existing one (allocatedLeaves + remainingLeaves) by the delta if the
      * LeaveType's configured days have changed since it was last allocated.
      */
-    private void allocateAnnualBalance(Employee employee, LeaveType leaveType) {
+    private void allocateAnnualBalance(Employee employee,
+                                       LeaveType leaveType,
+                                       int year,
+                                       LeaveBalance existingBalance) {
 
-        int year = LocalDate.now().getYear();
         int allocatedDays = resolveAllocatedDays(leaveType);
 
-        Optional<LeaveBalance> existingOpt = leaveBalanceRepository
-                .findByEmployeeAndLeaveTypeAndYear(employee, leaveType, year);
-
-        if (existingOpt.isPresent()) {
-            adjustExistingBalance(existingOpt.get(), allocatedDays);
+        if (existingBalance != null) {
+            adjustExistingBalance(existingBalance, allocatedDays);
             return;
         }
 
