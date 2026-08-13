@@ -32,6 +32,40 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     List<Employee> findByActiveTrueAndRoleNameInOrderByFirstNameAsc(List<RoleName> manager);
 
+    /**
+     * Active employees whose birthday falls on the given day.
+     * Used by the daily birthday scheduler (avoids loading every employee
+     * and filtering in memory).
+     */
+    @Query("""
+            SELECT e FROM Employee e
+            WHERE e.active = true
+              AND e.dateOfBirth IS NOT NULL
+              AND MONTH(e.dateOfBirth) = :month
+              AND DAY(e.dateOfBirth) = :day
+            """)
+    List<Employee> findActiveEmployeesWithBirthday(
+            @Param("month") int month,
+            @Param("day") int day
+    );
+
+    /**
+     * Active employees whose work anniversary (date of joining) falls on the
+     * given day. Used by the daily work-anniversary scheduler.
+     */
+    @Query("""
+            SELECT e FROM Employee e
+            WHERE e.active = true
+              AND e.dateOfJoining IS NOT NULL
+              AND MONTH(e.dateOfJoining) = :month
+              AND DAY(e.dateOfJoining) = :day
+            """)
+    List<Employee> findActiveEmployeesWithWorkAnniversary(
+            @Param("month") int month,
+            @Param("day") int day
+    );
+
+
     Page<Employee> findAll(Specification<Employee> specification, Pageable pageable);
 
 //    ==========================

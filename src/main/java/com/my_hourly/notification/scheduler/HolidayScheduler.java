@@ -7,6 +7,7 @@ import com.my_hourly.notification.enums.NotificationPriority;
 import com.my_hourly.notification.enums.NotificationType;
 import com.my_hourly.notification.enums.ReferenceType;
 import com.my_hourly.notification.service.NotificationService;
+import com.my_hourly.notification.service.NotificationService.NotificationItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -42,21 +44,24 @@ public class HolidayScheduler {
                     List<Employee> employees =
                             employeeRepository.findByActiveTrue();
 
+                    List<NotificationItem> items = new ArrayList<>();
+
                     for (Employee employee : employees) {
 
-                        notificationService.createNotification(
+                        items.add(new NotificationItem(
                                 employee,
                                 "Holiday Today 🎉",
-                                "Holiday",
                                 "Today is " + holiday.getHolidayName()
                                         + ". Enjoy your holiday!",
                                 NotificationType.HOLIDAY,
                                 NotificationPriority.HIGH,
                                 ReferenceType.HOLIDAY,
                                 holiday.getId()
-                        );
+                        ));
 
                     }
+
+                    notificationService.createNotificationsBulk(items);
 
                     log.info("Today's holiday notifications sent.");
 
@@ -81,21 +86,24 @@ public class HolidayScheduler {
                     List<Employee> employees =
                             employeeRepository.findByActiveTrue();
 
+                    List<NotificationItem> items = new ArrayList<>();
+
                     for (Employee employee : employees) {
 
-                        notificationService.createNotification(
+                        items.add(new NotificationItem(
                                 employee,
                                 "Upcoming Holiday 📅",
-                                "Holiday",
                                 "Tomorrow is " + holiday.getHolidayName()
                                         + ". Plan your work accordingly.",
                                 NotificationType.HOLIDAY,
                                 NotificationPriority.MEDIUM,
                                 ReferenceType.HOLIDAY,
                                 holiday.getId()
-                        );
+                        ));
 
                     }
+
+                    notificationService.createNotificationsBulk(items);
 
                     log.info("Tomorrow holiday reminder sent.");
 

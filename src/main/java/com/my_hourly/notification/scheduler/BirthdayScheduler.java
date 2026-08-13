@@ -6,6 +6,7 @@ import com.my_hourly.notification.enums.NotificationPriority;
 import com.my_hourly.notification.enums.NotificationType;
 import com.my_hourly.notification.enums.ReferenceType;
 import com.my_hourly.notification.service.NotificationService;
+import com.my_hourly.notification.service.NotificationService.NotificationItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -30,20 +32,18 @@ public class BirthdayScheduler {
 
         LocalDate today = LocalDate.now();
 
-        List<Employee> allEmployees = employeeRepository.findByActiveTrue();
-
-        List<Employee> birthdayEmployees = allEmployees.stream()
-                .filter(employee ->
-                        employee.getDateOfBirth() != null
-                                && employee.getDateOfBirth().getMonthValue() == today.getMonthValue()
-                                && employee.getDateOfBirth().getDayOfMonth() == today.getDayOfMonth()
-                )
-                .toList();
+        List<Employee> birthdayEmployees =
+                employeeRepository.findActiveEmployeesWithBirthday(
+                        today.getMonthValue(),
+                        today.getDayOfMonth()
+                );
 
         if (birthdayEmployees.isEmpty()) {
             log.info("No birthdays found for {}", today);
             return;
         }
+
+        List<Employee> allEmployees = employeeRepository.findByActiveTrue();
 
         for (Employee birthdayEmployee : birthdayEmployees) {
 
@@ -54,17 +54,18 @@ public class BirthdayScheduler {
                 employeeName += " " + birthdayEmployee.getLastName();
             }
 
+            List<NotificationItem> items = new ArrayList<>();
+
             // Birthday wish to employee
-            notificationService.createNotification(
+            items.add(new NotificationItem(
                     birthdayEmployee,
-                "Happy Birthday 🎉 " + employeeName + "! Enjoy",
-                    "Birthday",
+                    "Happy Birthday 🎉 " + employeeName + "! Enjoy",
                     "Wishing you a wonderful birthday and a fantastic year ahead!",
                     NotificationType.BIRTHDAY,
                     NotificationPriority.MEDIUM,
                     ReferenceType.EMPLOYEE,
                     birthdayEmployee.getId()
-            );
+            ));
 
             // Notify everyone else
             for (Employee employee : allEmployees) {
@@ -73,17 +74,18 @@ public class BirthdayScheduler {
                     continue;
                 }
 
-                notificationService.createNotification(
+                items.add(new NotificationItem(
                         employee,
                         "Birthday Celebration 🎂",
-                        "Birthday",
                         employeeName + " is celebrating a birthday today. Don't forget to wish him/her!",
                         NotificationType.BIRTHDAY,
                         NotificationPriority.LOW,
                         ReferenceType.EMPLOYEE,
                         birthdayEmployee.getId()
-                );
+                ));
             }
+
+            notificationService.createNotificationsBulk(items);
         }
 
         log.info("Birthday notifications sent successfully for {} employee(s).",

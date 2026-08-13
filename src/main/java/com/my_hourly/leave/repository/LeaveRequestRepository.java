@@ -73,6 +73,33 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             @Param("monthStart") LocalDate monthStart,
             @Param("monthEnd") LocalDate monthEnd);
 
+    /**
+     * Same calculation as {@link #sumApprovedLeaveDaysInMonth} but for every
+     * employee / leave type at once, so the month-end expiry scheduler can
+     * replace the per-employee, per-leave-type N+1 queries with a single query.
+     */
+    interface UsedDaysProjection {
+        Long getEmployeeId();
+
+        Long getLeaveTypeId();
+
+        Long getTotalDays();
+    }
+
+    @Query("""
+            SELECT lr.employee.id AS employeeId,
+                   lr.leaveType.id AS leaveTypeId,
+                   COALESCE(SUM(lr.totalDays), 0) AS totalDays
+            FROM LeaveRequest lr
+            WHERE lr.status = 'HR_APPROVED'
+              AND lr.startDate >= :monthStart
+              AND lr.startDate <= :monthEnd
+            GROUP BY lr.employee.id, lr.leaveType.id
+            """)
+    List<UsedDaysProjection> sumApprovedLeaveDaysInMonthGrouped(
+            @Param("monthStart") LocalDate monthStart,
+            @Param("monthEnd") LocalDate monthEnd);
+
 
     @Query("""
             SELECT lr

@@ -953,15 +953,15 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         List<Attendance> attendances =
                 attendanceRepository
-                        .findByAttendanceDateAndCheckInTimeIsNotNullAndCheckOutTimeIsNull(
-                                today
+                        .findByAttendanceDateAndCheckInTimeIsNotNullAndCheckOutTimeIsNullAndAttendanceStatusNotIn(
+                                today,
+                                List.of(
+                                        AttendanceStatus.LEAVE,
+                                        AttendanceStatus.MISSED_CHECKOUT
+                                )
                         );
 
         for (Attendance attendance : attendances) {
-
-            if (attendance.getAttendanceStatus() == AttendanceStatus.LEAVE) {
-                continue;
-            }
 
             attendance.setAttendanceStatus(
                     AttendanceStatus.MISSED_CHECKOUT

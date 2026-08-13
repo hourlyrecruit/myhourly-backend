@@ -18,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -81,12 +83,46 @@ public class LeaveExpiryServiceImpl implements LeaveExpiryService {
         List<Employee> employees = employeeRepository.findByActiveTrue();
         List<LeaveType> leaveTypes = leaveTypeRepository.findByActiveTrue();
 
+        // Load all balances for the year and all approved days used in the month
+        // in two queries, replacing the per-employee / per-leave-type N+1 reads.
+        Map<Long, Map<Long, LeaveBalance>> balancesByEmployeeAndType = new HashMap<>();
+        for (LeaveBalance balance : leaveBalanceRepository.findByYear(expiringMonth.getYear())) {
+            balancesByEmployeeAndType
+                    .computeIfAbsent(balance.getEmployee().getId(), k -> new HashMap<>())
+                    .put(balance.getLeaveType().getId(), balance);
+        }
+
+        Map<Long, Map<Long, Integer>> usedDaysByEmployeeAndType = new HashMap<>();
+        for (LeaveRequestRepository.UsedDaysProjection used :
+                leaveRequestRepository.sumApprovedLeaveDaysInMonthGrouped(monthStart, monthEnd)) {
+            usedDaysByEmployeeAndType
+                    .computeIfAbsent(used.getEmployeeId(), k -> new HashMap<>())
+                    .put(used.getLeaveTypeId(), used.getTotalDays().intValue());
+        }
+
         for (Employee employee : employees) {
             for (LeaveType leaveType : leaveTypes) {
                 // Apply expiry logic to paid leave types
-                if (Boolean.TRUE.equals(leaveType.getPaid())) {
-                    processExpiry(employee, leaveType, monthStart, monthEnd, expiringMonth, monthlyGuideline);
+                if (!Boolean.TRUE.equals(leaveType.getPaid())) {
+                    continue;
                 }
+
+                Map<Long, LeaveBalance> employeeBalances =
+                        balancesByEmployeeAndType.get(employee.getId());
+                if (employeeBalances == null) {
+                    continue;
+                }
+
+                LeaveBalance balance = employeeBalances.get(leaveType.getId());
+                if (balance == null) {
+                    continue;
+                }
+
+                int usedThisMonth = usedDaysByEmployeeAndType
+                        .getOrDefault(employee.getId(), Map.of())
+                        .getOrDefault(leaveType.getId(), 0);
+
+                expireUnused(balance, employee, usedThisMonth, monthlyGuideline);
             }
         }
 
@@ -97,33 +133,9 @@ public class LeaveExpiryServiceImpl implements LeaveExpiryService {
     // Private helpers
     // -----------------------------------------------------------------------
 
-    private void processExpiry(Employee employee,
-                                LeaveType leaveType,
-                                LocalDate monthStart,
-                                LocalDate monthEnd,
-                                YearMonth expiringMonth,
-                                int monthlyGuideline) {
-
-        // Fetch the annual balance for this year
-        leaveBalanceRepository
-                .findByEmployeeAndLeaveTypeAndYear(
-                        employee,
-                        leaveType,
-                        expiringMonth.getYear())
-                .ifPresent(balance -> expireUnused(
-                        balance,
-                        leaveType,
-                        employee,
-                        monthStart,
-                        monthEnd,
-                        monthlyGuideline));
-    }
-
     private void expireUnused(LeaveBalance balance,
-                               LeaveType leaveType,
                                Employee employee,
-                               LocalDate monthStart,
-                               LocalDate monthEnd,
+                               int usedThisMonth,
                                int monthlyGuideline) {
 
         if (balance.getRemainingLeaves() <= 0) {
@@ -131,23 +143,13 @@ public class LeaveExpiryServiceImpl implements LeaveExpiryService {
             return;
         }
 
-        // How many approved leave days did this employee use in the expiring month?
-        Integer usedThisMonth = leaveRequestRepository.sumApprovedLeaveDaysInMonth(
-                employee,
-                leaveType,
-                monthStart,
-                monthEnd);
-
-        if (usedThisMonth == null) {
-            usedThisMonth = 0;
-        }
-
         // Unused = guideline - used, clamped to 0 (cannot be negative)
         int unusedGuideline = Math.max(0, monthlyGuideline - usedThisMonth);
 
         if (unusedGuideline <= 0) {
             log.debug("No expiry for employee {} leaveType {} month {}: used {} >= guideline {}",
-                    employee.getId(), leaveType.getName(), monthStart.getMonth(),
+                    employee.getId(), balance.getLeaveType().getName(),
+                    LocalDate.now().getMonth(),
                     usedThisMonth, monthlyGuideline);
             return;
         }
@@ -165,7 +167,7 @@ public class LeaveExpiryServiceImpl implements LeaveExpiryService {
         leaveTransactionService.createExpiryTransaction(balance, daysToExpire);
 
         log.info("Expired {} day(s) for employee {} leaveType {} | balance: {} → {}",
-                daysToExpire, employee.getId(), leaveType.getName(),
+                daysToExpire, employee.getId(), balance.getLeaveType().getName(),
                 balanceBefore, balance.getRemainingLeaves());
     }
 }

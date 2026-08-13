@@ -15,6 +15,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -43,6 +44,29 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             ReferenceType referenceType,
             Long referenceId,
             NotificationType notificationType
+    );
+
+    /**
+     * Bulk duplicate check used by schedulers / broadcasts.
+     *
+     * <p>Returns the (employeeId, referenceId) pairs that already have a
+     * notification for the given reference type / notification type, so the
+     * caller can insert only the missing ones instead of running one
+     * exists-check + save per recipient.</p>
+     */
+    @Query("""
+            SELECT n.employee.id, n.referenceId
+            FROM Notification n
+            WHERE n.employee.id IN :employeeIds
+              AND n.referenceType = :referenceType
+              AND n.notificationType = :notificationType
+              AND n.referenceId IN :referenceIds
+            """)
+    List<Object[]> findExistingEmployeeIdAndReferenceId(
+            @Param("employeeIds") Collection<Long> employeeIds,
+            @Param("referenceType") ReferenceType referenceType,
+            @Param("notificationType") NotificationType notificationType,
+            @Param("referenceIds") Collection<Long> referenceIds
     );
 
     /**
