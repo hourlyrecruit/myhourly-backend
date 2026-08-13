@@ -107,7 +107,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     );
 
 
-    List<Notification> findByCreatedAtGreaterThanEqualAndCreatedAtLessThanAndReferenceTypeNotIn(
+    List<Notification> findByCreatedAtGreaterThanEqualAndCreatedAtLessThanAndReferenceTypeNotInOrderByCreatedAtDesc(
             LocalDateTime startOfDay,
             LocalDateTime endOfDay,
             List<ReferenceType> excludedTypes
