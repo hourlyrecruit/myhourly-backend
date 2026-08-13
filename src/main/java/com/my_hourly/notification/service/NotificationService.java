@@ -36,6 +36,14 @@ public interface NotificationService {
     void markAllAsRead();
 
     /**
+     * Returns active employees whose next birthday falls within the next
+     * {@code days} days (including today), sorted by upcoming birthday date.
+     */
+    java.util.List<com.my_hourly.notification.api.response.UpcomingBirthdayResponse> getUpcomingBirthdays(
+            int days
+    );
+
+    /**
      * HR Announcement.
      */
     void createAnnouncement(

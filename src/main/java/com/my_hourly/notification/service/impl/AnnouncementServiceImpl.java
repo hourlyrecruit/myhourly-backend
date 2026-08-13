@@ -3,6 +3,7 @@ package com.my_hourly.notification.service.impl;
 import com.my_hourly.notification.api.response.NotificationResponse;
 import com.my_hourly.notification.entity.Announcement;
 import com.my_hourly.notification.entity.Notification;
+import com.my_hourly.notification.enums.NotificationType;
 import com.my_hourly.notification.enums.ReferenceType;
 import com.my_hourly.notification.enums.UploadType;
 import com.my_hourly.notification.mapper.NotificationMapper;
@@ -24,6 +25,22 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final AnnouncementRepository announcementRepository;
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
+
+    /**
+     * Notification types shown on the celebration wall. Birthdays only appear
+     * on the actual birth date: {@link NotificationType#BIRTHDAY} is created
+     * by {@link com.my_hourly.notification.scheduler.BirthdayScheduler} on the
+     * day itself, while the advance "Upcoming Birthday" reminders
+     * ({@link NotificationType#GENERAL}, sent days ahead) are intentionally
+     * excluded.
+     */
+    private static final List<NotificationType> CELEBRATION_TYPES = List.of(
+            NotificationType.ANNOUNCEMENT,
+            NotificationType.BIRTHDAY,
+            NotificationType.WORK_ANNIVERSARY,
+            NotificationType.HOLIDAY
+    );
+
     @Override
     public List<Announcement> getAnnouncementsForToday() {
         LocalDate today = LocalDate.now();
@@ -58,7 +75,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                                 startOfDay,
                                 endOfDay,
                                 excludedTypes
-                        );
+                        )
+                        .stream()
+                        .filter(notification -> CELEBRATION_TYPES.contains(
+                                notification.getNotificationType()
+                        ))
+                        .toList();
 
         Map<String, Notification> dedupMap = new LinkedHashMap<>();
         for (Notification notification : notifications) {

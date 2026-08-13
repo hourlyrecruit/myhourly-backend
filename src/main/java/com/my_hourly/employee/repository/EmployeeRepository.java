@@ -33,6 +33,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByActiveTrueAndRoleNameInOrderByFirstNameAsc(List<RoleName> manager);
 
     /**
+     * Active employees who have a date of birth on file.
+     * Used by the upcoming-birthdays endpoint / scheduler, which compute the
+     * next birthday date (including year wrap-around) in memory.
+     */
+    List<Employee> findByActiveTrueAndDateOfBirthIsNotNull();
+
+    /**
      * Active employees whose birthday falls on the given day.
      * Used by the daily birthday scheduler (avoids loading every employee
      * and filtering in memory).
