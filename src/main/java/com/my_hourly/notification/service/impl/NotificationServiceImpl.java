@@ -25,7 +25,7 @@ import com.my_hourly.notification.mapper.NotificationMapper;
 import com.my_hourly.notification.repository.AnnouncementRepository;
 import com.my_hourly.notification.repository.NotificationRepository;
 import com.my_hourly.notification.service.NotificationService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
