@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
@@ -59,7 +58,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public PageResponse<NotificationResponse> getMyNotifications(
             int page,
             int size
@@ -111,6 +110,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public long getUnreadCount() {
 
         return notificationRepository.countByEmployeeAndIsReadFalse(
@@ -119,6 +119,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
     public void markAsRead(Long notificationId) {
 
         Employee employee = getCurrentEmployee();
@@ -142,6 +143,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
     public void markAllAsRead() {
 
         notificationRepository.markAllAsRead(
@@ -150,6 +152,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
     public void createNotification(
             Employee employee,
             String title,
@@ -204,6 +207,12 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
 
+        saveAnnouncementAndBroadcast(request, attachmentUrls);
+    }
+
+    @Transactional
+    protected void saveAnnouncementAndBroadcast(AnnouncementRequest request, List<String> attachmentUrls) {
+
         Announcement announcement = Announcement.builder()
                 .title(request.getTitle())
                 .uploadType(request.getUploadType())
@@ -231,6 +240,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
     public void processAttendanceNotifications() {
 
         LocalDate today = LocalDate.now();
@@ -276,12 +286,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
     public void processCheckoutReminderNotifications() {
 
         LocalDate today = LocalDate.now();
 
         AttendanceSettings settings = attendanceSettingsService.getSettings();
-        String officeEndTime = settings.getOfficeEndTime().toString(); // e.g. "18:00"
+        String officeEndTime = settings.getOfficeEndTime().toString();
 
         List<Attendance> attendances =
                 attendanceRepository.findByAttendanceDateAndCheckInTimeIsNotNullAndCheckOutTimeIsNull(today);
@@ -355,6 +366,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
     public void processLeaveNotifications() {
 
         LocalDateTime endTime = LocalDateTime.now();
