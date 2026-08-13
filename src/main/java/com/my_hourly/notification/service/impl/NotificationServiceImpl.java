@@ -5,6 +5,7 @@ import com.my_hourly.attendance.entity.AttendanceStatus;
 import com.my_hourly.settings.attendance.entity.AttendanceSettings;
 import com.my_hourly.settings.attendance.service.AttendanceSettingsService;
 import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.BadRequestException;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.common.service.FileStorageServiceB2;
@@ -16,6 +17,7 @@ import com.my_hourly.leave.entity.LeaveRequest;
 import com.my_hourly.leave.repository.LeaveRequestRepository;
 import com.my_hourly.notification.api.request.AnnouncementRequest;
 import com.my_hourly.notification.api.response.NotificationResponse;
+import com.my_hourly.notification.api.response.UpcomingBirthdayResponse;
 import com.my_hourly.notification.entity.Announcement;
 import com.my_hourly.notification.entity.Notification;
 import com.my_hourly.notification.enums.NotificationPriority;
@@ -35,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +58,85 @@ public class NotificationServiceImpl implements NotificationService {
     private Employee getCurrentEmployee() {
         Employee currentEmployee = employeeService.getCurrentEmployee();
         return currentEmployee;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UpcomingBirthdayResponse> getUpcomingBirthdays(int days) {
+
+        if (days < 1 || days > 365) {
+            throw new BadRequestException(
+                    "days must be between 1 and 365.",
+                    ErrorCode.BAD_REQUEST
+            );
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate windowEnd = today.plusDays(days);
+
+        return employeeRepository
+                .findByActiveTrueAndDateOfBirthIsNotNull()
+                .stream()
+                .map(employee -> new UpcomingBirthday(
+                        employee,
+                        nextBirthday(employee.getDateOfBirth(), today)
+                ))
+                .filter(upcoming -> !upcoming.date().isAfter(windowEnd))
+                .sorted(Comparator
+                        .comparing(UpcomingBirthday::date)
+                        .thenComparing(upcoming -> upcoming.employee().getFirstName())
+                )
+                .map(upcoming -> toUpcomingBirthdayResponse(
+                        upcoming.employee(),
+                        upcoming.date(),
+                        today
+                ))
+                .toList();
+    }
+
+    /**
+     * The next date on which {@code dateOfBirth} falls, taking the current
+     * year (or the next one once this year's birthday has passed) into account.
+     */
+    static LocalDate nextBirthday(LocalDate dateOfBirth, LocalDate today) {
+
+        LocalDate next = dateOfBirth.withYear(today.getYear());
+
+        if (next.isBefore(today)) {
+            next = next.plusYears(1);
+        }
+
+        return next;
+    }
+
+    private UpcomingBirthdayResponse toUpcomingBirthdayResponse(
+            Employee employee,
+            LocalDate upcomingBirthdayDate,
+            LocalDate today
+    ) {
+
+        String employeeName = employee.getFirstName();
+
+        if (employee.getLastName() != null
+                && !employee.getLastName().isBlank()) {
+            employeeName += " " + employee.getLastName();
+        }
+
+        return new UpcomingBirthdayResponse(
+                employee.getId(),
+                employee.getFirstName(),
+                employee.getLastName(),
+                employeeName,
+                employee.getDateOfBirth(),
+                upcomingBirthdayDate,
+                ChronoUnit.DAYS.between(today, upcomingBirthdayDate)
+        );
+    }
+
+    private record UpcomingBirthday(
+            Employee employee,
+            LocalDate date
+    ) {
     }
 
     @Override

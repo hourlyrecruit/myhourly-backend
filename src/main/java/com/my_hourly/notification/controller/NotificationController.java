@@ -4,6 +4,7 @@ import com.my_hourly.common.payload.response.ApiResponse;
 import com.my_hourly.common.payload.response.PageResponse;
 import com.my_hourly.notification.api.request.AnnouncementRequest;
 import com.my_hourly.notification.api.response.NotificationResponse;
+import com.my_hourly.notification.api.response.UpcomingBirthdayResponse;
 import com.my_hourly.notification.entity.Announcement;
 import com.my_hourly.notification.entity.Notification;
 import com.my_hourly.notification.service.AnnouncementService;
@@ -131,6 +132,28 @@ public class NotificationController {
                         .data(announcements)
                         .build()
         );
+    }
+
+    @GetMapping("/upcoming-birthdays")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
+    @Operation(
+            summary = "Get Upcoming Birthdays",
+            description = "Fetches active employees whose birthdays fall within the next N days (including today), sorted by upcoming birthday date."
+    )
+    public ApiResponse<List<UpcomingBirthdayResponse>> getUpcomingBirthdays(
+
+            @RequestParam(defaultValue = "7")
+            int days
+    ) {
+
+        List<UpcomingBirthdayResponse> birthdays =
+                notificationService.getUpcomingBirthdays(days);
+
+        return ApiResponse.<List<UpcomingBirthdayResponse>>builder()
+                .success(true)
+                .message("Upcoming birthdays fetched successfully.")
+                .data(birthdays)
+                .build();
     }
 
     @GetMapping("/celebration-wall/today")
