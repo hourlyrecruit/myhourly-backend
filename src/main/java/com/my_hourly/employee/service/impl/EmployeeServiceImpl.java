@@ -1,7 +1,5 @@
 package com.my_hourly.employee.service.impl;
 
-import com.my_hourly.attendance.entity.Attendance;
-import com.my_hourly.attendance.specification.AttendanceSpecification;
 import com.my_hourly.authentication.entity.User;
 import com.my_hourly.authentication.repository.UserRepository;
 import com.my_hourly.common.enums.ErrorCode;
@@ -37,6 +35,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.my_hourly.authentication.entity.RoleName;
 
 import java.io.IOException;
 import java.util.List;
@@ -457,7 +456,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             String sortDirection
     ) {
 
-        Employee manager = getCurrentEmployee();
+        Employee currentEmployee = getCurrentEmployee();
 
         Sort sort = sortDirection.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
@@ -465,11 +464,16 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        // Filter by logged-in manager
-        Specification<Employee> specification =
-                EmployeeSpecification.reportingManager(manager);
+        Specification<Employee> specification = Specification.allOf();
 
-        // Add search condition
+        // Managers can see only their direct reports
+        if (isManager(currentEmployee)) {
+            specification = specification.and(
+                    EmployeeSpecification.reportingManager(currentEmployee)
+            );
+        }
+
+        // Apply search filter
         if (search != null && !search.isBlank()) {
             specification = specification.and(
                     EmployeeSpecification.search(search)
@@ -477,10 +481,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         Page<Employee> employees =
-                employeeRepository.findAll(
-                        specification,
-                        pageable
-                );
+                employeeRepository.findAll(specification, pageable);
 
         List<EmployeeResponse> responses =
                 employees.getContent()
@@ -496,6 +497,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .totalPages(employees.getTotalPages())
                 .last(employees.isLast())
                 .build();
+    }
+
+    private boolean isManager(Employee employee) {
+        return employee.getRoleName() == RoleName.MANAGER;
     }
 
     @Override
