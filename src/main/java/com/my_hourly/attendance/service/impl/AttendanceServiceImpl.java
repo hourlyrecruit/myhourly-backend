@@ -966,6 +966,7 @@ public class AttendanceServiceImpl implements AttendanceService {
             attendance.setAttendanceStatus(
                     AttendanceStatus.MISSED_CHECKOUT
             );
+            attendance.setCheckOutTime(LocalDateTime.now());
         }
 
         attendanceRepository.saveAll(attendances);
