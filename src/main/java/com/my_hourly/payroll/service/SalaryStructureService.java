@@ -23,18 +23,13 @@ public interface SalaryStructureService {
     SalaryStructureResponse getById(Long id);
 
     /**
-     * Get current active salary structure of employee.
+     * Get salary structures of employee.
      */
-    SalaryStructureResponse getActiveByEmployee(Long employeeId);
+    List<SalaryStructureResponse> getByEmployee(Long employeeId, Boolean activeOnly);
 
     /**
-     * Get salary history of employee.
+     * Get all salary structures.
      */
-    List<SalaryStructureResponse> getHistory(Long employeeId);
-
-    /**
-     * Get all active salary structures.
-     */
-    List<SalaryStructureResponse> getAllActive();
+    List<SalaryStructureResponse> getAll(Boolean activeOnly);
 
 }

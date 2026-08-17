@@ -2,6 +2,7 @@ package com.my_hourly.payroll.controller;
 
 import com.my_hourly.payroll.dto.request.CreatePayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdateDraftPayrollRequest;
+import com.my_hourly.payroll.dto.request.UpdatePayrollStatusRequest;
 import com.my_hourly.payroll.dto.response.PayrollResponse;
 import com.my_hourly.payroll.dto.response.PayrollSummaryResponse;
 import com.my_hourly.payroll.enums.PayrollStatus;
@@ -104,46 +105,26 @@ public class PayrollController {
        Lifecycle Transitions
        ===================================================== */
 
-    @PutMapping("/{payrollId}/draft")
-    @Operation(summary = "Finalize a DRAFT payroll as GENERATED before approval, 'SUPER_ADMIN','HR_ADMIN'")
+    @PutMapping("/{id}")
+    @Operation(summary = "Update a DRAFT payroll before approval, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
-    public ResponseEntity<PayrollResponse> updateDraft(
-            @PathVariable Long payrollId,
+    public ResponseEntity<PayrollResponse> update(
+            @PathVariable Long id,
             @Valid @RequestBody UpdateDraftPayrollRequest request) {
 
         return ResponseEntity.ok(
-                payrollService.updateDraft(payrollId, request));
+                payrollService.update(id, request));
     }
 
-    @PatchMapping("/{id}/approve")
-    @Operation(summary = "Approve a GENERATED payroll, 'SUPER_ADMIN','HR_ADMIN'")
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Update Payroll Status (APPROVE, PAID, CANCEL), 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
-    public ResponseEntity<PayrollResponse> approve(
-            @PathVariable Long id) {
-
-        return ResponseEntity.ok(
-                payrollService.approve(id));
-    }
-
-    @PatchMapping("/{id}/pay")
-    @Operation(summary = "Mark an APPROVED payroll as PAID, 'SUPER_ADMIN','HR_ADMIN'")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
-    public ResponseEntity<PayrollResponse> markAsPaid(
+    public ResponseEntity<PayrollResponse> updateStatus(
             @PathVariable Long id,
-            @RequestParam String paymentReference) {
+            @Valid @RequestBody UpdatePayrollStatusRequest request) {
 
         return ResponseEntity.ok(
-                payrollService.markAsPaid(id, paymentReference));
-    }
-
-    @PatchMapping("/{id}/cancel")
-    @Operation(summary = "Cancel a DRAFT or GENERATED payroll, 'SUPER_ADMIN','HR_ADMIN'")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
-    public ResponseEntity<PayrollResponse> cancel(
-            @PathVariable Long id) {
-
-        return ResponseEntity.ok(
-                payrollService.cancel(id));
+                payrollService.updateStatus(id, request));
     }
 
     @PostMapping("/{id}/regenerate")
@@ -173,25 +154,6 @@ public class PayrollController {
                         "attachment; filename=payslip-" + id + ".pdf")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
-    }
-
-
-    @GetMapping("/employee/month")
-    @Operation(summary = "Download Own Payslip PDF for the given month/year, 'EMPLOYEE', 'HR_ADMIN', 'MANAGER'")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'HR_ADMIN', 'MANAGER')")
-    public ResponseEntity<byte[]> getPayslipByEmployeeAndMonth(
-            @RequestParam int month,
-            @RequestParam int year) {
-
-        byte[] pdfBytes = payslipPdfService.generatePayslip(month, year);
-
-        String filename = "payslip_" + month + "_" + year + ".pdf";
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + filename + "\"")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdfBytes);
     }
 
 

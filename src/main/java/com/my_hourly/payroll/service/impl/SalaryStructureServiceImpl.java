@@ -93,32 +93,35 @@ public class SalaryStructureServiceImpl implements SalaryStructureService {
 
     @Override
     @Transactional(readOnly = true)
-    public SalaryStructureResponse getActiveByEmployee(Long employeeId) {
+    public List<SalaryStructureResponse> getByEmployee(Long employeeId, Boolean activeOnly) {
 
-        return mapToResponse(
-                getActiveSalaryStructure(employeeId));
+        if (Boolean.TRUE.equals(activeOnly)) {
+            return salaryStructureRepository.findByEmployeeIdAndStatus(employeeId, SalaryStructureStatus.ACTIVE)
+                    .map(structure -> List.of(mapToResponse(structure)))
+                    .orElse(List.of());
+        } else {
+            return salaryStructureRepository.findByEmployeeIdOrderByEffectiveFromDesc(employeeId)
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
+        }
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<SalaryStructureResponse> getHistory(Long employeeId) {
+    public List<SalaryStructureResponse> getAll(Boolean activeOnly) {
 
-        return salaryStructureRepository
-                .findByEmployeeIdOrderByEffectiveFromDesc(employeeId)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalaryStructureResponse> getAllActive() {
-
-        return salaryStructureRepository
-                .findByStatus(SalaryStructureStatus.ACTIVE)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+        if (Boolean.TRUE.equals(activeOnly)) {
+            return salaryStructureRepository.findByStatus(SalaryStructureStatus.ACTIVE)
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
+        } else {
+            return salaryStructureRepository.findAll()
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
+        }
     }
 
     private Employee getEmployee(Long employeeId) {

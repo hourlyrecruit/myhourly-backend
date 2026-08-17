@@ -3,6 +3,7 @@ package com.my_hourly.payroll.controller;
 import com.my_hourly.employee.entity.EmploymentType;
 import com.my_hourly.payroll.dto.request.CreateSalaryTemplateRequest;
 import com.my_hourly.payroll.dto.request.UpdateSalaryTemplateRequest;
+import com.my_hourly.payroll.dto.request.UpdateSalaryTemplateStatusRequest;
 import com.my_hourly.payroll.dto.response.SalaryTemplateResponse;
 import com.my_hourly.payroll.service.SalaryTemplateService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -68,41 +69,22 @@ public class SalaryTemplateController {
     @GetMapping
     @Operation(summary = "Get All Salary Templates, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
-    public ResponseEntity<List<SalaryTemplateResponse>> getAll() {
+    public ResponseEntity<List<SalaryTemplateResponse>> getAll(
+            @RequestParam(required = false, defaultValue = "false") Boolean activeOnly) {
 
         return ResponseEntity.ok(
-                salaryTemplateService.getAll());
+                salaryTemplateService.getAll(activeOnly));
     }
 
-    @GetMapping("/active")
-    @Operation(summary = "Get All Active Salary Templates, 'SUPER_ADMIN','HR_ADMIN'")
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Update Salary Template Status, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
-    public ResponseEntity<List<SalaryTemplateResponse>> getAllActive() {
+    public ResponseEntity<SalaryTemplateResponse> updateStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateSalaryTemplateStatusRequest request) {
 
         return ResponseEntity.ok(
-                salaryTemplateService.getAllActive());
-    }
-
-    @PatchMapping("/{id}/activate")
-    @Operation(summary = "Activate Salary Template, 'SUPER_ADMIN','HR_ADMIN'")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
-    public ResponseEntity<Void> activate(
-            @PathVariable Long id) {
-
-        salaryTemplateService.activate(id);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping("/{id}/deactivate")
-    @Operation(summary = "Deactivate Salary Template, 'SUPER_ADMIN','HR_ADMIN'")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN')")
-    public ResponseEntity<Void> deactivate(
-            @PathVariable Long id) {
-
-        salaryTemplateService.deactivate(id);
-
-        return ResponseEntity.noContent().build();
+                salaryTemplateService.updateStatus(id, request));
     }
 
 }

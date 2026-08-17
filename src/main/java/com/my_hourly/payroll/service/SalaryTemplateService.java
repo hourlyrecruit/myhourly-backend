@@ -3,6 +3,7 @@ package com.my_hourly.payroll.service;
 import com.my_hourly.employee.entity.EmploymentType;
 import com.my_hourly.payroll.dto.request.CreateSalaryTemplateRequest;
 import com.my_hourly.payroll.dto.request.UpdateSalaryTemplateRequest;
+import com.my_hourly.payroll.dto.request.UpdateSalaryTemplateStatusRequest;
 import com.my_hourly.payroll.dto.response.SalaryTemplateResponse;
 
 import java.util.List;
@@ -35,21 +36,11 @@ public interface SalaryTemplateService {
     /**
      * Get all Salary Templates.
      */
-    List<SalaryTemplateResponse> getAll();
+    List<SalaryTemplateResponse> getAll(Boolean activeOnly);
 
     /**
-     * Get all Active Salary Templates.
+     * Update Salary Template status.
      */
-    List<SalaryTemplateResponse> getAllActive();
-
-    /**
-     * Activate Salary Template.
-     */
-    void activate(Long id);
-
-    /**
-     * Deactivate Salary Template.
-     */
-    void deactivate(Long id);
+    SalaryTemplateResponse updateStatus(Long id, UpdateSalaryTemplateStatusRequest request);
 
 }

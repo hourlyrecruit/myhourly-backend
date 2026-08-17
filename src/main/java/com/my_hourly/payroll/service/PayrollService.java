@@ -2,6 +2,7 @@ package com.my_hourly.payroll.service;
 
 import com.my_hourly.payroll.dto.request.CreatePayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdateDraftPayrollRequest;
+import com.my_hourly.payroll.dto.request.UpdatePayrollStatusRequest;
 import com.my_hourly.payroll.dto.response.PayrollResponse;
 import com.my_hourly.payroll.dto.response.PayrollSummaryResponse;
 import com.my_hourly.payroll.enums.PayrollStatus;
@@ -44,22 +45,12 @@ public interface PayrollService {
     /**
      * Update a DRAFT payroll before finalizing.
      */
-    PayrollResponse updateDraft(Long payrollId, UpdateDraftPayrollRequest request);
+    PayrollResponse update(Long payrollId, UpdateDraftPayrollRequest request);
 
     /**
-     * Approve a GENERATED payroll.
+     * Update the status of a payroll (Approve, Pay, Cancel).
      */
-    PayrollResponse approve(Long payrollId);
-
-    /**
-     * Mark an APPROVED payroll as PAID.
-     */
-    PayrollResponse markAsPaid(Long payrollId, String paymentReference);
-
-    /**
-     * Cancel a payroll (only DRAFT or GENERATED).
-     */
-    PayrollResponse cancel(Long payrollId);
+    PayrollResponse updateStatus(Long payrollId, UpdatePayrollStatusRequest request);
 
     /**
      * Regenerate a payroll (supersedes current, creates new version).
