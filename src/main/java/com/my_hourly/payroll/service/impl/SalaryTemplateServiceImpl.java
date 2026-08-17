@@ -6,6 +6,7 @@ import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.employee.entity.EmploymentType;
 import com.my_hourly.payroll.dto.request.CreateSalaryTemplateRequest;
 import com.my_hourly.payroll.dto.request.UpdateSalaryTemplateRequest;
+import com.my_hourly.payroll.dto.request.UpdateSalaryTemplateStatusRequest;
 import com.my_hourly.payroll.dto.response.SalaryTemplateResponse;
 import com.my_hourly.payroll.entity.SalaryTemplate;
 import com.my_hourly.payroll.repository.SalaryTemplateRepository;
@@ -109,42 +110,28 @@ public class SalaryTemplateServiceImpl implements SalaryTemplateService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SalaryTemplateResponse> getAll() {
+    public List<SalaryTemplateResponse> getAll(Boolean activeOnly) {
 
-        return salaryTemplateRepository.findAll()
-                .stream()
+        List<SalaryTemplate> templates;
+        if (Boolean.TRUE.equals(activeOnly)) {
+            templates = salaryTemplateRepository.findByActiveTrue();
+        } else {
+            templates = salaryTemplateRepository.findAll();
+        }
+
+        return templates.stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<SalaryTemplateResponse> getAllActive() {
-
-        return salaryTemplateRepository.findByActiveTrue()
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    @Override
-    public void activate(Long id) {
+    public SalaryTemplateResponse updateStatus(Long id, UpdateSalaryTemplateStatusRequest request) {
 
         SalaryTemplate template = getTemplate(id);
 
-        template.setActive(true);
+        template.setActive(request.getActive());
 
-        salaryTemplateRepository.save(template);
-    }
-
-    @Override
-    public void deactivate(Long id) {
-
-        SalaryTemplate template = getTemplate(id);
-
-        template.setActive(false);
-
-        salaryTemplateRepository.save(template);
+        return mapToResponse(salaryTemplateRepository.save(template));
     }
 
     // =========================================================

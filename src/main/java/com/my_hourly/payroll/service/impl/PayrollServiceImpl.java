@@ -8,6 +8,7 @@ import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.employee.service.EmployeeService;
 import com.my_hourly.payroll.dto.request.CreatePayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdateDraftPayrollRequest;
+import com.my_hourly.payroll.dto.request.UpdatePayrollStatusRequest;
 import com.my_hourly.payroll.dto.response.FailedPayroll;
 import com.my_hourly.payroll.dto.response.PayrollResponse;
 import com.my_hourly.payroll.dto.response.PayrollSummaryResponse;
@@ -179,7 +180,7 @@ public class PayrollServiceImpl implements PayrollService {
        ========================================================= */
 
     @Override
-    public PayrollResponse updateDraft(Long payrollId, UpdateDraftPayrollRequest request) {
+    public PayrollResponse update(Long payrollId, UpdateDraftPayrollRequest request) {
 
         Payroll payroll = getPayroll(payrollId);
 
@@ -264,81 +265,62 @@ public class PayrollServiceImpl implements PayrollService {
     }
 
     @Override
-    public PayrollResponse approve(Long payrollId) {
+    public PayrollResponse updateStatus(Long payrollId, UpdatePayrollStatusRequest request) {
 
         Payroll payroll = getPayroll(payrollId);
+        PayrollStatus newStatus = request.getStatus();
 
-        if (payroll.getStatus() != PayrollStatus.GENERATED) {
-            throw new BadRequestException(
-                    "Only GENERATED payroll can be approved. Current status: " + payroll.getStatus(),
-                    ErrorCode.BAD_REQUEST);
+        if (newStatus == PayrollStatus.APPROVED) {
+            if (payroll.getStatus() != PayrollStatus.GENERATED) {
+                throw new BadRequestException(
+                        "Only GENERATED payroll can be approved. Current status: " + payroll.getStatus(),
+                        ErrorCode.BAD_REQUEST);
+            }
+
+            payroll.setStatus(PayrollStatus.APPROVED);
+            payroll.setApprovedDate(LocalDate.now());
+            payroll.setApprovedBy(employeeService.getCurrentEmployee()); // TODO: wire in security context
+
+            payrollRepository.save(payroll);
+            payrollHistoryService.saveHistory(payroll, PayrollHistoryAction.APPROVED, "Payroll approved.");
+
+        } else if (newStatus == PayrollStatus.PAID) {
+            if (payroll.getStatus() != PayrollStatus.APPROVED) {
+                throw new BadRequestException(
+                        "Payroll must be APPROVED before marking as PAID. Current status: " + payroll.getStatus(),
+                        ErrorCode.BAD_REQUEST);
+            }
+
+            payroll.setStatus(PayrollStatus.PAID);
+            payroll.setPaymentDate(LocalDate.now());
+            payroll.setPaymentReference(request.getPaymentReference());
+            
+            payrollRepository.save(payroll);
+            payrollHistoryService.saveHistory(
+                    payroll,
+                    PayrollHistoryAction.PAID,
+                    "Payroll marked as PAID. Reference: " + request.getPaymentReference());
+
+        } else if (newStatus == PayrollStatus.CANCELLED) {
+            if (payroll.getStatus() == PayrollStatus.APPROVED
+                    || payroll.getStatus() == PayrollStatus.PAID) {
+                throw new BadRequestException(
+                        "Approved or Paid payrolls cannot be cancelled.", ErrorCode.BAD_REQUEST);
+            }
+
+            if (payroll.getStatus() == PayrollStatus.CANCELLED) {
+                throw new BadRequestException(
+                        "Payroll is already cancelled.", ErrorCode.BAD_REQUEST);
+            }
+
+            payroll.setStatus(PayrollStatus.CANCELLED);
+            payroll.setActive(false);
+
+            payrollRepository.save(payroll);
+            payrollHistoryService.saveHistory(payroll, PayrollHistoryAction.CANCELLED, "Payroll cancelled.");
+        } else {
+            throw new BadRequestException("Unsupported status transition: " + newStatus, ErrorCode.BAD_REQUEST);
         }
-
-        payroll.setStatus(PayrollStatus.APPROVED);
-        payroll.setApprovedDate(LocalDate.now());
-        payroll.setApprovedBy(employeeService.getCurrentEmployee()); // TODO: wire in security context
-
-        payrollRepository.save(payroll);
-
-        payrollHistoryService.saveHistory(payroll, PayrollHistoryAction.APPROVED, "Payroll approved.");
-
-        return mapToResponse(payroll);
-    }
-
-    @Override
-    public PayrollResponse markAsPaid(Long payrollId, String paymentReference) {
-
-        Payroll payroll = getPayroll(payrollId);
-
-        if (payroll.getStatus() != PayrollStatus.APPROVED) {
-            throw new BadRequestException(
-                    "Payroll must be APPROVED before marking as PAID. Current status: " + payroll.getStatus(),
-                    ErrorCode.BAD_REQUEST);
-        }
-
-        payroll.setStatus(PayrollStatus.PAID);
-        payroll.setPaymentDate(LocalDate.now());
-
-        //String paymentReference = generatePaymentReference(payroll);
-        payroll.setPaymentReference(paymentReference);
-        Payroll saved = payrollRepository.save(payroll);
-
-
-        payrollHistoryService.saveHistory(
-                payroll,
-                PayrollHistoryAction.PAID,
-                "Payroll marked as PAID. Reference: " + saved.getStatus());
-
-        return mapToResponse(payroll);
-    }
-
-//    private String generatePaymentReference(Payroll payroll){
-//        payroll.getPayrollNumber() + "-" + payroll.getVersion();
-//    }
-
-
-    @Override
-    public PayrollResponse cancel(Long payrollId) {
-
-        Payroll payroll = getPayroll(payrollId);
-
-        if (payroll.getStatus() == PayrollStatus.APPROVED
-                || payroll.getStatus() == PayrollStatus.PAID) {
-            throw new BadRequestException(
-                    "Approved or Paid payrolls cannot be cancelled.", ErrorCode.BAD_REQUEST);
-        }
-
-        if (payroll.getStatus() == PayrollStatus.CANCELLED) {
-            throw new BadRequestException(
-                    "Payroll is already cancelled.", ErrorCode.BAD_REQUEST);
-        }
-
-        payroll.setStatus(PayrollStatus.CANCELLED);
-        payroll.setActive(false);
-
-        payrollRepository.save(payroll);
-
-        payrollHistoryService.saveHistory(payroll, PayrollHistoryAction.CANCELLED, "Payroll cancelled.");
 
         return mapToResponse(payroll);
     }

@@ -52,32 +52,24 @@ public class SalaryStructureController {
                 salaryStructureService.getById(id));
     }
 
-    @GetMapping("/employee/{employeeId}/active")
-    @Operation(summary = "Get Active Salary Structure, 'SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN'")
+    @GetMapping("/employee/{employeeId}")
+    @Operation(summary = "Get Salary Structures of Employee, 'SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
-    public ResponseEntity<SalaryStructureResponse> getActiveSalary(
-            @PathVariable Long employeeId) {
+    public ResponseEntity<List<SalaryStructureResponse>> getByEmployee(
+            @PathVariable Long employeeId,
+            @RequestParam(required = false, defaultValue = "false") Boolean activeOnly) {
 
         return ResponseEntity.ok(
-                salaryStructureService.getActiveByEmployee(employeeId));
+                salaryStructureService.getByEmployee(employeeId, activeOnly));
     }
 
-    @GetMapping("/employee/{employeeId}/history")
-    @Operation(summary = "Get Salary History, 'SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN'")
+    @GetMapping
+    @Operation(summary = "Get All Salary Structures, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
-    public ResponseEntity<List<SalaryStructureResponse>> getHistory(
-            @PathVariable Long employeeId) {
+    public ResponseEntity<List<SalaryStructureResponse>> getAll(
+            @RequestParam(required = false, defaultValue = "false") Boolean activeOnly) {
 
         return ResponseEntity.ok(
-                salaryStructureService.getHistory(employeeId));
-    }
-
-    @GetMapping("/active")
-    @Operation(summary = "Get All Active Salary Structures, 'SUPER_ADMIN','HR_ADMIN'")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
-    public ResponseEntity<List<SalaryStructureResponse>> getAllActive() {
-
-        return ResponseEntity.ok(
-                salaryStructureService.getAllActive());
+                salaryStructureService.getAll(activeOnly));
     }
 }
