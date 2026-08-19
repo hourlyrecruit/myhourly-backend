@@ -148,20 +148,20 @@ public class LeaveRequestServiceImpl
          * Restore the balance that was deducted when
          * the leave was applied.
          */
-        LeaveBalance leaveBalance =
-                leaveBalanceService.getLeaveBalanceEntity(
-                        leaveRequest.getEmployee(),
-                        leaveRequest.getLeaveType(),
-                        leaveRequest.getStartDate()
-                );
-
-        leaveBalanceService.restoreLeaveBalance(
-                leaveBalance,
-                leaveRequest
-        );
+//        LeaveBalance leaveBalance =
+//                leaveBalanceService.getLeaveBalanceEntity(
+//                        leaveRequest.getEmployee(),
+//                        leaveRequest.getLeaveType(),
+//                        leaveRequest.getStartDate()
+//                );
+//
+//        leaveBalanceService.restoreLeaveBalance(
+//                leaveBalance,
+//                leaveRequest
+//        );
 
         // Remove attendance created for the leave, if any
-        attendanceService.removeLeaveAttendance(leaveRequest);
+       // attendanceService.removeLeaveAttendance(leaveRequest);
 
         // Update leave status
         leaveRequest.setStatus(LeaveStatus.CANCELLED);
