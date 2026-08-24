@@ -5,6 +5,7 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import com.my_hourly.report.dto.response.LeaveReportResponse;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -13,90 +14,157 @@ import java.util.List;
 @Component
 public class LeavePdfExporter {
 
+    private final Font titleFont = new Font(
+            Font.HELVETICA,
+            18,
+            Font.BOLD
+    );
+
+    // Header font
+    private final Font headerFont = new Font(
+            Font.HELVETICA,
+            12,
+            Font.BOLD
+    );
+
+    // Table content font
+    private final Font tableFont = new Font(
+            Font.HELVETICA,
+            12,
+            Font.NORMAL
+    );
+
     public byte[] export(List<LeaveReportResponse> reports) {
 
         try {
 
-            Document document = new Document(PageSize.A4.rotate());
+            Document document =
+                    new Document(PageSize.A4.rotate());
 
             ByteArrayOutputStream outputStream =
                     new ByteArrayOutputStream();
 
-            PdfWriter.getInstance(document, outputStream);
+            PdfWriter.getInstance(
+                    document,
+                    outputStream
+            );
 
             document.open();
 
-            Font titleFont = new Font(
-                    Font.HELVETICA,
-                    18,
-                    Font.BOLD
-            );
+            // =========================
+            // Title
+            // =========================
 
             Paragraph title =
-                    new Paragraph("Leave Report", titleFont);
+                    new Paragraph(
+                            "Leave Report",
+                            titleFont
+                    );
 
-            title.setAlignment(Element.ALIGN_CENTER);
+            title.setAlignment(
+                    Element.ALIGN_CENTER
+            );
 
             document.add(title);
 
-            document.add(new Paragraph(" "));
+            document.add(
+                    new Paragraph(" ")
+            );
 
-            PdfPTable table = new PdfPTable(10);
+            // =========================
+            // Table
+            // =========================
 
-            table.setWidthPercentage(100);
-
-            table.setWidths(new float[]{
-                    2f, // Employee Code
-                    3f, // Employee Name
-                    3f, // Department
-                    2f, // Leave Type
-                    2f, // Status
-                    2f, // Start
-                    2f, // End
-                    1.5f, // Days
-                    4f, // Reason
-                    3f  // Created At
-            });
+            PdfPTable table =
+                    getPdfPTable();
 
             addHeader(table);
 
             for (LeaveReportResponse report : reports) {
 
-                table.addCell(value(report.getEmployeeCode()));
-                table.addCell(value(report.getEmployeeName()));
-                table.addCell(value(report.getDepartmentName()));
+                // Employee Code
+                addDataCell(
+                        table,
+                        value(report.getEmployeeCode())
+                );
 
-                table.addCell(
+                // Employee Id
+                addDataCell(
+                        table,
+                        report.getEmployeeId() == null
+                                ? ""
+                                : report.getEmployeeId().toString()
+                );
+
+                // Employee Name
+                addDataCell(
+                        table,
+                        value(report.getEmployeeName())
+                );
+
+                // Department
+                addDataCell(
+                        table,
+                        value(report.getDepartmentName())
+                );
+
+                // Leave Type
+                addDataCell(
+                        table,
                         report.getLeaveType() == null
                                 ? ""
                                 : report.getLeaveType().toString()
                 );
 
-                table.addCell(
+                // Leave Id
+                addDataCell(
+                        table,
+                        report.getLeaveId() == null
+                                ? ""
+                                : report.getLeaveId().toString()
+                );
+
+                // Status
+                addDataCell(
+                        table,
                         report.getLeaveStatus() == null
                                 ? ""
                                 : report.getLeaveStatus().name()
                 );
 
-                table.addCell(
+                // Start Date
+                addDataCell(
+                        table,
                         report.getStartDate() == null
                                 ? ""
                                 : report.getStartDate().toString()
                 );
 
-                table.addCell(
+                // End Date
+                addDataCell(
+                        table,
                         report.getEndDate() == null
                                 ? ""
                                 : report.getEndDate().toString()
                 );
 
-                table.addCell(
-                        String.valueOf(report.getTotalDays())
+                // Total Days
+                addDataCell(
+                        table,
+                        String.valueOf(
+                                report.getTotalDays()
+                        )
                 );
 
-                table.addCell(value(report.getReason()));
+                // Reason
+                addDataCell(
+                        table,
+                        value(report.getReason())
+                );
 
-                table.addCell(
+                // Created At
+                addDataCell(
+                        table,
                         report.getCreatedAt() == null
                                 ? ""
                                 : report.getCreatedAt().toString()
@@ -118,31 +186,173 @@ public class LeavePdfExporter {
         }
     }
 
-    private void addHeader(PdfPTable table) {
+    // =========================
+    // Create PDF Table
+    // =========================
 
-        addCell(table, "Employee Code");
-        addCell(table, "Employee Name");
-        addCell(table, "Department");
-        addCell(table, "Leave Type");
-        addCell(table, "Status");
-        addCell(table, "Start Date");
-        addCell(table, "End Date");
-        addCell(table, "Days");
-        addCell(table, "Reason");
-        addCell(table, "Created At");
+    private static @NonNull PdfPTable getPdfPTable() {
+
+        PdfPTable table =
+                new PdfPTable(12);
+
+        table.setWidthPercentage(100);
+
+        table.setWidths(
+                new float[]{
+                        2f,    // Employee Code
+                        1.5f,  // Employee Id
+                        3f,    // Employee Name
+                        3f,    // Department
+                        2f,    // Leave Type
+                        1.5f,  // Leave Id
+                        2f,    // Status
+                        2f,    // Start Date
+                        2f,    // End Date
+                        1.5f,  // Days
+                        4f,    // Reason
+                        3f     // Created At
+                }
+        );
+
+        return table;
     }
 
-    private void addCell(PdfPTable table, String value) {
+    // =========================
+    // Table Header
+    // =========================
 
-        PdfPCell cell = new PdfPCell(new Phrase(value));
+    private void addHeader(
+            PdfPTable table) {
 
-        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        addHeaderCell(
+                table,
+                "Employee Code"
+        );
+
+        addHeaderCell(
+                table,
+                "Employee Id"
+        );
+
+        addHeaderCell(
+                table,
+                "Employee Name"
+        );
+
+        addHeaderCell(
+                table,
+                "Department"
+        );
+
+        addHeaderCell(
+                table,
+                "Leave Type"
+        );
+
+        addHeaderCell(
+                table,
+                "Leave Id"
+        );
+
+        addHeaderCell(
+                table,
+                "Status"
+        );
+
+        addHeaderCell(
+                table,
+                "Start Date"
+        );
+
+        addHeaderCell(
+                table,
+                "End Date"
+        );
+
+        addHeaderCell(
+                table,
+                "Days"
+        );
+
+        addHeaderCell(
+                table,
+                "Reason"
+        );
+
+        addHeaderCell(
+                table,
+                "Created At"
+        );
+    }
+
+    // =========================
+    // Header Cell
+    // =========================
+
+    private void addHeaderCell(
+            PdfPTable table,
+            String value) {
+
+        PdfPCell cell =
+                new PdfPCell(
+                        new Phrase(
+                                value,
+                                headerFont
+                        )
+                );
+
+        cell.setHorizontalAlignment(
+                Element.ALIGN_CENTER
+        );
+
+        cell.setVerticalAlignment(
+                Element.ALIGN_MIDDLE
+        );
+
+        // Reduce header padding
+        cell.setPadding(2);
 
         table.addCell(cell);
     }
 
+    // =========================
+    // Data Cell
+    // =========================
+
+    private void addDataCell(
+            PdfPTable table,
+            String value) {
+
+        PdfPCell cell =
+                new PdfPCell(
+                        new Phrase(
+                                value,
+                                tableFont
+                        )
+                );
+
+        cell.setHorizontalAlignment(
+                Element.ALIGN_CENTER
+        );
+
+        cell.setVerticalAlignment(
+                Element.ALIGN_MIDDLE
+        );
+
+        // Reduce cell padding
+        cell.setPadding(2);
+
+        table.addCell(cell);
+    }
+
+    // =========================
+    // Null Handling
+    // =========================
+
     private String value(String value) {
 
-        return value == null ? "" : value;
+        return value == null
+                ? ""
+                : value;
     }
 }

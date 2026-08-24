@@ -36,7 +36,7 @@ public class LeaveReportResponse {
     private Long leaveId;
 
     @Schema(description = "Type of leave")
-    private LeaveType leaveType;
+    private String leaveType;
 
     @Schema(description = "Current status of leave", example = "APPROVED")
     private LeaveStatus leaveStatus;

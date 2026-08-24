@@ -4,6 +4,8 @@ import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.leave.entity.LeaveRequest;
 import com.my_hourly.leave.entity.LeaveType;
 import com.my_hourly.leave.enums.LeaveStatus;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -121,6 +123,14 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             LocalDateTime start,
             LocalDateTime end
     );
+
+    @EntityGraph(attributePaths = {
+            "employee",
+            "employee.department",
+            "leaveType"
+    })
+    @Override
+    List<LeaveRequest> findAll(Specification<LeaveRequest> specification);
 }
 
 
