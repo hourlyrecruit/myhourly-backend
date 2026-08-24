@@ -23,14 +23,14 @@ public class LeavePdfExporter {
     // Header font
     private final Font headerFont = new Font(
             Font.HELVETICA,
-            12,
+            8,
             Font.BOLD
     );
 
     // Table content font
     private final Font tableFont = new Font(
             Font.HELVETICA,
-            12,
+            7,
             Font.NORMAL
     );
 
