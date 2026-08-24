@@ -36,6 +36,8 @@ public class LeaveExcelExporter {
         header.createCell(8).setCellValue("Reason");
         header.createCell(9).setCellValue("Created At");
         header.createCell(10).setCellValue("Updated At");
+        header.createCell(11).setCellValue("EmployeeId");
+        header.createCell(12).setCellValue("Leave Request Id");
 
         // Data
         for (LeaveReportResponse report : reports) {
@@ -93,10 +95,22 @@ public class LeaveExcelExporter {
                             ? ""
                             : report.getUpdatedAt().toString()
             );
+
+            row.createCell(11).setCellValue(
+                    report.getEmployeeId() == null
+                        ? ""
+                            : report.getEmployeeId().toString()
+            );
+
+            row.createCell(12).setCellValue(
+                    report.getLeaveId() == null
+                        ? ""
+                            : report.getLeaveId().toString()
+            );
         }
 
         // Auto Size Columns
-        for (int i = 0; i <= 10; i++) {
+        for (int i = 0; i <= 12; i++) {
             sheet.autoSizeColumn(i);
         }
 

@@ -34,6 +34,7 @@ public class LeaveReportServiceImpl implements LeaveReportService {
     private final LeavePdfExporter leavePdfExporter;
 
     @Override
+    @Transactional(readOnly = true)
     public LeaveReportPageResponse getLeaveReport(
             LeaveReportRequest request) {
 
@@ -147,7 +148,7 @@ public class LeaveReportServiceImpl implements LeaveReportService {
                                 .getDepartmentName())
 
                 .leaveType(
-                        leave.getLeaveType())
+                        leave.getLeaveType().getName())
 
                 .leaveStatus(
                         leave.getStatus())
@@ -241,6 +242,7 @@ public class LeaveReportServiceImpl implements LeaveReportService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public byte[] exportLeaveExcel(
             LeaveReportRequest request) {
 
@@ -251,8 +253,11 @@ public class LeaveReportServiceImpl implements LeaveReportService {
         Specification<LeaveRequest> specification =
                 LeaveReportSpecification.filter(request);
 
+        List<LeaveRequest> leaveRequests =
+                leaveRequestRepository.findAll(specification);
+
         List<LeaveReportResponse> reports =
-                leaveRequestRepository.findAll(specification)
+               leaveRequests
                         .stream()
                         .map(this::mapToLeaveResponse)
                         .toList();
@@ -268,6 +273,7 @@ public class LeaveReportServiceImpl implements LeaveReportService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public byte[] exportLeavePdf(
             LeaveReportRequest request) {
 
@@ -278,8 +284,12 @@ public class LeaveReportServiceImpl implements LeaveReportService {
         Specification<LeaveRequest> specification =
                 LeaveReportSpecification.filter(request);
 
+
+        List<LeaveRequest> leaveRequests =
+                leaveRequestRepository.findAll(specification);
+
         List<LeaveReportResponse> reports =
-                leaveRequestRepository.findAll(specification)
+                leaveRequests
                         .stream()
                         .map(this::mapToLeaveResponse)
                         .toList();
