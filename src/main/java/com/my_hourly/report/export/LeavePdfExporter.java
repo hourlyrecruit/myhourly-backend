@@ -202,7 +202,7 @@ public class LeavePdfExporter {
                         2f,    // Employee Code
                         1.5f,  // Employee Id
                         3f,    // Employee Name
-                        3f,    // Department
+                        2f,    // Department
                         2f,    // Leave Type
                         1.5f,  // Leave Id
                         2f,    // Status
