@@ -11,9 +11,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,12 +28,10 @@ import java.util.UUID;
 public class B2FileStorageServiceImpl implements FileStorageServiceB2 {
 
     private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
     @Value("${b2.bucket}")
     private String bucket;
-
-    @Value("${b2.public-url}")
-    private String publicUrl;
 
     private static final Set<String> ALLOWED_EXTENSIONS =
             Set.of("pdf", "png", "jpg", "jpeg");
@@ -63,13 +66,13 @@ public class B2FileStorageServiceImpl implements FileStorageServiceB2 {
         }
 
         String fileName =
-                subFolder + "/" + UUID.randomUUID() + "." + extension;
+                subFolder + "/" +
+                        UUID.randomUUID() +
+                        "." +
+                        extension;
 
         try {
 
-            // Note: Backblaze B2's S3-compatible API does not support canned ACLs.
-            // Public read access is controlled at the bucket level (the bucket is
-            // public via b2.public-url), so no ACL is sent on upload.
             PutObjectRequest request =
                     PutObjectRequest.builder()
                             .bucket(bucket)
@@ -79,16 +82,33 @@ public class B2FileStorageServiceImpl implements FileStorageServiceB2 {
 
             s3Client.putObject(
                     request,
-                    RequestBody.fromBytes(file.getBytes()));
+                    RequestBody.fromBytes(file.getBytes())
+            );
 
-            return publicUrl + "/" + fileName;
+            GetObjectRequest getObjectRequest =
+                    GetObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(fileName)
+                            .build();
+
+            GetObjectPresignRequest presignRequest =
+                    GetObjectPresignRequest.builder()
+                            .signatureDuration(Duration.ofMinutes(15))
+                            .getObjectRequest(getObjectRequest)
+                            .build();
+
+            PresignedGetObjectRequest presigned =
+                    s3Presigner.presignGetObject(presignRequest);
+
+            return presigned.url().toString();
 
         } catch (Exception e) {
 
             log.error("B2 upload failed", e);
 
             throw new BadRequestException(
-                    "Unable to upload file to Backblaze B2: " + e.getMessage(),
+                    "Unable to upload file to Backblaze B2: "
+                            + e.getMessage(),
                     ErrorCode.INVALID_REQUEST
             );
         }
