@@ -1,11 +1,14 @@
 package com.my_hourly.payroll.service.impl;
 
+import com.my_hourly.attendance.entity.AttendanceStatus;
+import com.my_hourly.attendance.repository.AttendanceRepository;
 import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.exception.BadRequestException;
 import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.employee.service.EmployeeService;
+import com.my_hourly.payroll.dto.AttendanceSummary;
 import com.my_hourly.payroll.dto.request.CreatePayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdateDraftPayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdatePayrollStatusRequest;
@@ -31,13 +34,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class PayrollServiceImpl implements PayrollService {
 
     private final PayrollRepository payrollRepository;
@@ -46,12 +49,14 @@ public class PayrollServiceImpl implements PayrollService {
     private final EmployeePaymentDetailsRepository paymentDetailsRepository;
     private final PayrollHistoryService payrollHistoryService;
     private final EmployeeService employeeService;
+    private final AttendanceRepository attendanceRepository;
 
     /* =========================================================
        Generate Payroll
        ========================================================= */
 
     @Override
+    @Transactional
     public PayrollSummaryResponse generatePayroll(CreatePayrollRequest request) {
 
         List<Employee> employees = getEmployees(request);
@@ -180,6 +185,7 @@ public class PayrollServiceImpl implements PayrollService {
        ========================================================= */
 
     @Override
+    @Transactional
     public PayrollResponse update(Long payrollId, UpdateDraftPayrollRequest request) {
 
         Payroll payroll = getPayroll(payrollId);
@@ -265,6 +271,7 @@ public class PayrollServiceImpl implements PayrollService {
     }
 
     @Override
+    @Transactional
     public PayrollResponse updateStatus(Long payrollId, UpdatePayrollStatusRequest request) {
 
         Payroll payroll = getPayroll(payrollId);
@@ -326,6 +333,7 @@ public class PayrollServiceImpl implements PayrollService {
     }
 
     @Override
+    @Transactional
     public PayrollResponse regenerate(Long payrollId) {
 
         Payroll oldPayroll = getPayroll(payrollId);
@@ -363,6 +371,7 @@ public class PayrollServiceImpl implements PayrollService {
 
                 // Payment snapshot
                 .panNumber(oldPayroll.getPanNumber())
+                .uanNumber(oldPayroll.getUanNumber())
                 .bankName(oldPayroll.getBankName())
                 .accountNumber(oldPayroll.getAccountNumber())
                 .ifscCode(oldPayroll.getIfscCode())
@@ -478,7 +487,6 @@ public class PayrollServiceImpl implements PayrollService {
                                         + employee.getEmployeeCode(),
                                 ErrorCode.RESOURCE_NOT_FOUND));
     }
-
     private Payroll buildPayroll(
             Employee employee,
             SalaryStructure salaryStructure,
@@ -486,12 +494,17 @@ public class PayrollServiceImpl implements PayrollService {
             CreatePayrollRequest request,
             boolean saveAsDraft) {
 
-        // Default attendance values (TODO: wire with attendance/leave module)
-        int totalWorkingDays = 22;
-        int workedDays = 22;
-        int lopDays = 0;
+        // Attendance
+        AttendanceSummary attendance = calculateAttendance(
+                employee,
+                YearMonth.from(request.getPayrollMonth())
+        );
 
-        // Step 1: Gross Salary (Design Doc Section 5)
+        int totalWorkingDays = attendance.totalWorkingDays();
+        int workedDays = attendance.workedDays();
+        int lopDays = attendance.lopDays();
+
+        // Step 1: Gross Salary
         BigDecimal grossSalary = calculateGross(
                 safe(salaryStructure.getBasicSalary()),
                 safe(salaryStructure.getHra()),
@@ -499,10 +512,15 @@ public class PayrollServiceImpl implements PayrollService {
                 safe(salaryStructure.getMedicalAllowance()),
                 safe(salaryStructure.getTravelAllowance()),
                 safe(salaryStructure.getBonus()),
-                safe(salaryStructure.getOtherAllowance()));
+                safe(salaryStructure.getOtherAllowance())
+        );
 
         // Step 2: LOP Deduction
-        BigDecimal lopAmount = calculateLop(grossSalary, totalWorkingDays, lopDays);
+        BigDecimal lopAmount = calculateLop(
+                grossSalary,
+                totalWorkingDays,
+                lopDays
+        );
 
         // Step 3: Total Deduction
         BigDecimal totalDeduction = safe(salaryStructure.getPf())
@@ -515,15 +533,25 @@ public class PayrollServiceImpl implements PayrollService {
         // Step 4: Net Payable
         BigDecimal netPayable = grossSalary.subtract(totalDeduction);
 
-        validateSalaryConstraints(grossSalary, totalDeduction, netPayable);
+        validateSalaryConstraints(
+                grossSalary,
+                totalDeduction,
+                netPayable
+        );
 
-        // Employee snapshot fields
+        // Employee snapshot
         String employeeName = employee.getFirstName()
-                + (employee.getLastName() != null ? " " + employee.getLastName() : "");
+                + (employee.getLastName() != null
+                ? " " + employee.getLastName()
+                : "");
+
         String departmentName = employee.getDepartment() != null
-                ? employee.getDepartment().getDepartmentName() : null;
+                ? employee.getDepartment().getDepartmentName()
+                : null;
+
         String designationName = employee.getDesignation() != null
-                ? employee.getDesignation().getDesignationName() : null;
+                ? employee.getDesignation().getDesignationName()
+                : null;
 
         return Payroll.builder()
                 .payrollNumber(generatePayrollNumber(request.getPayrollMonth()))
@@ -547,13 +575,13 @@ public class PayrollServiceImpl implements PayrollService {
                 .accountNumber(paymentDetails.getAccountNumber())
                 .ifscCode(paymentDetails.getIfscCode())
 
-                // Attendance Snapshot
+                // Attendance snapshot
                 .totalWorkingDays(totalWorkingDays)
                 .workedDays(workedDays)
                 .lopDays(lopDays)
                 .payableDays(workedDays)
 
-                // Earnings Snapshot
+                // Earnings
                 .basicSalary(salaryStructure.getBasicSalary())
                 .hra(salaryStructure.getHra())
                 .specialAllowance(salaryStructure.getSpecialAllowance())
@@ -575,10 +603,44 @@ public class PayrollServiceImpl implements PayrollService {
                 // Final
                 .netPayable(netPayable)
 
-                .status(saveAsDraft ? PayrollStatus.DRAFT : PayrollStatus.GENERATED)
+                .status(
+                        saveAsDraft
+                                ? PayrollStatus.DRAFT
+                                : PayrollStatus.GENERATED
+                )
 
                 .remarks(request.getRemarks())
                 .build();
+    }
+
+
+    private AttendanceSummary calculateAttendance(
+            Employee employee,
+            YearMonth payrollMonth) {
+
+        LocalDate startDate = payrollMonth.atDay(1);
+        LocalDate endDate = payrollMonth.atEndOfMonth();
+
+        int totalDays = payrollMonth.lengthOfMonth();
+
+        long lopDays = attendanceRepository
+                .countByEmployeeAndAttendanceDateBetweenAndAttendanceStatusIn(
+                        employee,
+                        startDate,
+                        endDate,
+                        List.of(
+                                AttendanceStatus.ABSENT,
+                                AttendanceStatus.LEAVE
+                        )
+                );
+
+        int workedDays = totalDays - (int) lopDays;
+
+        return new AttendanceSummary(
+                totalDays,
+                workedDays,
+                (int) lopDays
+        );
     }
 
     /**
@@ -594,17 +656,22 @@ public class PayrollServiceImpl implements PayrollService {
     /**
      * Step 2: LOP Deduction = (Gross / Total Working Days) * LOP Days
      */
-    private BigDecimal calculateLop(BigDecimal grossSalary, int totalWorkingDays, int lopDays) {
+    private BigDecimal calculateLop(
+            BigDecimal grossSalary,
+            int totalWorkingDays,
+            int lopDays) {
 
-        if (lopDays <= 0 || totalWorkingDays <= 0) {
+        if (totalWorkingDays <= 0 || lopDays <= 0) {
             return BigDecimal.ZERO;
         }
 
-        BigDecimal perDaySalary = grossSalary.divide(
-                BigDecimal.valueOf(totalWorkingDays), 2, RoundingMode.HALF_UP);
-
-        return perDaySalary.multiply(BigDecimal.valueOf(lopDays))
-                .setScale(2, RoundingMode.HALF_UP);
+        return grossSalary
+                .divide(
+                        BigDecimal.valueOf(totalWorkingDays),
+                        2,
+                        RoundingMode.HALF_UP
+                )
+                .multiply(BigDecimal.valueOf(lopDays));
     }
 
     /**
