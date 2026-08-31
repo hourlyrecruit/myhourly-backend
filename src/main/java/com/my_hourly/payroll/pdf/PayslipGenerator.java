@@ -89,7 +89,7 @@ public class PayslipGenerator {
         companyCell.setPadding(14);
         companyCell.setBorder(Rectangle.NO_BORDER);
 
-        Paragraph companyName = new Paragraph("MyHourly HRMS", boldWhite(18));
+        Paragraph companyName = new Paragraph("MyHourly", boldWhite(18));
         companyName.setAlignment(Element.ALIGN_LEFT);
         companyCell.addElement(companyName);
 
@@ -167,7 +167,7 @@ public class PayslipGenerator {
         empCell.addElement(labelValue("Department",  safe(payroll.getDepartmentName())));
         empCell.addElement(labelValue("Designation", safe(payroll.getDesignationName())));
         empCell.addElement(labelValue("PAN",         safe(payroll.getPanNumber(), "Not provided")));
-
+        empCell.addElement(labelValue("UAN",         safe(payroll.getUanNumber(), "Not provided")));
         outer.addCell(empCell);
 
         // Bank / Payment Details
