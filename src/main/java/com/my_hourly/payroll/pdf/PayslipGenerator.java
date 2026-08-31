@@ -182,7 +182,7 @@ public class PayslipGenerator {
         bankCell.addElement(labelValue("IFSC Code",       safe(payroll.getIfscCode())));
         bankCell.addElement(labelValue("Payment Mode",    "Bank Transfer"));
         bankCell.addElement(labelValue("Payment Ref.",
-                safe(payroll.getPaymentReference(), "Pending")));
+                safe(payroll.getPaymentReference(), "NA")));
 
         outer.addCell(bankCell);
         doc.add(outer);
