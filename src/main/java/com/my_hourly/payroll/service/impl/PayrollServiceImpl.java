@@ -27,6 +27,7 @@ import com.my_hourly.payroll.repository.SalaryStructureRepository;
 import com.my_hourly.payroll.service.PayrollHistoryService;
 import com.my_hourly.payroll.service.PayrollService;
 import com.my_hourly.security.util.SecurityUtils;
+import com.my_hourly.settings.leave.repository.LeaveSettingsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +51,7 @@ public class PayrollServiceImpl implements PayrollService {
     private final PayrollHistoryService payrollHistoryService;
     private final EmployeeService employeeService;
     private final AttendanceRepository attendanceRepository;
+    private final LeaveSettingsRepository leaveSettingsRepository;
 
     /* =========================================================
        Generate Payroll
@@ -623,16 +625,35 @@ public class PayrollServiceImpl implements PayrollService {
 
         int totalDays = payrollMonth.lengthOfMonth();
 
-        long lopDays = attendanceRepository
-                .countByEmployeeAndAttendanceDateBetweenAndAttendanceStatusIn(
+        long absentDays = attendanceRepository
+                .countByEmployeeAndAttendanceDateBetweenAndAttendanceStatus(
                         employee,
                         startDate,
                         endDate,
-                        List.of(
-                                AttendanceStatus.ABSENT,
-                                AttendanceStatus.LEAVE
-                        )
+                        AttendanceStatus.ABSENT
                 );
+
+        long leaveDays = attendanceRepository
+                .countByEmployeeAndAttendanceDateBetweenAndAttendanceStatus(
+                        employee,
+                        startDate,
+                        endDate,
+                        AttendanceStatus.LEAVE
+                );
+
+        long allowedLeaveDays = leaveSettingsRepository
+                .findFirstByActiveTrue()
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Allowed Monthly Paid Leave not found.",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        )
+                )
+                .getMonthlyGuideline();
+
+        long excessLeaveDays = Math.max(0, leaveDays - allowedLeaveDays);
+
+        long lopDays = absentDays + excessLeaveDays;
 
         int workedDays = totalDays - (int) lopDays;
 
