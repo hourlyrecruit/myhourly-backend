@@ -542,6 +542,7 @@ public class PayrollServiceImpl implements PayrollService {
 
                 // Payment snapshot
                 .panNumber(paymentDetails.getPanNumber())
+                .uanNumber(paymentDetails.getUanNumber())
                 .bankName(paymentDetails.getBankName())
                 .accountNumber(paymentDetails.getAccountNumber())
                 .ifscCode(paymentDetails.getIfscCode())

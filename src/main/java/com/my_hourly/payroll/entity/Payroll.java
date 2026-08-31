@@ -114,6 +114,11 @@ public class Payroll extends BaseEntity {
     @Column(name = "ifsc_code", length = 20)
     private String ifscCode;
 
+    @Column(name = "uan", length = 20)
+    private String uanNumber;
+
+
+
     /* =====================================================
        Attendance Snapshot
        ===================================================== */
