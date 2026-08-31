@@ -49,14 +49,14 @@ public class PayrollController {
        Read
        ===================================================== */
 
-    @GetMapping("/{id}")
+    @GetMapping("/{payrollId}")
     @Operation(summary = "Get Payroll by ID, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> getById(
-            @PathVariable Long id) {
+            @PathVariable Long payrollId) {
 
         return ResponseEntity.ok(
-                payrollService.getById(id));
+                payrollService.getById(payrollId));
     }
 
     @GetMapping("/number/{payrollNumber}")
@@ -105,53 +105,53 @@ public class PayrollController {
        Lifecycle Transitions
        ===================================================== */
 
-    @PutMapping("/{id}")
+    @PutMapping("/{payrollId}")
     @Operation(summary = "Update a DRAFT payroll before approval, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> update(
-            @PathVariable Long id,
+            @PathVariable Long payrollId,
             @Valid @RequestBody UpdateDraftPayrollRequest request) {
 
         return ResponseEntity.ok(
-                payrollService.update(id, request));
+                payrollService.update(payrollId, request));
     }
 
-    @PatchMapping("/{id}/status")
+    @PatchMapping("/{payrollId}/status")
     @Operation(summary = "Update Payroll Status (APPROVE, PAID, CANCEL), 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> updateStatus(
-            @PathVariable Long id,
+            @PathVariable Long payrollId,
             @Valid @RequestBody UpdatePayrollStatusRequest request) {
 
         return ResponseEntity.ok(
-                payrollService.updateStatus(id, request));
+                payrollService.updateStatus(payrollId, request));
     }
 
-    @PostMapping("/{id}/regenerate")
+    @PostMapping("/{payrollId}/regenerate")
     @Operation(summary = "Supersede the current payroll and create a new version, 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> regenerate(
-            @PathVariable Long id) {
+            @PathVariable Long payrollId) {
 
         return ResponseEntity.ok(
-                payrollService.regenerate(id));
+                payrollService.regenerate(payrollId));
     }
 
     /* =====================================================
        PDF
        ===================================================== */
 
-    @GetMapping("/{id}/payslip")
+    @GetMapping("/{payrollId}/payslip")
     @Operation(summary = "Download Payslip PDF (APPROVED or PAID only), 'EMPLOYEE','HR_ADMIN','SUPER_ADMIN'")
     @PreAuthorize("hasAnyRole('EMPLOYEE','HR_ADMIN','PAYROLL_ADMIN','SUPER_ADMIN')")
     public ResponseEntity<byte[]> downloadPayslip(
-            @PathVariable Long id) {
+            @PathVariable Long payrollId) {
 
-        byte[] pdf = payslipPdfService.generatePayslip(id);
+        byte[] pdf = payslipPdfService.generatePayslip(payrollId);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=payslip-" + id + ".pdf")
+                        "attachment; filename=payslip-" + payrollId + ".pdf")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
