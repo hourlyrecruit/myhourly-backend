@@ -203,6 +203,10 @@ public class AuthenticationServiceImpl
     @Transactional
     public RegisterResponse registerEmployee(EmployeeRegisterRequest request) {
 
+        String email = request.getEmail()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new DuplicateResourceException(
                     "Username '" + request.getUsername() + "' is already taken.",
@@ -210,9 +214,9 @@ public class AuthenticationServiceImpl
             );
         }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(email)) {
             throw new DuplicateResourceException(
-                    "Email '" + request.getEmail() + "' is already registered.",
+                    "Email '" + email + "' is already registered.",
                     ErrorCode.USER_ALREADY_EXISTS
             );
         }
@@ -226,7 +230,7 @@ public class AuthenticationServiceImpl
 
         User user = User.builder()
                 .username(request.getUsername())
-                .email(request.getEmail())
+                .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .userStatus(UserStatus.ACTIVE)
                 .role(RoleName.EMPLOYEE)
@@ -251,8 +255,15 @@ public class AuthenticationServiceImpl
 
         authenticate(request);
 
-        User user =
-                getUser(request.getUsernameOrEmail());
+        String usernameOrEmail = request.getUsernameOrEmail().trim();
+
+        User user;
+
+        if (usernameOrEmail.contains("@")) {
+            usernameOrEmail = usernameOrEmail.toLowerCase(Locale.ROOT);
+        }
+
+        user = getUser(usernameOrEmail);
 
         String accessToken =
                 generateAccessToken(user);
@@ -452,9 +463,14 @@ public class AuthenticationServiceImpl
     @Override
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
-        Optional<User> user = userRepository.findByEmail(request.getEmail());
+
+        String email = request.getEmail()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
+        Optional<User> user = userRepository.findByEmail(email);
         if (user.isEmpty()) {
-            throw new ResourceNotFoundException("User with email " + request.getEmail() + " does not exist.",
+            throw new ResourceNotFoundException("User with email " + email + " does not exist.",
                     ErrorCode.RESOURCE_NOT_FOUND);
         }
 
