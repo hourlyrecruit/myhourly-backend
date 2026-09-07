@@ -38,6 +38,10 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public RegisterResponse registerUser(AdminRegisterRequest request) {
 
+        String email = request.getEmail()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new DuplicateResourceException(
                     "Username '" + request.getUsername() + "' is already taken.",
@@ -45,16 +49,16 @@ public class AdminServiceImpl implements AdminService {
             );
         }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(email)) {
             throw new DuplicateResourceException(
-                    "Email '" + request.getEmail() + "' is already registered.",
+                    "Email '" + email + "' is already registered.",
                     ErrorCode.USER_ALREADY_EXISTS
             );
         }
 
         User user = User.builder()
                 .username(request.getUsername())
-                .email(request.getEmail())
+                .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .userStatus(UserStatus.ACTIVE)
                 .role(request.getRole())

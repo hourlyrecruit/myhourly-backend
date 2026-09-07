@@ -1,7 +1,7 @@
 # Attendance Regularization Module — Frontend Implementation Guide
 
 > **Version:** 1.0  
-> **Last Updated:** August 31, 2026  
+> **Last Updated:** September 07, 2026  
 > **Base URL:** `/api/v1`  
 > **Authentication:** Bearer Token (JWT)
 
@@ -452,7 +452,7 @@ Returns the full updated `RegularizationResponse` with all details (the parent s
 
 ---
 
-### 5.7 Revert a Detail (HR Admin)
+### 5.7 Revert a Detail (HR Admin || Manager)
 
 **Revert a previously approved regularization detail back to its original attendance state.**
 
@@ -460,7 +460,7 @@ Returns the full updated `RegularizationResponse` with all details (the parent s
 POST /api/v1/attendance-regularizations/{regularizationId}/details/{detailId}/revert
 ```
 
-**Access:** HR_ADMIN, SUPER_ADMIN
+**Access:** HR_ADMIN, MANAGER, SUPER_ADMIN
 
 #### Path Parameters
 
@@ -663,7 +663,7 @@ Backend-specific error codes for the regularization module:
 
 ---
 
-#### Screen 5: HR Admin — Revert Approval
+#### Screen 5: HR Admin || Manager — Revert Approval
 
 Same as the Manager review screen, but for `APPROVED` details, shows a "Revert" button instead of Approve/Reject.
 
@@ -886,7 +886,7 @@ interface ApiResponse<T> {
    → Returns updated response: parent status = APPROVED
 ```
 
-### HR Admin Reverts an Approval
+### HR Admin || Manager Reverts an Approval
 
 ```
 1. HR Admin opens All Requests screen
