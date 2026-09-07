@@ -154,7 +154,7 @@ public class AttendanceRegularizationController {
 
     @Operation(summary = "Revert an approved regularization detail. Access: HR_ADMIN, SUPER_ADMIN")
     @PostMapping("/{regularizationId}/details/{detailId}/revert")
-    @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN','MANAGER', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<String>> revertDetail(
             @PathVariable Long regularizationId,
             @PathVariable Long detailId
