@@ -1,0 +1,943 @@
+AWS_DEPLOYMENT_GUIDE.html<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MyHourly HRMS — AWS Deployment Guide</title>
+<style>
+  :root {
+    --aws-dark: #232f3e;
+    --aws-orange: #ff9900;
+    --accent: #146eb4;
+    --light-bg: #f4f6f8;
+    --border: #d0d7de;
+    --code-bg: #f6f8fa;
+    --text: #1c2733;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", "DejaVu Sans", Arial, sans-serif;
+    color: var(--text);
+    font-size: 10pt;
+    line-height: 1.5;
+    margin: 0;
+  }
+  @page {
+    size: A4;
+    margin: 18mm 15mm 18mm 15mm;
+    @bottom-center {
+      content: "MyHourly HRMS — AWS Deployment Guide  ·  Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #6b7a8a;
+    }
+    @top-right {
+      content: "Freebuff · September 2026";
+      font-size: 8pt;
+      color: #6b7a8a;
+    }
+  }
+  @page cover { margin: 0; }
+
+  /* ---------- Cover ---------- */
+  .cover {
+    page: cover;
+    width: 100%;
+    height: 297mm;
+    background: var(--aws-dark);
+    color: #fff;
+    padding: 40mm 25mm;
+    page-break-after: always;
+  }
+  .cover .kicker {
+    color: var(--aws-orange);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-size: 10pt;
+    font-weight: 600;
+    margin-bottom: 10mm;
+  }
+  .cover h1 {
+    font-size: 30pt;
+    line-height: 1.15;
+    margin: 0 0 8mm 0;
+  }
+  .cover h2 {
+    font-size: 13pt;
+    font-weight: 400;
+    color: #d5dbe1;
+    margin: 0 0 18mm 0;
+  }
+  .cover .meta {
+    border-top: 1px solid #3a4858;
+    padding-top: 8mm;
+    font-size: 10pt;
+    color: #aab7c4;
+  }
+  .cover .meta table { width: 100%; border-collapse: collapse; }
+  .cover .meta td { padding: 2.5mm 0; vertical-align: top; }
+  .cover .meta td:first-child { color: var(--aws-orange); width: 42mm; font-weight: 600; }
+  .cover .pill {
+    display: inline-block;
+    background: #1b2733;
+    border: 1px solid #3a4858;
+    border-radius: 4mm;
+    padding: 1.5mm 4mm;
+    margin: 1mm 2mm 1mm 0;
+    font-size: 9pt;
+    color: #e8edf1;
+  }
+
+  /* ---------- Headings ---------- */
+  h1.section {
+    font-size: 16pt;
+    color: var(--aws-dark);
+    border-bottom: 3px solid var(--aws-orange);
+    padding-bottom: 2mm;
+    margin: 0 0 5mm 0;
+    page-break-before: always;
+    page-break-after: avoid;
+  }
+  h1.section.first { page-break-before: auto; }
+  h2 {
+    font-size: 12.5pt;
+    color: var(--accent);
+    margin: 7mm 0 3mm 0;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11pt;
+    color: var(--aws-dark);
+    margin: 5mm 0 2mm 0;
+    page-break-after: avoid;
+  }
+  p { margin: 0 0 3mm 0; }
+  ul, ol { margin: 0 0 3mm 0; padding-left: 6mm; }
+  li { margin-bottom: 1.5mm; }
+  code {
+    font-family: "Cascadia Code", Consolas, "Courier New", monospace;
+    font-size: 8.5pt;
+    background: var(--code-bg);
+    border: 1px solid #e1e4e8;
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+  pre {
+    font-family: "Cascadia Code", Consolas, "Courier New", monospace;
+    font-size: 8pt;
+    line-height: 1.4;
+    background: var(--code-bg);
+    border: 1px solid #e1e4e8;
+    border-left: 3px solid var(--aws-orange);
+    border-radius: 3px;
+    padding: 3mm;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0 0 4mm 0;
+    page-break-inside: avoid;
+  }
+  pre code { background: none; border: none; padding: 0; font-size: 8pt; }
+
+  /* ---------- Tables ---------- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 4mm 0;
+    font-size: 9pt;
+  }
+  th {
+    background: var(--aws-dark);
+    color: #fff;
+    text-align: left;
+    padding: 2mm 2.5mm;
+    font-weight: 600;
+  }
+  td {
+    border: 1px solid var(--border);
+    padding: 2mm 2.5mm;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafbfc; }
+  .num { text-align: right; white-space: nowrap; }
+
+  /* ---------- Callouts ---------- */
+  .callout {
+    border: 1px solid #f0b429;
+    background: #fff8e6;
+    border-left: 4px solid #f0b429;
+    border-radius: 3px;
+    padding: 3mm 4mm;
+    margin: 0 0 4mm 0;
+    page-break-inside: avoid;
+  }
+  .callout.warn { border-color: #d64545; background: #fdeeee; border-left-color: #d64545; }
+  .callout.info { border-color: #146eb4; background: #eef6fc; border-left-color: #146eb4; }
+  .callout .title { font-weight: 700; margin-bottom: 1mm; }
+
+  /* ---------- Architecture diagram ---------- */
+  .arch {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 8px;
+    margin: 4mm 0 2mm 0;
+  }
+  .arch .client, .arch .net, .arch .comp, .arch .data, .arch .ext {
+    border-radius: 4px;
+    padding: 3mm;
+    font-size: 8.5pt;
+    text-align: center;
+  }
+  .arch .client { background: #eef6fc; border: 1px solid #146eb4; flex: 1; }
+  .arch .net { background: #fdf0e0; border: 1px solid #ff9900; flex: 1.2; }
+  .arch .comp { background: #e9f7ef; border: 1px solid #2e8540; flex: 1.4; }
+  .arch .data { background: #f3eefb; border: 1px solid #6f42c1; flex: 1; }
+  .arch .ext { background: #f8f9fa; border: 1px dashed #6b7a8a; flex: 1; }
+  .arch .cap { font-weight: 700; font-size: 8.5pt; display: block; margin-bottom: 1mm; }
+  .arch .sub { font-size: 7.5pt; color: #44546a; display: block; }
+  .arrow-row { display: flex; justify-content: space-between; font-size: 7.5pt; color: #6b7a8a; margin-bottom: 3mm; }
+  .arrow-row span { flex: 1; text-align: center; }
+
+  .toc ol { counter-reset: toc; list-style: none; padding-left: 0; }
+  .toc li { margin-bottom: 2mm; padding-left: 8mm; text-indent: -8mm; }
+  .toc .lvl1 { font-weight: 600; }
+  .toc .lvl2 { padding-left: 14mm; text-indent: -8mm; font-weight: 400; color: #44546a; }
+  .small { font-size: 8.5pt; color: #44546a; }
+</style>
+</head>
+<body>
+
+<!-- ======================= COVER ======================= -->
+<div class="cover">
+  <div class="kicker">Deployment Guide</div>
+  <h1>MyHourly HRMS<br>AWS Deployment Guide</h1>
+  <h2>Minimum services, architecture options, step-by-step provisioning,<br>migration, security and cost for deploying the Spring Boot API on AWS</h2>
+  <div>
+    <span class="pill">Spring Boot 4.0.7</span>
+    <span class="pill">Java 21</span>
+    <span class="pill">PostgreSQL</span>
+    <span class="pill">Docker</span>
+    <span class="pill">JWT Auth</span>
+    <span class="pill">S3-compatible storage</span>
+  </div>
+  <div class="meta">
+    <table>
+      <tr><td>Version</td><td>1.0</td></tr>
+      <tr><td>Date</td><td>September 3, 2026</td></tr>
+      <tr><td>Prepared by</td><td>Freebuff (Codebuff) — based on repository inspection</td></tr>
+      <tr><td>Applies to</td><td>com.my_hourly:my_hourly — MyHourly HRMS REST API</td></tr>
+      <tr><td>Current stack</td><td>Aiven PostgreSQL · Backblaze B2 storage · Gmail SMTP</td></tr>
+      <tr><td>Target stack</td><td>AWS: RDS PostgreSQL · S3 · ECS Fargate (or EC2 / Elastic Beanstalk)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ======================= TOC ======================= -->
+<h1 class="section first">Contents</h1>
+<div class="toc">
+  <ol>
+    <li class="lvl1">1&nbsp;&nbsp;About the Application</li>
+    <li class="lvl2">1.1 Tech stack &nbsp;·&nbsp; 1.2 Current external services &nbsp;·&nbsp; 1.3 What runs at runtime</li>
+    <li class="lvl1">2&nbsp;&nbsp;Deployment Options at a Glance</li>
+    <li class="lvl1">3&nbsp;&nbsp;Minimum Required AWS Services</li>
+    <li class="lvl1">4&nbsp;&nbsp;Supporting Services (Strongly Recommended)</li>
+    <li class="lvl1">5&nbsp;&nbsp;Optional Services</li>
+    <li class="lvl1">6&nbsp;&nbsp;Recommended Architecture — ECS Fargate</li>
+    <li class="lvl2">6.1 Reference architecture &nbsp;·&nbsp; 6.2 Step-by-step &nbsp;·&nbsp; 6.3 Task definition &nbsp;·&nbsp; 6.4 IAM &nbsp;·&nbsp; 6.5 Health checks</li>
+    <li class="lvl1">7&nbsp;&nbsp;Alternative A — Elastic Beanstalk (Simplest)</li>
+    <li class="lvl1">8&nbsp;&nbsp;Alternative B — Single EC2 + docker-compose (Cheapest)</li>
+    <li class="lvl1">9&nbsp;&nbsp;Data &amp; File Migration (Aiven → RDS, B2 → S3)</li>
+    <li class="lvl1">10&nbsp;&nbsp;Environment Variable Reference</li>
+    <li class="lvl1">11&nbsp;&nbsp;Security Checklist</li>
+    <li class="lvl1">12&nbsp;&nbsp;Cost Estimates</li>
+    <li class="lvl1">13&nbsp;&nbsp;Operations, Monitoring &amp; Known Gotchas</li>
+    <li class="lvl1">Appendix&nbsp;&nbsp;Useful AWS CLI Commands</li>
+  </ol>
+</div>
+
+<!-- ======================= 1. ABOUT ======================= -->
+<h1 class="section">1&nbsp;&nbsp;About the Application</h1>
+
+<p><strong>MyHourly</strong> is an HRMS (Human Resource Management System) exposed as a Spring Boot REST API. The repository is backend-only; a separate frontend application (which consumes the API on port 3000) is out of scope for this guide but is touched on in §5.</p>
+
+<h2>1.1 Tech stack (from <code>pom.xml</code>, <code>Dockerfile</code>)</h2>
+<table>
+  <tr><th style="width:34%">Component</th><th>Detail</th></tr>
+  <tr><td>Framework</td><td>Spring Boot 4.0.7, Java 21, Maven (<code>mvnw</code>)</td></tr>
+  <tr><td>Web layer</td><td>Spring MVC REST API, port <code>8080</code> (configurable via <code>PORT</code>); Swagger UI via springdoc-openapi (<code>/swagger-ui/index.html</code>, <code>/v3/api-docs</code>)</td></tr>
+  <tr><td>Persistence</td><td>Spring Data JPA — PostgreSQL (prod), MySQL driver also bundled but not used</td></tr>
+  <tr><td>Security</td><td>Spring Security + JWT (jjwt) — <code>PUBLIC_ENDPOINTS</code> whitelist in <code>SecurityConstants.java</code></td></tr>
+  <tr><td>Email</td><td>Spring Mail — SMTP (currently Gmail), used for password reset and notifications</td></tr>
+  <tr><td>File storage</td><td>AWS SDK S3 client + <code>S3Presigner</code> against an S3-compatible endpoint (<code>b2.*</code> properties). Uploads ≤ 25 MB (pdf/png/jpg/jpeg); returns a 15-minute presigned GET URL</td></tr>
+  <tr><td>Reports</td><td>Apache POI (Excel export), OpenPDF (PDF export), Apache Tika (content detection)</td></tr>
+  <tr><td>Container</td><td>Two-stage <code>Dockerfile</code>: Maven build → <code>eclipse-temurin:21-jre</code> runtime, <code>TZ=Asia/Kolkata</code>, port 8080</td></tr>
+  <tr><td>Background jobs</td><td>In-app <code>@Scheduled</code> cron jobs (§1.3) — enabled via <code>@EnableScheduling</code></td></tr>
+</table>
+
+<h2>1.2 Current external services</h2>
+<table>
+  <tr><th>Service</th><th>Purpose</th><th>Configured in</th><th>AWS replacement</th></tr>
+  <tr><td>PostgreSQL (Aiven)</td><td>Primary production database</td><td><code>application-prod.properties</code> (env-driven) and <code>application-dev.properties</code> (hardcoded)</td><td><strong>Amazon RDS for PostgreSQL</strong></td></tr>
+  <tr><td>Backblaze B2</td><td>File/object storage (S3-compatible)</td><td><code>b2.*</code> properties</td><td><strong>Amazon S3</strong> — drop-in, same SDK and same env vars</td></tr>
+  <tr><td>Gmail SMTP</td><td>Email delivery</td><td><code>spring.mail.*</code></td><td><strong>Amazon SES</strong> (optional — Gmail works too)</td></tr>
+  <tr><td>Cloudinary</td><td>Image storage (code commented out)</td><td><code>CloudinaryConfig.java</code></td><td>Not needed</td></tr>
+</table>
+
+<h2>1.3 What runs at runtime</h2>
+<ul>
+  <li><strong>REST API</strong> — ~15 modules (auth, employee, attendance, leave, payroll, report, notification, holiday, performance, master/lookup, settings, calendar).</li>
+  <li><strong>Scheduled jobs</strong> (must always run — require one long-running instance, not serverless):
+    <table style="margin-top:2mm">
+      <tr><th>Scheduler</th><th>Schedule</th><th>Purpose</th></tr>
+      <tr><td>AttendanceScheduler</td><td>Every 1 minute</td><td>Attendance auto-actions</td></tr>
+      <tr><td>NotificationScheduler</td><td>Every 5 minutes</td><td>Notification processing</td></tr>
+      <tr><td>Birthday / UpcomingBirthday / WorkAnniversary / Holiday</td><td>Daily 8:00–18:00 IST</td><td>Celebration &amp; holiday notifications</td></tr>
+      <tr><td>LeaveScheduler</td><td>Jan 1 / month-end</td><td>Leave allocation &amp; balance rollover</td></tr>
+    </table>
+  </li>
+  <li><strong>Seeders / DataInitializer</strong> — create SUPER_ADMIN, HR, MANAGER users and settings on first boot; skip when data already exists.</li>
+  <li><strong>File uploads</strong> — multipart uploads via the API (max 25 MB per file in the B2 service; Spring multipart max 100 MB), returned as presigned URLs.</li>
+</ul>
+
+<!-- ======================= 2. OPTIONS ======================= -->
+<h1 class="section">2&nbsp;&nbsp;Deployment Options at a Glance</h1>
+
+<table>
+  <tr><th style="width:16%">Path</th><th>Compute</th><th>Database</th><th>Effort</th><th>Approx. cost / month</th><th>Best for</th></tr>
+  <tr>
+    <td><strong>A — Recommended</strong></td>
+    <td>ECS Fargate (1 vCPU / 2 GB)</td>
+    <td>RDS PostgreSQL</td>
+    <td>Medium (IAM, ECR, ECS, ALB)</td>
+    <td class="num">≈ $70–80</td>
+    <td>Production, managed, scalable, HTTPS</td>
+  </tr>
+  <tr>
+    <td><strong>B — Simplest</strong></td>
+    <td>Elastic Beanstalk (single Docker container)</td>
+    <td>RDS PostgreSQL</td>
+    <td>Low (console-driven)</td>
+    <td class="num">≈ $30–40</td>
+    <td>Fast first deployment, small team</td>
+  </tr>
+  <tr>
+    <td><strong>C — Cheapest</strong></td>
+    <td>Single EC2 (t4g.small) running docker-compose</td>
+    <td>PostgreSQL container on the same VM</td>
+    <td>Low (one VM + script)</td>
+    <td class="num">≈ $18–22</td>
+    <td>Dev/experiment, tight budget</td>
+  </tr>
+</table>
+
+<div class="callout info">
+  <div class="title">Minimum services, stated plainly</div>
+  Every path needs exactly three categories of AWS services:
+  <strong>1) compute</strong> to run the container (ECS/Fargate, EC2, or Beanstalk),
+  <strong>2) a PostgreSQL database</strong> (RDS — or Postgres on the same VM in path C), and
+  <strong>3) Amazon S3</strong> for files. Everything else in this guide is supporting or optional.
+</div>
+
+<!-- ======================= 3. MINIMUM ======================= -->
+<h1 class="section">3&nbsp;&nbsp;Minimum Required AWS Services</h1>
+
+<h2>3.1 Amazon ECS on Fargate (compute) — or EC2</h2>
+<p>Runs the Dockerized Spring Boot API on port 8080. The existing <code>Dockerfile</code> builds and runs the app unchanged. Fargate removes server management; the alternative is EC2 (self-managed VM, cheaper at idle). Because the app embeds <code>@Scheduled</code> jobs, the compute must run <strong>one task 24×7</strong> — keep <code>desiredCount = 1</code> (§13.3).</p>
+<ul>
+  <li><strong>Start size:</strong> 1 vCPU / 2 GB memory (Fargate) — comfortable for Spring Boot + Hikari pool (max 8 connections) + POI/PDF generation.</li>
+  <li><strong>Storage:</strong> none needed locally — everything is in RDS + S3 (Fargate's ephemeral 20 GB layer is enough for temp files during report export).</li>
+</ul>
+
+<h2>3.2 Amazon RDS for PostgreSQL (database)</h2>
+<p>The app is JPA/PostgreSQL — <code>spring.datasource.*</code> (prod profile) already expects a JDBC URL, user and password from env vars. RDS replaces the current Aiven instance 1:1, and adds managed backups, Multi-AZ and PITR.</p>
+<ul>
+  <li><strong>Start size:</strong> <code>db.t4g.micro</code> (2 vCPU / 1 GB RAM) or <code>db.t4g.small</code> (2 GB RAM) — single-AZ to save money; enable automated backups (7 days) and <code>rds.force_ssl=1</code>.</li>
+  <li><strong>Note:</strong> the app runs <code>spring.jpa.hibernate.ddl-auto=update</code> — RDS is fine with it; see §13.5.</li>
+</ul>
+
+<h2>3.3 Amazon S3 (object storage)</h2>
+<p>Replaces Backblaze B2. The storage layer (<code>B2FileStorageServiceImpl</code>) already uses the <strong>AWS SDK for Java (S3Client + S3Presigner)</strong> and reads five config properties (<code>b2.bucket</code>, <code>b2.access-key</code>, <code>b2.secret-key</code>, <code>b2.endpoint</code>, <code>b2.region</code>). These map directly to an S3 bucket + IAM user keys — only the endpoint/region values change. No code change required.</p>
+<ul>
+  <li>Create one bucket, e.g. <code>myhourly-files</code>, with <strong>Block Public Access ON</strong> — the app returns short-lived presigned URLs, so the bucket itself never needs to be public.</li>
+  <li>Configure the app with the values in §6.2 Step 4.</li>
+</ul>
+
+<!-- ======================= 4. SUPPORTING ======================= -->
+<h1 class="section">4&nbsp;&nbsp;Supporting Services (Strongly Recommended)</h1>
+
+<table>
+  <tr><th style="width:22%">Service</th><th>Why it is needed</th><th>Notes</th></tr>
+  <tr>
+    <td><strong>Amazon ECR</strong></td>
+    <td>Stores the Docker image so ECS can pull it</td>
+    <td>One private repository <code>myhourly</code>; ~$0.10/GB/month</td>
+  </tr>
+  <tr>
+    <td><strong>Amazon VPC + Security Groups</strong></td>
+    <td>Networking between ECS, RDS and S3; free</td>
+    <td>Use the default VPC to start, or a 2-public-subnet VPC; SG rules in §11</td>
+  </tr>
+  <tr>
+    <td><strong>AWS Secrets Manager</strong></td>
+    <td>Stores <code>JWT_SECRET</code>, DB credentials, SMTP password; the prod profile reads everything from env vars, which ECS injects from Secrets Manager</td>
+    <td>$0.40/secret/month — ~5 secrets ≈ $2/month</td>
+  </tr>
+  <tr>
+    <td><strong>Amazon CloudWatch</strong></td>
+    <td>Container logs (<code>awslogs</code> driver) and metrics/alarms</td>
+    <td>~$0.50/GB logs ingested; set a retention policy</td>
+  </tr>
+  <tr>
+    <td><strong>Amazon SES (optional)</strong></td>
+    <td>Replaces Gmail SMTP so email is sent from AWS (password reset, notifications)</td>
+    <td>$0.10 per 1,000 emails; must verify sender domain; request production access to leave sandbox</td>
+  </tr>
+</table>
+
+<!-- ======================= 5. OPTIONAL ======================= -->
+<h1 class="section">5&nbsp;&nbsp;Optional Services</h1>
+
+<table>
+  <tr><th style="width:22%">Service</th><th>Purpose</th><th>When to add</th></tr>
+  <tr>
+    <td><strong>Application Load Balancer</strong></td>
+    <td>HTTPS termination, target health checks, domain routing</td>
+    <td>As soon as you expose the API publicly — <em>but see the 1 MB body limit warning below</em></td>
+  </tr>
+  <tr>
+    <td><strong>Amazon Route 53</strong></td>
+    <td>DNS for <code>api.yourdomain.com</code></td>
+    <td>When you have a domain ($0.50/hosted zone/month + query cost)</td>
+  </tr>
+  <tr>
+    <td><strong>AWS Certificate Manager (ACM)</strong></td>
+    <td>Free TLS certificates for ALB</td>
+    <td>Together with ALB + Route 53</td>
+  </tr>
+  <tr>
+    <td><strong>Amazon CloudFront</strong></td>
+    <td>CDN in front of the frontend static site and/or presigned file URLs</td>
+    <td>For the React frontend (S3 static hosting) — recommended</td>
+  </tr>
+  <tr>
+    <td><strong>NAT Gateway</strong></td>
+    <td>Outbound internet for tasks in private subnets</td>
+    <td>Only if you use a private-subnet architecture (~$32/month — skip to save money; public subnets + SG rules work fine here)</td>
+  </tr>
+  <tr>
+    <td><strong>AWS WAF</strong></td>
+    <td>Web-application firewall on the ALB</td>
+    <td>Later hardening; not required to go live</td>
+  </tr>
+</table>
+
+<div class="callout warn">
+  <div class="title">⚠ Application Load Balancer has a 1 MB request-body limit — affects file uploads</div>
+  The app uploads files through the API (multipart, up to 25 MB per the storage service, 100 MB Spring limit). ALB rejects request bodies over <strong>1 MB</strong> with <code>413 Request Entity Too Large</code>, so profile photos / announcements / documents over 1 MB will fail behind an ALB.
+  Options: <strong>(a)</strong> add a presigned-PUT upload endpoint so the browser uploads straight to S3 and the API only stores the key (small code change — recommended), <strong>(b)</strong> use a Network Load Balancer instead (no body limit; TLS via ACM), or <strong>(c)</strong> accept the limit and cap uploads at ≤ 1 MB. Path C (direct EC2 IP) and path B (Beanstalk single instance without ALB) do not have this problem.
+</div>
+
+<!-- ======================= 6. RECOMMENDED ARCH ======================= -->
+<h1 class="section">6&nbsp;&nbsp;Recommended Architecture — ECS Fargate</h1>
+
+<h2>6.1 Reference architecture</h2>
+<div class="arch">
+  <div class="client"><span class="cap">Users</span><span class="sub">Browser / Mobile<br>React frontend (optional)</span></div>
+  <div class="net"><span class="cap">Route 53 + ALB</span><span class="sub">HTTPS (ACM) · health checks</span></div>
+  <div class="comp"><span class="cap">ECS Fargate</span><span class="sub">myhourly-api task · 1 vCPU / 2 GB<br>port 8080 · 1 running task</span></div>
+  <div class="data"><span class="cap">RDS PostgreSQL</span><span class="sub">db.t4g.micro · SSL<br>automated backups</span></div>
+  <div class="ext"><span class="cap">S3 + SES + Secrets</span><span class="sub">files · email · credentials</span></div>
+</div>
+<div class="arrow-row">
+  <span>HTTPS 443</span><span>→</span><span>8080</span><span>5432</span><span>S3 / SES / SMTP</span>
+</div>
+<p class="small">All traffic east-west within the VPC; ECS tasks get IAM roles instead of static keys (§6.4).</p>
+
+<h2>6.2 Step-by-step</h2>
+
+<h3>Step 1 — Prepare the code &amp; secrets (do this first)</h3>
+<ol>
+  <li><strong>Remove hardcoded credentials.</strong> <code>application-dev.properties</code> currently contains live-looking Aiven, Gmail and JWT values. For AWS, run with <code>SPRING_PROFILES_ACTIVE=prod</code> (already 100% env-var driven) and rotate/remove the old credentials before going live (§11).</li>
+  <li><strong>Add a real health endpoint (recommended).</strong> <code>/actuator/health</code> is whitelisted in <code>SecurityConstants</code>, but <code>spring-boot-starter-actuator</code> is not on the classpath. Either add it, or point the ALB health check at <code>/swagger-ui/index.html</code> (public, returns 200).</li>
+  <li>Build the image locally once to smoke-test: <code>./mvnw clean package -DskipTests</code> then <code>docker build -t myhourly:local .</code></li>
+</ol>
+
+<h3>Step 2 — Store secrets in AWS Secrets Manager</h3>
+<p>Create these secrets (all read by ECS via the task definition in §6.3):</p>
+<table>
+  <tr><th>Secret</th><th>Keys (JSON)</th><th>Example value</th></tr>
+  <tr><td><code>myhourly/db</code></td><td><code>DATABASE_URL</code>, <code>DATABASE_USER</code>, <code>DATABASE_PASSWORD</code></td><td><code>jdbc:postgresql://myhourly.xxxx.us-east-1.rds.amazonaws.com:5432/myhourly</code></td></tr>
+  <tr><td><code>myhourly/jwt</code></td><td><code>JWT_SECRET</code>, <code>ACCESS_TOKEN_EXPIRATION</code>, <code>REFRESH_TOKEN_EXPIRATION</code></td><td>512-bit random secret; 9000000 / 604800000 ms</td></tr>
+  <tr><td><code>myhourly/smtp</code></td><td><code>SMTP_USERNAME</code>, <code>SMTP_PASSWORD</code>, <code>SMTP_HOST</code>, <code>SMTP_PORT</code></td><td>SES SMTP user / password, or your Gmail app password</td></tr>
+  <tr><td><code>myhourly/storage</code></td><td><code>B2_BUCKET_NAME</code>, <code>B2_ACCESS_KEY</code>, <code>B2_SECRET_KEY</code>, <code>B2_ENDPOINT</code>, <code>B2_REGION</code>, <code>B2_PUBLIC_URL</code></td><td>See Step 4</td></tr>
+</table>
+
+<h3>Step 3 — Create the RDS PostgreSQL database</h3>
+<pre><code>aws rds create-db-instance \
+  --db-instance-identifier myhourly-db \
+  --engine postgres \
+  --engine-version 16 \
+  --db-instance-class db.t4g.micro \
+  --allocated-storage 20 \
+  --master-username myhourly \
+  --master-user-password 'CHANGE_ME_STRONG' \
+  --db-name myhourly \
+  --backup-retention-period 7 \
+  --publicly-accessible false \
+  --vpc-security-group-ids sg-xxxxxxxx
+# After creation, set parameter rds.force_ssl=1 (DB parameter group)</code></pre>
+<p>Take note of the endpoint (e.g. <code>myhourly-db.xxxxxxxx.us-east-1.rds.amazonaws.com</code>) — it goes into the <code>myhourly/db</code> secret as <code>DATABASE_URL</code>.</p>
+
+<h3>Step 4 — Create the S3 bucket + IAM user</h3>
+<pre><code>aws s3api create-bucket --bucket myhourly-files --region us-east-1
+aws s3api put-public-access-block --bucket myhourly-files \
+  --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+
+# IAM user with programmatic access, policy scoped to this bucket only (§6.4)
+aws iam create-user --user-name myhourly-s3
+aws iam create-access-key --user-name myhourly-s3</code></pre>
+<p>Map the app's <code>b2.*</code> properties to S3 (stored in the <code>myhourly/storage</code> secret):</p>
+<table>
+  <tr><th>App property</th><th>Value for AWS S3</th></tr>
+  <tr><td><code>b2.bucket</code></td><td><code>myhourly-files</code></td></tr>
+  <tr><td><code>b2.access-key</code></td><td>IAM access key id</td></tr>
+  <tr><td><code>b2.secret-key</code></td><td>IAM secret key</td></tr>
+  <tr><td><code>b2.endpoint</code></td><td><code>https://s3.us-east-1.amazonaws.com</code> (or omit for the SDK default)</td></tr>
+  <tr><td><code>b2.region</code></td><td><code>us-east-1</code></td></tr>
+  <tr><td><code>b2.public-url</code></td><td>Unused for presigned URLs — can be left empty</td></tr>
+</table>
+<div class="callout info">
+  <div class="title">Why the presigned-URL model makes S3 migration easy</div>
+  The storage service writes objects with the S3 SDK and returns a 15-minute presigned GET URL. Point the same code at S3 and it works identically — no public bucket, no ACLs. (Note: if any code path stores the presigned URL itself rather than the object key, that URL will expire after 15 minutes — worth auditing during migration, §9.)
+</div>
+
+<h3>Step 5 — Build &amp; push the image to ECR</h3>
+<pre><code>aws ecr create-repository --repository-name myhourly
+
+aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+
+docker build -t myhourly:latest .
+docker tag myhourly:latest ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/myhourly:latest
+docker push ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/myhourly:latest</code></pre>
+
+<h3>Step 6 — Register the ECS task definition &amp; create the service</h3>
+<p>Register the task definition from §6.3 (via console or <code>aws ecs register-task-definition</code>), then:</p>
+<pre><code>aws ecs create-service \
+  --cluster myhourly-cluster \
+  --service-name myhourly-api \
+  --task-definition myhourly-api:1 \
+  --desired-count 1 \
+  --launch-type FARGATE \
+  --network-configuration "awsvpcConfiguration={subnets=[subnet-xxx,subnet-yyy],securityGroups=[sg-xxx],assignPublicIp=ENABLED}" \
+  --load-balancers "targetGroupArn=arn:aws:elasticloadbalancing:...:targetgroup/myhourly-tg/...,containerName=myhourly-api,containerPort=8080"</code></pre>
+<ul>
+  <li><strong>Region/timezone:</strong> any region works — the container already forces <code>TZ=Asia/Kolkata</code> and <code>-Duser.timezone=Asia/Kolkata</code>.</li>
+  <li><strong>Networking:</strong> public subnets + SG that only allows 8080 from the ALB SG (avoids a $32/month NAT gateway).</li>
+</ul>
+
+<h3>Step 7 — ALB, HTTPS and Route 53</h3>
+<ol>
+  <li>Create an internet-facing ALB; target group on port 8080, health check path <code>/swagger-ui/index.html</code> (or <code>/actuator/health</code> if you added actuator), healthy threshold 3, interval 30 s.</li>
+  <li>Request an ACM certificate for <code>api.yourdomain.com</code> (DNS validation) and attach it to an HTTPS:443 listener with HTTP→HTTPS redirect.</li>
+  <li>Create a Route 53 A record (alias) pointing <code>api.yourdomain.com</code> at the ALB.</li>
+  <li>Set <code>PASSWORD_RESET_FRONTEND_URL</code> to your real frontend reset-password page (e.g. <code>https://app.yourdomain.com/reset-password</code>) in the task environment.</li>
+</ol>
+
+<h3>Step 8 — Migrate data &amp; files (see §9)</h3>
+<p>Restore the Aiven dump into RDS and copy B2 objects into S3 <em>before</em> switching traffic.</p>
+
+<h3>Step 9 — Verify</h3>
+<ul>
+  <li><code>GET https://api.yourdomain.com/swagger-ui/index.html</code> → 200 (or <code>/actuator/health</code> → <code>{"status":"UP"}</code>).</li>
+  <li>Log in via <code>POST /api/v1/auth/login</code>; check the Swagger UI loads.</li>
+  <li>Upload a file (≤ 1 MB if behind ALB — §5 warning) and confirm a presigned URL is returned.</li>
+  <li>Confirm RDS is receiving connections: CloudWatch logs show no datasource errors; Hikari pool = 8 max.</li>
+  <li>Watch <code>/ecs/myhourly</code> log group for the seeders running once (they skip existing rows).</li>
+</ul>
+
+<h2>6.3 Sample task definition</h2>
+<pre><code>{
+  "family": "myhourly-api",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/myhourly-task-role",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "containerDefinitions": [{
+    "name": "myhourly-api",
+    "image": "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/myhourly:latest",
+    "portMappings": [{ "containerPort": 8080, "protocol": "tcp" }],
+    "environment": [
+      { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
+      { "name": "PASSWORD_RESET_FRONTEND_URL", "value": "https://app.yourdomain.com/reset-password" },
+      { "name": "PASSWORD_RESET_EXPIRATION", "value": "30" },
+      { "name": "PASSWORD_RESET_EMAIL", "value": "noreply@yourdomain.com" },
+      { "name": "HR_EMAIL", "value": "hr@yourdomain.com" }
+    ],
+    "secrets": [
+      { "name": "DATABASE_URL",          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/db-XXXXXX:DATABASE_URL" },
+      { "name": "DATABASE_USER",         "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/db-XXXXXX:DATABASE_USER" },
+      { "name": "DATABASE_PASSWORD",     "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/db-XXXXXX:DATABASE_PASSWORD" },
+      { "name": "JWT_SECRET",            "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/jwt-XXXXXX:JWT_SECRET" },
+      { "name": "ACCESS_TOKEN_EXPIRATION", "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/jwt-XXXXXX:ACCESS_TOKEN_EXPIRATION" },
+      { "name": "REFRESH_TOKEN_EXPIRATION","valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/jwt-XXXXXX:REFRESH_TOKEN_EXPIRATION" },
+      { "name": "SMTP_HOST",             "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/smtp-XXXXXX:SMTP_HOST" },
+      { "name": "SMTP_USERNAME",         "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/smtp-XXXXXX:SMTP_USERNAME" },
+      { "name": "SMTP_PASSWORD",         "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/smtp-XXXXXX:SMTP_PASSWORD" },
+      { "name": "B2_BUCKET_NAME",        "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/storage-XXXXXX:B2_BUCKET_NAME" },
+      { "name": "B2_ACCESS_KEY",         "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/storage-XXXXXX:B2_ACCESS_KEY" },
+      { "name": "B2_SECRET_KEY",         "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/storage-XXXXXX:B2_SECRET_KEY" },
+      { "name": "B2_ENDPOINT",           "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/storage-XXXXXX:B2_ENDPOINT" },
+      { "name": "B2_REGION",             "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/storage-XXXXXX:B2_REGION" }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/myhourly",
+        "awslogs-region": "us-east-1",
+        "awslogs-stream-prefix": "api"
+      }
+    }
+  }]
+}</code></pre>
+
+<h2>6.4 IAM roles &amp; policies</h2>
+<h3>Execution role — <code>ecsTaskExecutionRole</code></h3>
+<p>Managed policy <code>AmazonECSTaskExecutionRolePolicy</code> (ECR pull + logs) plus read access to the Secrets Manager secrets:</p>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "secretsmanager:GetSecretValue",
+      "kms:Decrypt"
+    ],
+    "Resource": [
+      "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:myhourly/*",
+      "arn:aws:kms:us-east-1:ACCOUNT_ID:key/*"
+    ]
+  }]
+}</code></pre>
+
+<h3>Task role — <code>myhourly-task-role</code> (what the app's SDK calls use)</h3>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket"],
+      "Resource": [
+        "arn:aws:s3:::myhourly-files",
+        "arn:aws:s3:::myhourly-files/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["ses:SendEmail", "ses:SendRawEmail"],
+      "Resource": "*"
+    }
+  ]
+}</code></pre>
+<div class="callout info">
+  <div class="title">Prefer task roles over access keys</div>
+  The task role above makes static keys unnecessary for S3/SES. However, the app reads <code>b2.access-key</code> / <code>b2.secret-key</code> directly, so it expects static keys. Two options: keep a dedicated IAM user <code>myhourly-s3</code> with the S3 policy (simplest, zero code change), or modify <code>B2StorageConfig</code> to build <code>S3Client</code> from the instance role when keys are absent. The guide uses the IAM-user approach.
+</div>
+
+<h2>6.5 Health checks</h2>
+<table>
+  <tr><th>Target</th><th>Path</th><th>Expected</th></tr>
+  <tr><td>ALB target group</td><td><code>/swagger-ui/index.html</code> (or <code>/actuator/health</code> if actuator added)</td><td>HTTP 200</td></tr>
+  <tr><td>Manual</td><td><code>GET /api/v1/auth/login</code> (public endpoint)</td><td>200 + JSON (validation error for empty body is still a healthy 4xx from the app)</td></tr>
+</table>
+
+<!-- ======================= 7. BEANSTALK ======================= -->
+<h1 class="section">7&nbsp;&nbsp;Alternative A — Elastic Beanstalk (Simplest)</h1>
+<p>If you prefer a managed platform without ECS/IAM details: deploy the single Docker container to Elastic Beanstalk and keep RDS + S3 as in §6.</p>
+<ol>
+  <li>Create RDS and S3 exactly as in §6.2 Steps 3–4; store the same secrets in Secrets Manager (or plain env vars in EB for speed — use Secrets Manager for production).</li>
+  <li>In the EB console: <strong>Create environment → Web server environment → Docker platform</strong> (single-container), upload a zip of the project (EB builds from the <code>Dockerfile</code>).</li>
+  <li>Set environment properties: <code>SPRING_PROFILES_ACTIVE=prod</code>, <code>DATABASE_URL</code>, <code>DATABASE_USER</code>, <code>DATABASE_PASSWORD</code>, <code>JWT_SECRET</code>, token expirations, SMTP vars, <code>B2_*</code> vars, <code>PASSWORD_RESET_FRONTEND_URL</code>.</li>
+  <li>Choose instance type <code>t4g.small</code> (2 GB RAM), root volume 20 GB. EB adds a reverse proxy on port 80 → 8080 automatically.</li>
+  <li>Point <code>api.yourdomain.com</code> (Route 53 + ACM) at the EB environment URL; enable HTTPS via the EB load balancer or environment domain.</li>
+  <li>Deploy updates with <code>eb deploy</code>.</li>
+</ol>
+<ul>
+  <li><strong>No ALB by default</strong> — single instance uses its own proxy, so the 1 MB body limit does not apply.</li>
+  <li>EB single instance ≈ $15/month (t4g.small) + RDS ≈ $14 → <strong>≈ $30–40/month total</strong>.</li>
+</ul>
+
+<!-- ======================= 8. EC2 ======================= -->
+<h1 class="section">8&nbsp;&nbsp;Alternative B — Single EC2 + docker-compose (Cheapest)</h1>
+<p>One VM runs both the app and PostgreSQL as containers. Fine for dev/staging or a very small team; you manage backups and upgrades yourself.</p>
+
+<h3>Steps</h3>
+<ol>
+  <li>Launch an EC2 <strong>t4g.small</strong> (2 vCPU / 2 GB, Amazon Linux 2023), 20 GB gp3 EBS, SG allowing 80 (and 22 from your IP only). Associate an Elastic IP.</li>
+  <li>Install Docker + compose: <code>sudo dnf install -y docker &amp;&amp; sudo systemctl enable --now docker</code>, then <code>sudo usermod -aG docker ec2-user</code> (re-login).</li>
+  <li>Clone the repo on the instance; add the <code>docker-compose.yml</code> below; create a <code>.env</code> with all secrets.</li>
+  <li><code>docker compose up -d --build</code></li>
+  <li>Point <code>api.yourdomain.com</code> at the Elastic IP. HTTPS: install Caddy/nginx as a reverse proxy (TLS via Let's Encrypt), or add an ALB later.</li>
+</ol>
+
+<h3>docker-compose.yml</h3>
+<pre><code>services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: myhourly
+      POSTGRES_USER: myhourly
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myhourly -d myhourly"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    ports:
+      - "80:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://db:5432/myhourly
+      DATABASE_USER: myhourly
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ACCESS_TOKEN_EXPIRATION: "9000000"
+      REFRESH_TOKEN_EXPIRATION: "604800000"
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: "587"
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      PASSWORD_RESET_EXPIRATION: "30"
+      PASSWORD_RESET_FRONTEND_URL: ${PASSWORD_RESET_FRONTEND_URL}
+      PASSWORD_RESET_EMAIL: ${PASSWORD_RESET_EMAIL}
+      B2_BUCKET_NAME: ${B2_BUCKET_NAME}
+      B2_ACCESS_KEY: ${B2_ACCESS_KEY}
+      B2_SECRET_KEY: ${B2_SECRET_KEY}
+      B2_ENDPOINT: https://s3.us-east-1.amazonaws.com
+      B2_REGION: us-east-1
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:</code></pre>
+
+<div class="callout warn">
+  <div class="title">Cheapest ≠ production-safe</div>
+  Single-VM Postgres has no managed backups/HA. If the VM dies, so does the database (unless you add nightly <code>pg_dump</code> to S3). Use this path for dev/experiments; move the DB to RDS for production.
+</div>
+
+<!-- ======================= 9. MIGRATION ======================= -->
+<h1 class="section">9&nbsp;&nbsp;Data &amp; File Migration</h1>
+
+<h2>9.1 Database: Aiven PostgreSQL → RDS</h2>
+<pre><code># 1) Dump from the current Aiven instance (custom format preserves types)
+pg_dump "postgresql://avnadmin:****@pg-11fc3ab8-hourlyrecruittechlabs-d432.a.aivencloud.com:16410/defaultdb?sslmode=require" \
+  --format=custom --no-owner -f myhourly.dump
+
+# 2) Create the empty database on RDS (already created via --db-name in §6.2 Step 3; skip if present)
+psql "postgresql://myhourly:****@myhourly-db.xxxxxxxx.us-east-1.rds.amazonaws.com:5432/postgres" \
+  -c "CREATE DATABASE myhourly;"
+
+# 3) Restore (run once; app seeders will skip existing rows afterwards)
+pg_restore --no-owner --no-privileges \
+  -d "postgresql://myhourly:****@myhourly-db.xxxxxxxx.us-east-1.rds.amazonaws.com:5432/myhourly" \
+  myhourly.dump
+
+# 4) Sanity check row counts
+psql "postgresql://myhourly:****@myhourly-db.xxxxxxxx.us-east-1.rds.amazonaws.com:5432/myhourly" \
+  -c "SELECT count(*) FROM users; SELECT count(*) FROM employees;"</code></pre>
+<ul>
+  <li>Do this during a maintenance window; the app tolerates it because seeders skip existing records.</li>
+  <li>Keep the Aiven instance running until the switch-over is verified, then decommission it.</li>
+</ul>
+
+<h2>9.2 Files: Backblaze B2 → S3</h2>
+<pre><code># Option A — AWS CLI with the B2 endpoint (B2 is S3-compatible)
+aws --endpoint-url https://s3.us-east-005.backblazeb2.com \
+  s3 sync s3://MyHourly s3://myhourly-files
+
+# Option B — rclone (handles large volumes, resumable)
+rclone copy b2:MyHourly s3:myhourly-files --progress</code></pre>
+<ul>
+  <li>Object keys are <code>subFolder/&lt;uuid&gt;.&lt;ext&gt;</code> — copy preserving keys so new presigned URLs resolve.</li>
+  <li>Any already-stored file references in the DB are presigned URLs that expire after 15 minutes; re-fetch flows will generate fresh URLs from the stored keys. Audit the code paths that persist URLs (§6.2 Step 4 note).</li>
+</ul>
+
+<!-- ======================= 10. ENV REF ======================= -->
+<h1 class="section">10&nbsp;&nbsp;Environment Variable Reference</h1>
+<p>Full set consumed by <code>application-prod.properties</code> (profile <code>prod</code>).</p>
+<table>
+  <tr><th>Env var</th><th>App property</th><th>Required</th><th>Notes / AWS value</th></tr>
+  <tr><td><code>SPRING_PROFILES_ACTIVE</code></td><td>—</td><td>Yes</td><td><code>prod</code></td></tr>
+  <tr><td><code>PORT</code></td><td><code>server.port</code></td><td>No</td><td>Default <code>8080</code>; keep container port 8080</td></tr>
+  <tr><td><code>DATABASE_URL</code></td><td><code>spring.datasource.url</code></td><td>Yes</td><td><code>jdbc:postgresql://&lt;rds-endpoint&gt;:5432/myhourly</code></td></tr>
+  <tr><td><code>DATABASE_USER</code></td><td><code>spring.datasource.username</code></td><td>Yes</td><td>RDS master user</td></tr>
+  <tr><td><code>DATABASE_PASSWORD</code></td><td><code>spring.datasource.password</code></td><td>Yes</td><td>Secrets Manager</td></tr>
+  <tr><td><code>JWT_SECRET</code></td><td><code>jwt.secret</code></td><td>Yes</td><td>≥ 64 random chars; rotate before go-live</td></tr>
+  <tr><td><code>ACCESS_TOKEN_EXPIRATION</code></td><td><code>jwt.access-token-expiration</code></td><td>Yes</td><td>ms, e.g. <code>9000000</code></td></tr>
+  <tr><td><code>REFRESH_TOKEN_EXPIRATION</code></td><td><code>jwt.refresh-token-expiration</code></td><td>Yes</td><td>ms, e.g. <code>604800000</code></td></tr>
+  <tr><td><code>HR_EMAIL</code></td><td><code>hr.email</code></td><td>No</td><td>HR notification recipient</td></tr>
+  <tr><td><code>SMTP_HOST</code></td><td><code>spring.mail.host</code></td><td>Yes*</td><td>Default <code>smtp.gmail.com</code>; SES = <code>email-smtp.us-east-1.amazonaws.com</code></td></tr>
+  <tr><td><code>SMTP_PORT</code></td><td><code>spring.mail.port</code></td><td>No</td><td>Default <code>587</code> (SES SMTP port 587)</td></tr>
+  <tr><td><code>SMTP_USERNAME</code></td><td><code>spring.mail.username</code></td><td>Yes*</td><td>Gmail app password or SES SMTP user</td></tr>
+  <tr><td><code>SMTP_PASSWORD</code></td><td><code>spring.mail.password</code></td><td>Yes*</td><td>Secrets Manager; timeouts (5 s) already configured</td></tr>
+  <tr><td><code>SMTP_STARTTLS_ENABLE</code> / <code>SMTP_SSL_ENABLE</code></td><td><code>mail.smtp.starttls.enable/ssl.enable</code></td><td>No</td><td>Defaults <code>true</code> / <code>false</code> — correct for Gmail &amp; SES 587</td></tr>
+  <tr><td><code>PASSWORD_RESET_EXPIRATION</code></td><td><code>app.password-reset.token-expiration-minutes</code></td><td>No</td><td>e.g. <code>30</code></td></tr>
+  <tr><td><code>PASSWORD_RESET_FRONTEND_URL</code></td><td><code>app.password-reset.frontend-url</code></td><td>Yes</td><td>Your frontend reset page, e.g. <code>https://app.yourdomain.com/reset-password</code></td></tr>
+  <tr><td><code>PASSWORD_RESET_EMAIL</code></td><td><code>app.password-reset.from</code></td><td>No</td><td><code>noreply@yourdomain.com</code> (must be verified in SES)</td></tr>
+  <tr><td><code>B2_BUCKET_NAME</code></td><td><code>b2.bucket</code></td><td>Yes</td><td>S3 bucket name</td></tr>
+  <tr><td><code>B2_ACCESS_KEY</code> / <code>B2_SECRET_KEY</code></td><td><code>b2.access-key/secret-key</code></td><td>Yes</td><td>IAM user keys (§6.4)</td></tr>
+  <tr><td><code>B2_ENDPOINT</code></td><td><code>b2.endpoint</code></td><td>Yes</td><td><code>https://s3.us-east-1.amazonaws.com</code></td></tr>
+  <tr><td><code>B2_REGION</code></td><td><code>b2.region</code></td><td>Yes</td><td><code>us-east-1</code></td></tr>
+  <tr><td><code>B2_PUBLIC_URL</code></td><td><code>b2.public-url</code></td><td>No</td><td>Not needed for presigned URLs</td></tr>
+</table>
+<p class="small">* Required only if you send email. Without SMTP credentials, mail features fail at send time (timeouts are bounded to 5 s, so the app won't hang).</p>
+
+<!-- ======================= 11. SECURITY ======================= -->
+<h1 class="section">11&nbsp;&nbsp;Security Checklist</h1>
+<ol>
+  <li><strong>Rotate &amp; remove hardcoded credentials.</strong> <code>application-dev.properties</code> ships live-looking Aiven, Gmail and JWT values. Rotate the Aiven/Gmail credentials and ensure no AWS deployment uses them.</li>
+  <li><strong>All secrets in Secrets Manager</strong> — JWT secret, DB password, SMTP password. Never in the repo, task definition plaintext, or image layers.</li>
+  <li><strong>RDS:</strong> private subnet; security group allows <code>5432</code> only from the ECS task SG (or a bastion); <code>rds.force_ssl=1</code>; automated backups ≥ 7 days; Multi-AZ for production SLA.</li>
+  <li><strong>S3:</strong> Block Public Access ON; versioning on; lifecycle to archive/expire old versions. The app's presigned URLs need no public access.</li>
+  <li><strong>IAM least privilege</strong> — task role scoped to the single bucket (§6.4); no <code>s3:*</code> wildcards across buckets; no long-lived keys where a role works.</li>
+  <li><strong>JWT:</strong> use a fresh random secret ≥ 64 bytes; store token expirations from env (access 2.5 h, refresh 7 d as in dev defaults — tighten for production if desired).</li>
+  <li><strong>HTTPS everywhere</strong> — ACM cert on ALB, HTTP→HTTPS redirect; <code>PASSWORD_RESET_FRONTEND_URL</code> must be HTTPS.</li>
+  <li><strong>Security groups</strong> — ALB: 443/80 from 0.0.0.0/0; ECS task: 8080 from ALB SG only; no SSH except bastion/VPN. WebConfig CORS is <code>allowedOrigins("*")</code> — restrict to your frontend origin for production.</li>
+  <li><strong>Audit</strong> — enable CloudTrail (management events) and consider GuardDuty; both are cheap at low volume.</li>
+  <li><strong>Schema control</strong> — <code>ddl-auto=update</code> is acceptable to start; move to Flyway/Liquibase migrations before schema churn becomes risky (§13.5).</li>
+  <li><strong>Frontend CORS</strong> — <code>SecurityConfig</code>/<code>WebConfig</code> currently allow all origins; lock to <code>https://app.yourdomain.com</code>.</li>
+</ol>
+
+<!-- ======================= 12. COST ======================= -->
+<h1 class="section">12&nbsp;&nbsp;Cost Estimates</h1>
+<p class="small">On-demand pricing, us-east-1, approximate as of Sep 2026 — verify at <code>aws.amazon.com/pricing</code>. Free tier can bring most of this to ~$0 for the first 12 months.</p>
+
+<table>
+  <tr><th>Item</th><th class="num">Path A — Fargate</th><th class="num">Path B — Beanstalk</th><th class="num">Path C — EC2</th></tr>
+  <tr><td>Compute</td><td class="num">$36 (1 vCPU / 2 GB Fargate)</td><td class="num">$15 (t4g.small)</td><td class="num">$15 (t4g.small)</td></tr>
+  <tr><td>Database</td><td class="num">$14 (RDS db.t4g.micro + 20 GB)</td><td class="num">$14 (RDS db.t4g.micro)</td><td class="num">$0 (Postgres container)</td></tr>
+  <tr><td>Load balancer</td><td class="num">$18 (ALB)</td><td class="num">$0</td><td class="num">$0 (or Caddy/nginx)</td></tr>
+  <tr><td>EBS / storage</td><td class="num">$0</td><td class="num">$3</td><td class="num">$3</td></tr>
+  <tr><td>S3 + ECR</td><td class="num">$1</td><td class="num">$1</td><td class="num">$1</td></tr>
+  <tr><td>Secrets + CloudWatch + Route 53</td><td class="num">$4</td><td class="num">$4</td><td class="num">$1</td></tr>
+  <tr><td><strong>Monthly total</strong></td><td class="num"><strong>≈ $73</strong></td><td class="num"><strong>≈ $37</strong></td><td class="num"><strong>≈ $20</strong></td></tr>
+  <tr><td>Free tier eligible?</td><td>Partially (CloudWatch, S3, Secrets)</td><td>Partially</td><td><strong>Yes</strong> — t3.micro 750 h (tight 1 GB RAM), RDS t3.micro, S3 5 GB</td></tr>
+</table>
+
+<h3>Cost levers</h3>
+<ul>
+  <li><strong>Skip the ALB</strong> (use EIP + Caddy on EC2, or service DNS) → saves ~$18.</li>
+  <li><strong>Downsize:</strong> 0.5 vCPU / 1 GB Fargate ≈ $18 (ok for light load; Spring Boot + Hikari 8 conns fit in 1 GB but watch memory).</li>
+  <li><strong>Savings plans / reserved</strong> — RDS reserved (1 yr, no upfront) ≈ −35%; Fargate savings plans similar.</li>
+  <li><strong>NAT gateway:</strong> avoid (public subnets + SG) to save ~$32.</li>
+</ul>
+
+<!-- ======================= 13. OPERATIONS ======================= -->
+<h1 class="section">13&nbsp;&nbsp;Operations, Monitoring &amp; Known Gotchas</h1>
+
+<h2>13.1 Monitoring</h2>
+<ul>
+  <li><strong>Logs:</strong> <code>awslogs</code> → CloudWatch group <code>/ecs/myhourly</code>; set retention (e.g. 30 days) to cap cost.</li>
+  <li><strong>Alarms:</strong> CPUUtilization &gt; 80% (5 min), HTTPCode_Target_5XX_COUNT &gt; 0, DB Connections &gt; 80% of pool (8), failed ECS deployments.</li>
+  <li><strong>RDS:</strong> monitor free storage, replica lag (if Multi-AZ/read replica), and slow-query logs.</li>
+  <li><strong>SES:</strong> bounce/complaint rate via the SES console (keep &lt; 5% / &lt; 0.1%).</li>
+</ul>
+
+<h2>13.2 Backups &amp; restore</h2>
+<ul>
+  <li>RDS automated backups (7 days, PITR) — test a quarterly restore into a scratch instance.</li>
+  <li>S3 versioning enabled; add lifecycle to expire old versions after 90 days.</li>
+  <li>Document the restore runbook (console steps + the <code>pg_restore</code> command in §9.1).</li>
+</ul>
+
+<h2>13.3 Scaling (important: schedulers)</h2>
+<ul>
+  <li>The in-app <code>@Scheduled</code> jobs mean you must keep <strong>exactly one</strong> long-running task. <code>desiredCount = 1</code>; do <em>not</em> attach a CPU-based autoscaler that spawns a second task (you'd get duplicate notifications/attendance runs).</li>
+  <li>If load outgrows one task: add a second task running only the API, and a separate <em>scheduler-only</em> task (same image, a profile/env flag that disables <code>@EnableScheduling</code> on the API tasks). That's a small code change — worth planning.</li>
+  <li>Scale <em>up</em> (2 vCPU / 4 GB) before scaling <em>out</em>.</li>
+</ul>
+
+<h2>13.4 Timezone &amp; schedulers</h2>
+<ul>
+  <li>The Dockerfile already sets <code>TZ=Asia/Kolkata</code> and <code>-Duser.timezone=Asia/Kolkata</code> — cron jobs fire on IST regardless of the AWS region.</li>
+  <li>Verified schedulers: Attendance (1 min), Notifications (5 min), Birthday/Holiday/WorkAnniversary (daily), Leave (Jan 1 &amp; month-end).</li>
+</ul>
+
+<h2>13.5 Known gotchas</h2>
+<table>
+  <tr><th style="width:30%">Gotcha</th><th>Impact &amp; mitigation</th></tr>
+  <tr><td>ALB 1 MB request body limit</td><td>Uploads &gt; 1 MB → HTTP 413. Mitigate with presigned-PUT uploads, NLB, or no ALB (§5 warning).</td></tr>
+  <tr><td>Uploads capped at 25 MB in <code>B2FileStorageServiceImpl</code> (Spring max is 100 MB)</td><td>Files over 25 MB are rejected with a clear error — by design; don't raise blindly without also fixing the ALB limit.</td></tr>
+  <tr><td><code>/actuator/health</code> whitelisted but actuator not on classpath</td><td>That path 404s. Add <code>spring-boot-starter-actuator</code> or health-check <code>/swagger-ui/index.html</code> (§6.2 Step 1).</td></tr>
+  <tr><td>Presigned URLs expire after 15 min</td><td>Fine for on-the-fly access; don't persist them — store keys and presign on read (audit during migration, §9.2).</td></tr>
+  <tr><td>Hardcoded creds in <code>application-dev.properties</code></td><td>Rotation required before production go-live (§11.1).</td></tr>
+  <tr><td><code>ddl-auto=update</code></td><td>Convenient but can drift/partially fail on big schema changes; plan Flyway/Liquibase (§11.10).</td></tr>
+  <tr><td>Multiple instances → duplicate scheduled jobs</td><td>Keep <code>desiredCount=1</code> (§13.3).</td></tr>
+  <tr><td>Gmail SMTP throttling (500/day)</td><td>If notifications exceed Gmail's limit, move to SES.</td></tr>
+  <tr><td>100 MB Spring multipart vs container memory</td><td>Large uploads buffer in memory — 2 GB task memory is adequate; consider streaming to S3 for very large files.</td></tr>
+</table>
+
+<h2>13.6 Frontend note</h2>
+<p>The repo contains the backend API only. The frontend (React, expected at port 3000 locally) should be hosted separately — e.g. static files in S3 behind CloudFront + ACM, or AWS Amplify — and <code>PASSWORD_RESET_FRONTEND_URL</code> / CORS origins updated to the real domain.</p>
+
+<!-- ======================= APPENDIX ======================= -->
+<h1 class="section">Appendix — Useful AWS CLI Commands</h1>
+
+<h2>A.1 ECR build &amp; push</h2>
+<pre><code>aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+docker build -t myhourly:latest .
+docker tag myhourly:latest ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/myhourly:latest
+docker push ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/myhourly:latest</code></pre>
+
+<h2>A.2 Secrets Manager</h2>
+<pre><code>aws secretsmanager create-secret --name myhourly/jwt --secret-string '{
+  "JWT_SECRET":"REPLACE_WITH_64+_RANDOM_CHARS",
+  "ACCESS_TOKEN_EXPIRATION":"9000000",
+  "REFRESH_TOKEN_EXPIRATION":"604800000"}'
+
+aws secretsmanager put-secret-value --secret-id myhourly/db \
+  --secret-string '{"DATABASE_URL":"jdbc:postgresql://HOST:5432/myhourly","DATABASE_USER":"myhourly","DATABASE_PASSWORD":"****"}'
+
+aws secretsmanager get-secret-value --secret-id myhourly/db --query SecretString --output text</code></pre>
+
+<h2>A.3 RDS</h2>
+<pre><code>aws rds describe-db-instances --db-instance-identifier myhourly-db \
+  --query 'DBInstances[0].Endpoint'
+
+# Snapshot + restore
+aws rds create-db-snapshot --db-instance-identifier myhourly-db \
+  --db-snapshot-identifier myhourly-db-pre-migration
+aws rds restore-db-instance-from-db-snapshot \
+  --db-instance-identifier myhourly-db-restored \
+  --db-snapshot-identifier myhourly-db-pre-migration</code></pre>
+
+<h2>A.4 S3</h2>
+<pre><code>aws s3 cp big-file.pdf s3://myhourly-files/documents/
+aws s3 ls s3://myhourly-files/ --recursive --summarize | tail -5
+aws s3 sync s3://MyHourly s3://myhourly-files   # via --endpoint-url for B2</code></pre>
+
+<h2>A.5 ECS</h2>
+<pre><code>aws ecs describe-services --cluster myhourly-cluster --services myhourly-api
+aws ecs update-service --cluster myhourly-cluster --service myhourly-api \
+  --task-definition myhourly-api:2            # roll forward
+aws ecs update-service --cluster myhourly-cluster --service myhourly-api \
+  --task-definition myhourly-api:1 --force-new-deployment   # roll back</code></pre>
+
+<h2>A.6 Logs</h2>
+<pre><code>aws logs tail /ecs/myhourly --follow --since 5m
+aws logs filter-log-events --log-group-name /ecs/myhourly \
+  --filter-pattern "ERROR" --limit 20</code></pre>
+
+<p class="small" style="margin-top:8mm">End of guide. Prepared from a direct inspection of the repository (<code>pom.xml</code>, <code>Dockerfile</code>, application properties, <code>B2FileStorageServiceImpl</code>, schedulers, <code>SecurityConstants</code>) plus AWS documentation and pricing references. All credentials shown are placeholders; replace before use.</p>
+
+</body>
+</html>
