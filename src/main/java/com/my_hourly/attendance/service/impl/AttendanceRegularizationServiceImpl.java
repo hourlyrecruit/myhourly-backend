@@ -4,6 +4,7 @@ import com.my_hourly.attendance.api.request.CreateRegularizationDetailRequest;
 import com.my_hourly.attendance.api.request.CreateRegularizationRequest;
 import com.my_hourly.attendance.api.request.RegularizationDetailActionRequest;
 import com.my_hourly.attendance.api.response.RegularizationResponse;
+import com.my_hourly.attendance.email.AttendanceRegularizationEmailService;
 import com.my_hourly.attendance.entity.*;
 import com.my_hourly.attendance.mapper.AttendanceRegularizationMapper;
 import com.my_hourly.attendance.repository.AttendanceRegularizationDetailRepository;
@@ -35,6 +36,7 @@ public class AttendanceRegularizationServiceImpl implements AttendanceRegulariza
     private final EmployeeService employeeService;
     private final RegularizationValidator regularizationValidator;
     private final AttendanceRegularizationMapper mapper;
+    private final AttendanceRegularizationEmailService attendanceRegularizationEmailService;
 
     @Override
     @Transactional
@@ -74,6 +76,14 @@ public class AttendanceRegularizationServiceImpl implements AttendanceRegulariza
                 ));
 
         log.info("Regularization {} created by employee {}", regularization.getId(), employee.getId());
+        try {
+            attendanceRegularizationEmailService.sendAttendanceRegularizationRequestEmail(regularization);
+        } catch (Exception e) {
+            log.error(
+                    "Failed to send attendance regularization request email",
+                    e
+            );
+        }
         return mapper.toResponse(regularization);
     }
 
@@ -243,6 +253,7 @@ public class AttendanceRegularizationServiceImpl implements AttendanceRegulariza
         log.info("Detail {} approved by manager {} for regularization {}",
                 detailId, manager.getId(), regularizationId);
 
+        attendanceRegularizationEmailService.sendAttendanceRegularizationStatusUpdateEmail(regularization);
         return mapper.toResponse(regularization);
     }
 
@@ -286,6 +297,8 @@ public class AttendanceRegularizationServiceImpl implements AttendanceRegulariza
 
         log.info("Detail {} rejected by manager {} for regularization {}",
                 detailId, manager.getId(), regularizationId);
+
+        attendanceRegularizationEmailService.sendAttendanceRegularizationStatusUpdateEmail(regularization);
 
         return mapper.toResponse(regularization);
     }
