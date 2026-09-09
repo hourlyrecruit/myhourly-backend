@@ -10,12 +10,14 @@ import com.my_hourly.settings.company.service.CompanySettingsService;
 import com.my_hourly.settings.leave.dto.request.LeaveSettingsRequest;
 import com.my_hourly.settings.leave.dto.response.LeaveSettingsResponse;
 import com.my_hourly.settings.leave.service.LeaveSettingsService;
-import com.my_hourly.settings.notification.dto.request.NotificationSettingsRequest;
-import com.my_hourly.settings.notification.dto.response.NotificationSettingsResponse;
-import com.my_hourly.settings.notification.service.NotificationSettingsService;
-import com.my_hourly.settings.workLogs.dto.request.WorkLogSettingsRequest;
-import com.my_hourly.settings.workLogs.dto.response.WorkLogSettingsResponse;
-import com.my_hourly.settings.workLogs.service.WorkLogSettingsService;
+// DISABLED: notification settings submodule is unused (see NotificationSettings).
+//import com.my_hourly.settings.notification.dto.request.NotificationSettingsRequest;
+//import com.my_hourly.settings.notification.dto.response.NotificationSettingsResponse;
+//import com.my_hourly.settings.notification.service.NotificationSettingsService;
+// DISABLED: workLogs settings submodule is unused (see WorkLogSettings).
+//import com.my_hourly.settings.workLogs.dto.request.WorkLogSettingsRequest;
+//import com.my_hourly.settings.workLogs.dto.response.WorkLogSettingsResponse;
+//import com.my_hourly.settings.workLogs.service.WorkLogSettingsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,9 +37,10 @@ public class SettingController {
 
     private final AttendanceSettingsService attendanceSettingsService;
     private final LeaveSettingsService leaveSettingsService;
-    private final NotificationSettingsService notificationSettingsService;
+    // DISABLED: notification settings submodule is unused (see NotificationSettings).
+//    private final NotificationSettingsService notificationSettingsService;
     private final CompanySettingsService service;
-    private final WorkLogSettingsService workLogSettingsService;
+    //private final WorkLogSettingsService workLogSettingsService;
 
     @Operation(summary = "Get Attendance Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
     @GetMapping("/attendance")
@@ -119,44 +122,45 @@ public class SettingController {
 
 
 
-    @Operation(summary = "Get Notification Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
-    @GetMapping("/notification")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<NotificationSettingsResponse>> getNotificationSettings() {
-
-        NotificationSettingsResponse response =
-                notificationSettingsService.getNotificationSettings();
-
-        ApiResponse<NotificationSettingsResponse> apiResponse =
-                ApiResponse.<NotificationSettingsResponse>builder()
-                        .success(true)
-                        .message("Notification settings fetched successfully.")
-                        .timestamp(LocalDateTime.now())
-                        .data(response)
-                        .build();
-
-        return ResponseEntity.ok(apiResponse);
-    }
-
-    @Operation(summary = "Update Notification Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
-    @PutMapping("/notification")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<NotificationSettingsResponse>> updateNotificationSettings(
-            @Valid @RequestBody NotificationSettingsRequest request) {
-
-        NotificationSettingsResponse response =
-                notificationSettingsService.updateNotificationSettings(request);
-
-        ApiResponse<NotificationSettingsResponse> apiResponse =
-                ApiResponse.<NotificationSettingsResponse>builder()
-                        .success(true)
-                        .message("Notification settings updated successfully.")
-                        .timestamp(LocalDateTime.now())
-                        .data(response)
-                        .build();
-
-        return ResponseEntity.ok(apiResponse);
-    }
+    // DISABLED: notification settings submodule is unused (see NotificationSettings).
+//    @Operation(summary = "Get Notification Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
+//    @GetMapping("/notification")
+//    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<NotificationSettingsResponse>> getNotificationSettings() {
+//
+//        NotificationSettingsResponse response =
+//                notificationSettingsService.getNotificationSettings();
+//
+//        ApiResponse<NotificationSettingsResponse> apiResponse =
+//                ApiResponse.<NotificationSettingsResponse>builder()
+//                        .success(true)
+//                        .message("Notification settings fetched successfully.")
+//                        .timestamp(LocalDateTime.now())
+//                        .data(response)
+//                        .build();
+//
+//        return ResponseEntity.ok(apiResponse);
+//    }
+//
+//    @Operation(summary = "Update Notification Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
+//    @PutMapping("/notification")
+//    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<NotificationSettingsResponse>> updateNotificationSettings(
+//            @Valid @RequestBody NotificationSettingsRequest request) {
+//
+//        NotificationSettingsResponse response =
+//                notificationSettingsService.updateNotificationSettings(request);
+//
+//        ApiResponse<NotificationSettingsResponse> apiResponse =
+//                ApiResponse.<NotificationSettingsResponse>builder()
+//                        .success(true)
+//                        .message("Notification settings updated successfully.")
+//                        .timestamp(LocalDateTime.now())
+//                        .data(response)
+//                        .build();
+//
+//        return ResponseEntity.ok(apiResponse);
+//    }
 //==================================================================
 
 
@@ -195,42 +199,42 @@ public class SettingController {
         );
     }
 //============================================================
-    @Operation(summary = "Get Work Log Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
-    @GetMapping("/work-log")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<WorkLogSettingsResponse>> getWorkLogSettings() {
+//    @Operation(summary = "Get Work Log Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
+//    @GetMapping("/work-log")
+//    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<WorkLogSettingsResponse>> getWorkLogSettings() {
+//
+//        WorkLogSettingsResponse response =
+//                workLogSettingsService.getWorkLogSettings();
+//
+//        ApiResponse<WorkLogSettingsResponse> apiResponse =
+//                ApiResponse.<WorkLogSettingsResponse>builder()
+//                        .success(true)
+//                        .message("Work log settings fetched successfully.")
+//                        .timestamp(LocalDateTime.now())
+//                        .data(response)
+//                        .build();
+//
+//        return ResponseEntity.ok(apiResponse);
+//    }
 
-        WorkLogSettingsResponse response =
-                workLogSettingsService.getWorkLogSettings();
-
-        ApiResponse<WorkLogSettingsResponse> apiResponse =
-                ApiResponse.<WorkLogSettingsResponse>builder()
-                        .success(true)
-                        .message("Work log settings fetched successfully.")
-                        .timestamp(LocalDateTime.now())
-                        .data(response)
-                        .build();
-
-        return ResponseEntity.ok(apiResponse);
-    }
-
-    @Operation(summary = "Update Work Log Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
-    @PutMapping("/work-log")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<WorkLogSettingsResponse>> updateWorkLogSettings(
-            @Valid @RequestBody WorkLogSettingsRequest request) {
-
-        WorkLogSettingsResponse response =
-                workLogSettingsService.updateWorkLogSettings(request);
-
-        ApiResponse<WorkLogSettingsResponse> apiResponse =
-                ApiResponse.<WorkLogSettingsResponse>builder()
-                        .success(true)
-                        .message("Work log settings updated successfully.")
-                        .timestamp(LocalDateTime.now())
-                        .data(response)
-                        .build();
-
-        return ResponseEntity.ok(apiResponse);
-    }
+//    @Operation(summary = "Update Work Log Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
+//    @PutMapping("/work-log")
+//    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<WorkLogSettingsResponse>> updateWorkLogSettings(
+//            @Valid @RequestBody WorkLogSettingsRequest request) {
+//
+//        WorkLogSettingsResponse response =
+//                workLogSettingsService.updateWorkLogSettings(request);
+//
+//        ApiResponse<WorkLogSettingsResponse> apiResponse =
+//                ApiResponse.<WorkLogSettingsResponse>builder()
+//                        .success(true)
+//                        .message("Work log settings updated successfully.")
+//                        .timestamp(LocalDateTime.now())
+//                        .data(response)
+//                        .build();
+//
+//        return ResponseEntity.ok(apiResponse);
+//    }
 }

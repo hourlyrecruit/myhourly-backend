@@ -11,8 +11,9 @@ import lombok.*;
 @AllArgsConstructor
 public class LeaveSettingsRequest {
 
-    @NotNull
-    private Boolean halfDayLeaveAllowed;
+    // DISABLED: entity field unused (no business-logic reader).
+//    @NotNull
+//    private Boolean halfDayLeaveAllowed;
 
     @NotNull
     private Boolean carryForwardAllowed;
@@ -25,37 +26,38 @@ public class LeaveSettingsRequest {
     @Min(0)
     private Integer annualPaidLeave;
 
-    @NotNull
-    @Min(0)
-    private Integer minimumAdvanceNoticeDays;
-
-    @NotNull
-    @Min(0)
-    private Integer maximumAdvanceNoticeDays;
-
-    @NotNull
-    @Min(1)
-    private Integer maximumConsecutiveLeaveDays;
-
-    @NotNull
-    private Boolean managerApprovalRequired;
-
-    @NotNull
-    private Boolean hrApprovalRequired;
-
-    @NotNull
-    private Boolean allowLeaveOnHoliday;
-
-    @NotNull
-    private Boolean allowLeaveOnWeekend;
-
-    @NotNull
-    private Boolean autoApproveLeave;
-
-    @NotNull
-    private Boolean allowNegativeLeaveBalance;
-
-    @NotNull
-    private Boolean allowBackdatedLeaveApplication;
+    // DISABLED: entity fields unused (no business-logic reader).
+//    @NotNull
+//    @Min(0)
+//    private Integer minimumAdvanceNoticeDays;
+//
+//    @NotNull
+//    @Min(0)
+//    private Integer maximumAdvanceNoticeDays;
+//
+//    @NotNull
+//    @Min(1)
+//    private Integer maximumConsecutiveLeaveDays;
+//
+//    @NotNull
+//    private Boolean managerApprovalRequired;
+//
+//    @NotNull
+//    private Boolean hrApprovalRequired;
+//
+//    @NotNull
+//    private Boolean allowLeaveOnHoliday;
+//
+//    @NotNull
+//    private Boolean allowLeaveOnWeekend;
+//
+//    @NotNull
+//    private Boolean autoApproveLeave;
+//
+//    @NotNull
+//    private Boolean allowNegativeLeaveBalance;
+//
+//    @NotNull
+//    private Boolean allowBackdatedLeaveApplication;
 
 }

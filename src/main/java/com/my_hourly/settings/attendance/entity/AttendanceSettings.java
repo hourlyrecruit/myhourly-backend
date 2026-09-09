@@ -38,16 +38,20 @@ public class AttendanceSettings extends BaseSettings {
     @Column(nullable = false)
     private Boolean overtimeEnabled;
 
-    @Column(nullable = false)
-    private Boolean attendanceRegularizationEnabled;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean attendanceRegularizationEnabled;
 
-    @Column(nullable = false)
-    private Boolean multipleBreaksAllowed;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean multipleBreaksAllowed;
 
-    @Column(nullable = false)
-    private Integer maximumBreakMinutes;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Integer maximumBreakMinutes;
 
-    private Integer maximumBreaksPerDay;
+    // DISABLED: no business-logic reader and never seeded (stayed null in DB).
+//    private Integer maximumBreaksPerDay;
 
 
     @Column(nullable = false)
@@ -56,17 +60,23 @@ public class AttendanceSettings extends BaseSettings {
     @Column(nullable = false)
     private Boolean holidayAttendanceAllowed;
 
-    @Column(nullable = false)
-    private Boolean lateMarkEnabled;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean lateMarkEnabled;
 
-    @Column(nullable = false)
-    private Boolean earlyExitEnabled;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean earlyExitEnabled;
 
-    @Column(nullable = false)
-    private Boolean autoCheckoutEnabled;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean autoCheckoutEnabled;
 
 
-    @Column(nullable = false)
-    @Builder.Default
-    private boolean active = true;
+    // NOTE: removed — duplicate `active` field shadowed the one inherited from
+    // BaseSettings (this.active vs super.active ambiguity). The inherited
+    // BaseSettings#active is the column actually used.
+//    @Column(nullable = false)
+//    @Builder.Default
+//    private boolean active = true;
 }

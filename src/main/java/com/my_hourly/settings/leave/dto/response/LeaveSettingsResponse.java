@@ -11,7 +11,8 @@ public class LeaveSettingsResponse {
 
     private Long id;
 
-    private Boolean halfDayLeaveAllowed;
+    // DISABLED: entity field unused (no business-logic reader).
+//    private Boolean halfDayLeaveAllowed;
 
     private Boolean carryForwardAllowed;
 
@@ -19,25 +20,17 @@ public class LeaveSettingsResponse {
 
     private Integer annualPaidLeave;
 
-    private Integer minimumAdvanceNoticeDays;
-
-    private Integer maximumAdvanceNoticeDays;
-
-    private Integer maximumConsecutiveLeaveDays;
-
-    private Boolean managerApprovalRequired;
-
-    private Boolean hrApprovalRequired;
-
-    private Boolean allowLeaveOnHoliday;
-
-    private Boolean allowLeaveOnWeekend;
-
-    private Boolean autoApproveLeave;
-
-    private Boolean allowNegativeLeaveBalance;
-
-    private Boolean allowBackdatedLeaveApplication;
+    // DISABLED: entity fields unused (no business-logic reader).
+//    private Integer minimumAdvanceNoticeDays;
+//    private Integer maximumAdvanceNoticeDays;
+//    private Integer maximumConsecutiveLeaveDays;
+//    private Boolean managerApprovalRequired;
+//    private Boolean hrApprovalRequired;
+//    private Boolean allowLeaveOnHoliday;
+//    private Boolean allowLeaveOnWeekend;
+//    private Boolean autoApproveLeave;
+//    private Boolean allowNegativeLeaveBalance;
+//    private Boolean allowBackdatedLeaveApplication;
 
     private Boolean active;
 

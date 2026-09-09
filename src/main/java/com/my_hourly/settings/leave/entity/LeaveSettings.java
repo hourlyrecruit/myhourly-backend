@@ -15,8 +15,9 @@ import lombok.*;
 @AllArgsConstructor
 public class LeaveSettings extends BaseSettings {
 
-    @Column(nullable = false)
-    private Boolean halfDayLeaveAllowed;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean halfDayLeaveAllowed;
 
     /**
      * When true, unused monthly guideline days carry forward into the annual balance.
@@ -40,37 +41,50 @@ public class LeaveSettings extends BaseSettings {
     @Builder.Default
     private Integer annualPaidLeave = 24;
 
-    @Column(nullable = false)
-    private Integer minimumAdvanceNoticeDays;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Integer minimumAdvanceNoticeDays;
 
-    @Column(nullable = false)
-    private Integer maximumAdvanceNoticeDays;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Integer maximumAdvanceNoticeDays;
 
-    @Column(nullable = false)
-    private Integer maximumConsecutiveLeaveDays;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Integer maximumConsecutiveLeaveDays;
 
-    @Column(nullable = false)
-    private Boolean managerApprovalRequired;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean managerApprovalRequired;
 
-    @Column(nullable = false)
-    private Boolean hrApprovalRequired;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean hrApprovalRequired;
 
-    @Column(nullable = false)
-    private Boolean allowLeaveOnHoliday;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean allowLeaveOnHoliday;
 
-    @Column(nullable = false)
-    private Boolean allowLeaveOnWeekend;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean allowLeaveOnWeekend;
 
-    @Column(nullable = false)
-    private Boolean autoApproveLeave;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean autoApproveLeave;
 
-    @Column(nullable = false)
-    private Boolean allowNegativeLeaveBalance;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean allowNegativeLeaveBalance;
 
-    @Column(nullable = false)
-    private Boolean allowBackdatedLeaveApplication;
+    // DISABLED: no business-logic reader — only round-trips through the settings API.
+//    @Column(nullable = false)
+//    private Boolean allowBackdatedLeaveApplication;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean active = true;
+    // NOTE: removed — duplicate `active` field shadowed the one inherited from
+    // BaseSettings (this.active vs super.active ambiguity). The inherited
+    // BaseSettings#active is the column actually used.
+//    @Column(nullable = false)
+//    @Builder.Default
+//    private Boolean active = true;
 }

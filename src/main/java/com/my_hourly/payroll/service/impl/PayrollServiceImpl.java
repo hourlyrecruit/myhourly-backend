@@ -26,7 +26,6 @@ import com.my_hourly.payroll.repository.PayrollRepository;
 import com.my_hourly.payroll.repository.SalaryStructureRepository;
 import com.my_hourly.payroll.service.PayrollHistoryService;
 import com.my_hourly.payroll.service.PayrollService;
-import com.my_hourly.security.util.SecurityUtils;
 import com.my_hourly.settings.leave.repository.LeaveSettingsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

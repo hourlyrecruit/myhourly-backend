@@ -55,31 +55,33 @@ public class LeaveSettingsServiceImpl implements LeaveSettingsService {
 
     private void validateLeaveSettings(LeaveSettingsRequest request) {
 
-        // Minimum advance notice cannot exceed maximum advance notice
-        if (request.getMinimumAdvanceNoticeDays()
-                > request.getMaximumAdvanceNoticeDays()) {
-
-            throw new BadRequestException(
-                    "Minimum advance notice cannot be greater than maximum advance notice.", ErrorCode.VALIDATION_FAILED);
-        }
-
-        // Carry forward validations removed because maxCarryForwardDays is replaced by monthlyGuideline.
-
-        // Auto approval validation
-        if (request.getAutoApproveLeave()
-                && (request.getManagerApprovalRequired()
-                || request.getHrApprovalRequired())) {
-
-            throw new BadRequestException(
-                    "Manager and HR approval cannot be required when auto approval is enabled.", ErrorCode.VALIDATION_FAILED);
-        }
-
-        // Maximum consecutive leave validation
-        if (request.getMaximumConsecutiveLeaveDays()
-                > request.getMaximumAdvanceNoticeDays()) {
-
-            throw new BadRequestException(
-                    "Maximum consecutive leave days cannot exceed maximum advance notice days.", ErrorCode.VALIDATION_FAILED);
-        }
+        // DISABLED: validated fields are unused entity fields (no business-logic reader)
+        // and were removed from LeaveSettingsRequest. Re-enable together with those fields.
+//        // Minimum advance notice cannot exceed maximum advance notice
+//        if (request.getMinimumAdvanceNoticeDays()
+//                > request.getMaximumAdvanceNoticeDays()) {
+//
+//            throw new BadRequestException(
+//                    "Minimum advance notice cannot be greater than maximum advance notice.", ErrorCode.VALIDATION_FAILED);
+//        }
+//
+//        // Carry forward validations removed because maxCarryForwardDays is replaced by monthlyGuideline.
+//
+//        // Auto approval validation
+//        if (request.getAutoApproveLeave()
+//                && (request.getManagerApprovalRequired()
+//                || request.getHrApprovalRequired())) {
+//
+//            throw new BadRequestException(
+//                    "Manager and HR approval cannot be required when auto approval is enabled.", ErrorCode.VALIDATION_FAILED);
+//        }
+//
+//        // Maximum consecutive leave validation
+//        if (request.getMaximumConsecutiveLeaveDays()
+//                > request.getMaximumAdvanceNoticeDays()) {
+//
+//            throw new BadRequestException(
+//                    "Maximum consecutive leave days cannot exceed maximum advance notice days.", ErrorCode.VALIDATION_FAILED);
+//        }
     }
 }
