@@ -20,10 +20,12 @@ import com.my_hourly.settings.attendance.repository.AttendanceSettingsRepository
 import com.my_hourly.settings.company.repository.CompanySettingsRepository;
 import com.my_hourly.settings.leave.entity.LeaveSettings;
 import com.my_hourly.settings.leave.repository.LeaveSettingsRepository;
-import com.my_hourly.settings.notification.entity.NotificationSettings;
-import com.my_hourly.settings.notification.repository.NotificationSettingsRepository;
-import com.my_hourly.settings.workLogs.entity.WorkLogSettings;
-import com.my_hourly.settings.workLogs.repository.WorkLogSettingsRepository;
+// DISABLED: notification settings submodule is unused (see NotificationSettings).
+//import com.my_hourly.settings.notification.entity.NotificationSettings;
+//import com.my_hourly.settings.notification.repository.NotificationSettingsRepository;
+// DISABLED: workLogs settings submodule is unused (see WorkLogSettings).
+//import com.my_hourly.settings.workLogs.entity.WorkLogSettings;
+//import com.my_hourly.settings.workLogs.repository.WorkLogSettingsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,8 +59,10 @@ public class DataInitializer implements ApplicationRunner {
     private final CompanySettingsRepository companySettingsRepository;
     private final AttendanceSettingsRepository attendanceSettingsRepository;
     private final LeaveSettingsRepository leaveSettingsRepository;
-    private final WorkLogSettingsRepository workLogSettingsRepository;
-    private final NotificationSettingsRepository notificationSettingsRepository;
+// DISABLED: workLogs settings submodule is unused (see WorkLogSettings).
+//    private final WorkLogSettingsRepository workLogSettingsRepository;
+// DISABLED: notification settings submodule is unused (see NotificationSettings).
+//    private final NotificationSettingsRepository notificationSettingsRepository;
     private final HolidayRepository holidayRepository;
    // private final SuperAdminProperties superAdminProperties;
 //==================================================
@@ -132,8 +136,10 @@ public class DataInitializer implements ApplicationRunner {
         seedCompanySettings();
         seedAttendanceSettings();
         seedLeaveSettings();
-        seedWorkLogSettings();
-        seedNotificationSettings();
+// DISABLED: workLogs settings submodule is unused (see WorkLogSettings).
+//        seedWorkLogSettings();
+// DISABLED: notification settings submodule is unused (see NotificationSettings).
+//        seedNotificationSettings();
 
         initializeHoliday();
 
@@ -239,7 +245,9 @@ public class DataInitializer implements ApplicationRunner {
                 .timeZone("Asia/Kolkata")
                 .currency("INR")
                 .workingDaysPerWeek(5)
-                .active(true)
+// DISABLED: `active` is inherited from BaseSettings (defaults to true); plain
+// @Builder does not expose inherited fields.
+//                .active(true)
                 .build();
 
         companySettingsRepository.save(settings);
@@ -262,15 +270,19 @@ public class DataInitializer implements ApplicationRunner {
                 .halfDayWorkingMinutes(240)
                 .checkoutCutoffMinutes(180)
                 .overtimeEnabled(false)
-                .attendanceRegularizationEnabled(true)
-                .multipleBreaksAllowed(true)
-                .maximumBreakMinutes(60)
+// DISABLED: entity fields unused (no business-logic reader).
+//                .attendanceRegularizationEnabled(true)
+//                .multipleBreaksAllowed(true)
+//                .maximumBreakMinutes(60)
                 .weekendAttendanceAllowed(false)
                 .holidayAttendanceAllowed(false)
-                .lateMarkEnabled(true)
-                .earlyExitEnabled(true)
-                .autoCheckoutEnabled(false)
-                .active(true)
+// DISABLED: entity fields unused (no business-logic reader).
+//                .lateMarkEnabled(true)
+//                .earlyExitEnabled(true)
+//                .autoCheckoutEnabled(false)
+// DISABLED: `active` is inherited from BaseSettings (defaults to true); plain
+// @Builder does not expose inherited fields.
+//                .active(true)
                 .build();
 
         attendanceSettingsRepository.save(settings);
@@ -287,20 +299,22 @@ public class DataInitializer implements ApplicationRunner {
         }
 
         LeaveSettings settings = LeaveSettings.builder()
-                .halfDayLeaveAllowed(true)
+// DISABLED: entity fields unused (no business-logic reader).
+//                .halfDayLeaveAllowed(true)
                 .carryForwardAllowed(false)
                 .monthlyGuideline(2)
                 .annualPaidLeave(24)
-                .minimumAdvanceNoticeDays(1)
-                .maximumAdvanceNoticeDays(30)
-                .maximumConsecutiveLeaveDays(10)
-                .managerApprovalRequired(true)
-                .hrApprovalRequired(true)
-                .allowLeaveOnHoliday(false)
-                .allowLeaveOnWeekend(false)
-                .autoApproveLeave(false)
-                .allowNegativeLeaveBalance(false)
-                .allowBackdatedLeaveApplication(false)
+// DISABLED: entity fields unused (no business-logic reader).
+//                .minimumAdvanceNoticeDays(1)
+//                .maximumAdvanceNoticeDays(30)
+//                .maximumConsecutiveLeaveDays(10)
+//                .managerApprovalRequired(true)
+//                .hrApprovalRequired(true)
+//                .allowLeaveOnHoliday(false)
+//                .allowLeaveOnWeekend(false)
+//                .autoApproveLeave(false)
+//                .allowNegativeLeaveBalance(false)
+//                .allowBackdatedLeaveApplication(false)
                 .build();
 
         leaveSettingsRepository.save(settings);
@@ -308,60 +322,64 @@ public class DataInitializer implements ApplicationRunner {
         log.info("[DataInitializer] Leave Settings initialized successfully.");
     }
 
-    private void seedWorkLogSettings() {
+// DISABLED: workLogs settings submodule is unused (see WorkLogSettings).
+//    private void seedWorkLogSettings() {
+//
+//        if (workLogSettingsRepository.count() > 0) {
+//            log.info("[DataInitializer] Work Log Settings already exist. Skipping...");
+//            return;
+//        }
+//
+//        WorkLogSettings settings = WorkLogSettings.builder()
+//                .workLogSubmissionRequired(true)
+//                .reportRequiredBeforeCheckout(true)
+//                .reportSubmissionDeadline(LocalTime.of(18, 0))
+//                .minimumWorkLogEntries(3)
+//                .workLogReminderEnabled(true)
+//                .reminderIntervalMinutes(60)
+//                .managerEmailNotification(true)
+//                .employeePdfDownloadAllowed(true)
+//                .managerApprovalRequired(false)
+//                .allowWorkLogEditAfterSubmission(false)
+//                .autoGenerateDailySummary(false)
+//                .minimumWorkLogDescriptionLength(20)
+//                .allowMultipleReportSubmissionsPerDay(false)
+//                .active(true)
+//                .build();
+//
+//        workLogSettingsRepository.save(settings);
+//
+//        log.info("[DataInitializer] Work Log Settings initialized successfully.");
+//    }
 
-        if (workLogSettingsRepository.count() > 0) {
-            log.info("[DataInitializer] Work Log Settings already exist. Skipping...");
-            return;
-        }
-
-        WorkLogSettings settings = WorkLogSettings.builder()
-                .workLogSubmissionRequired(true)
-                .reportRequiredBeforeCheckout(true)
-                .reportSubmissionDeadline(LocalTime.of(18, 0))
-                .minimumWorkLogEntries(3)
-                .workLogReminderEnabled(true)
-                .reminderIntervalMinutes(60)
-                .managerEmailNotification(true)
-                .employeePdfDownloadAllowed(true)
-                .managerApprovalRequired(false)
-                .allowWorkLogEditAfterSubmission(false)
-                .autoGenerateDailySummary(false)
-                .minimumWorkLogDescriptionLength(20)
-                .allowMultipleReportSubmissionsPerDay(false)
-                .active(true)
-                .build();
-
-        workLogSettingsRepository.save(settings);
-
-        log.info("[DataInitializer] Work Log Settings initialized successfully.");
-    }
-
-    private void seedNotificationSettings() {
-
-        if (notificationSettingsRepository.count() > 0) {
-            log.info("[DataInitializer] Notification Settings already exist. Skipping...");
-            return;
-        }
-
-        NotificationSettings settings = NotificationSettings.builder()
-                .emailNotificationsEnabled(true)
-                .inAppNotificationsEnabled(true)
-                .attendanceNotificationsEnabled(true)
-                .leaveNotificationsEnabled(true)
-                .workLogNotificationsEnabled(true)
-                .holidayNotificationsEnabled(true)
-                .birthdayNotificationsEnabled(true)
-                .announcementNotificationsEnabled(true)
-                .notifyManagers(true)
-                .notifyEmployees(true)
-                .active(true)
-                .build();
-
-        notificationSettingsRepository.save(settings);
-
-        log.info("[DataInitializer] Notification Settings initialized successfully.");
-    }
+// DISABLED: notification settings submodule is unused (see NotificationSettings).
+//    private void seedNotificationSettings() {
+//
+//        if (notificationSettingsRepository.count() > 0) {
+//            log.info("[DataInitializer] Notification Settings already exist. Skipping...");
+//            return;
+//        }
+//
+//        NotificationSettings settings = NotificationSettings.builder()
+//                .emailNotificationsEnabled(true)
+//                .inAppNotificationsEnabled(true)
+//                .attendanceNotificationsEnabled(true)
+//                .leaveNotificationsEnabled(true)
+//                .workLogNotificationsEnabled(true)
+//                .holidayNotificationsEnabled(true)
+//                .birthdayNotificationsEnabled(true)
+//                .announcementNotificationsEnabled(true)
+//                .notifyManagers(true)
+//                .notifyEmployees(true)
+// DISABLED: `active` is inherited from BaseSettings (defaults to true); plain
+// @Builder does not expose inherited fields.
+////                .active(true)
+//                .build();
+//
+//        notificationSettingsRepository.save(settings);
+//
+//        log.info("[DataInitializer] Notification Settings initialized successfully.");
+//    }
 
 
     private void initializeHoliday() {

@@ -16,20 +16,22 @@ public class LeaveSettingsMapper {
 
         return LeaveSettingsResponse.builder()
                 .id(entity.getId())
-                .halfDayLeaveAllowed(entity.getHalfDayLeaveAllowed())
+                // DISABLED: entity field unused (no business-logic reader).
+//                .halfDayLeaveAllowed(entity.getHalfDayLeaveAllowed())
                 .carryForwardAllowed(entity.getCarryForwardAllowed())
                 .monthlyGuideline(entity.getMonthlyGuideline())
                 .annualPaidLeave(entity.getAnnualPaidLeave())
-                .minimumAdvanceNoticeDays(entity.getMinimumAdvanceNoticeDays())
-                .maximumAdvanceNoticeDays(entity.getMaximumAdvanceNoticeDays())
-                .maximumConsecutiveLeaveDays(entity.getMaximumConsecutiveLeaveDays())
-                .managerApprovalRequired(entity.getManagerApprovalRequired())
-                .hrApprovalRequired(entity.getHrApprovalRequired())
-                .allowLeaveOnHoliday(entity.getAllowLeaveOnHoliday())
-                .allowLeaveOnWeekend(entity.getAllowLeaveOnWeekend())
-                .autoApproveLeave(entity.getAutoApproveLeave())
-                .allowNegativeLeaveBalance(entity.getAllowNegativeLeaveBalance())
-                .allowBackdatedLeaveApplication(entity.getAllowBackdatedLeaveApplication())
+                // DISABLED: entity fields unused (no business-logic reader).
+//                .minimumAdvanceNoticeDays(entity.getMinimumAdvanceNoticeDays())
+//                .maximumAdvanceNoticeDays(entity.getMaximumAdvanceNoticeDays())
+//                .maximumConsecutiveLeaveDays(entity.getMaximumConsecutiveLeaveDays())
+//                .managerApprovalRequired(entity.getManagerApprovalRequired())
+//                .hrApprovalRequired(entity.getHrApprovalRequired())
+//                .allowLeaveOnHoliday(entity.getAllowLeaveOnHoliday())
+//                .allowLeaveOnWeekend(entity.getAllowLeaveOnWeekend())
+//                .autoApproveLeave(entity.getAutoApproveLeave())
+//                .allowNegativeLeaveBalance(entity.getAllowNegativeLeaveBalance())
+//                .allowBackdatedLeaveApplication(entity.getAllowBackdatedLeaveApplication())
                 .active(entity.getActive())
                 .build();
     }
@@ -38,19 +40,21 @@ public class LeaveSettingsMapper {
             LeaveSettingsRequest request,
             LeaveSettings entity) {
 
-        entity.setHalfDayLeaveAllowed(request.getHalfDayLeaveAllowed());
+        // DISABLED: entity field unused (no business-logic reader).
+//        entity.setHalfDayLeaveAllowed(request.getHalfDayLeaveAllowed());
         entity.setCarryForwardAllowed(request.getCarryForwardAllowed());
         entity.setMonthlyGuideline(request.getMonthlyGuideline());
         entity.setAnnualPaidLeave(request.getAnnualPaidLeave());
-        entity.setMinimumAdvanceNoticeDays(request.getMinimumAdvanceNoticeDays());
-        entity.setMaximumAdvanceNoticeDays(request.getMaximumAdvanceNoticeDays());
-        entity.setMaximumConsecutiveLeaveDays(request.getMaximumConsecutiveLeaveDays());
-        entity.setManagerApprovalRequired(request.getManagerApprovalRequired());
-        entity.setHrApprovalRequired(request.getHrApprovalRequired());
-        entity.setAllowLeaveOnHoliday(request.getAllowLeaveOnHoliday());
-        entity.setAllowLeaveOnWeekend(request.getAllowLeaveOnWeekend());
-        entity.setAutoApproveLeave(request.getAutoApproveLeave());
-        entity.setAllowNegativeLeaveBalance(request.getAllowNegativeLeaveBalance());
-        entity.setAllowBackdatedLeaveApplication(request.getAllowBackdatedLeaveApplication());
+        // DISABLED: entity fields unused (no business-logic reader).
+//        entity.setMinimumAdvanceNoticeDays(request.getMinimumAdvanceNoticeDays());
+//        entity.setMaximumAdvanceNoticeDays(request.getMaximumAdvanceNoticeDays());
+//        entity.setMaximumConsecutiveLeaveDays(request.getMaximumConsecutiveLeaveDays());
+//        entity.setManagerApprovalRequired(request.getManagerApprovalRequired());
+//        entity.setHrApprovalRequired(request.getHrApprovalRequired());
+//        entity.setAllowLeaveOnHoliday(request.getAllowLeaveOnHoliday());
+//        entity.setAllowLeaveOnWeekend(request.getAllowLeaveOnWeekend());
+//        entity.setAutoApproveLeave(request.getAutoApproveLeave());
+//        entity.setAllowNegativeLeaveBalance(request.getAllowNegativeLeaveBalance());
+//        entity.setAllowBackdatedLeaveApplication(request.getAllowBackdatedLeaveApplication());
     }
 }

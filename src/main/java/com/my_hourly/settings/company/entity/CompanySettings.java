@@ -60,5 +60,8 @@ public class CompanySettings extends BaseSettings {
     @Column(length = 500)
     private String logoUrl;
 
-    private boolean active;
+    // NOTE: removed — duplicate `active` field shadowed the one inherited from
+    // BaseSettings (this.active vs super.active ambiguity). The inherited
+    // BaseSettings#active is the column actually used.
+//    private boolean active;
 }

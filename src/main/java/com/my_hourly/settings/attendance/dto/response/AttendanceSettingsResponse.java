@@ -32,23 +32,30 @@ public class AttendanceSettingsResponse {
 
     private Boolean overtimeEnabled;
 
-    private Boolean attendanceRegularizationEnabled;
+    // DISABLED: entity field unused (no business-logic reader).
+//    private Boolean attendanceRegularizationEnabled;
 
-    private Boolean multipleBreaksAllowed;
+    // DISABLED: entity field unused (no business-logic reader).
+//    private Boolean multipleBreaksAllowed;
 
-    private Integer maximumBreakMinutes;
+    // DISABLED: entity field unused (no business-logic reader).
+//    private Integer maximumBreakMinutes;
 
-    private Integer maximumBreaksPerDay;
+    // DISABLED: entity field unused (no business-logic reader, never seeded).
+//    private Integer maximumBreaksPerDay;
 
     private Boolean weekendAttendanceAllowed;
 
     private Boolean holidayAttendanceAllowed;
 
-    private Boolean lateMarkEnabled;
+    // DISABLED: entity field unused (no business-logic reader).
+//    private Boolean lateMarkEnabled;
 
-    private Boolean earlyExitEnabled;
+    // DISABLED: entity field unused (no business-logic reader).
+//    private Boolean earlyExitEnabled;
 
-    private Boolean autoCheckoutEnabled;
+    // DISABLED: entity field unused (no business-logic reader).
+//    private Boolean autoCheckoutEnabled;
 
     private Boolean active;
 }

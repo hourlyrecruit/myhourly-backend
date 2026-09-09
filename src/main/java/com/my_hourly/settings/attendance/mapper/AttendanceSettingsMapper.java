@@ -23,15 +23,17 @@ public class AttendanceSettingsMapper {
                 .halfDayWorkingMinutes(entity.getHalfDayWorkingMinutes())
                 .checkoutCutoffMinutes(entity.getCheckoutCutoffMinutes())
                 .overtimeEnabled(entity.getOvertimeEnabled())
-                .attendanceRegularizationEnabled(entity.getAttendanceRegularizationEnabled())
-                .multipleBreaksAllowed(entity.getMultipleBreaksAllowed())
-                .maximumBreakMinutes(entity.getMaximumBreakMinutes())
-                .maximumBreaksPerDay(entity.getMaximumBreaksPerDay())
+                // DISABLED: entity field unused (no business-logic reader).
+//                .attendanceRegularizationEnabled(entity.getAttendanceRegularizationEnabled())
+//                .multipleBreaksAllowed(entity.getMultipleBreaksAllowed())
+//                .maximumBreakMinutes(entity.getMaximumBreakMinutes())
+//                .maximumBreaksPerDay(entity.getMaximumBreaksPerDay())
                 .weekendAttendanceAllowed(entity.getWeekendAttendanceAllowed())
                 .holidayAttendanceAllowed(entity.getHolidayAttendanceAllowed())
-                .lateMarkEnabled(entity.getLateMarkEnabled())
-                .earlyExitEnabled(entity.getEarlyExitEnabled())
-                .autoCheckoutEnabled(entity.getAutoCheckoutEnabled())
+                // DISABLED: entity field unused (no business-logic reader).
+//                .lateMarkEnabled(entity.getLateMarkEnabled())
+//                .earlyExitEnabled(entity.getEarlyExitEnabled())
+//                .autoCheckoutEnabled(entity.getAutoCheckoutEnabled())
                 .active(entity.getActive())
                 .build();
     }
@@ -47,9 +49,10 @@ public class AttendanceSettingsMapper {
         entity.setHalfDayWorkingMinutes(request.getHalfDayWorkingMinutes());
         entity.setCheckoutCutoffMinutes(request.getCheckoutCutoffMinutes());
         entity.setOvertimeEnabled(request.getOvertimeEnabled());
-        entity.setAttendanceRegularizationEnabled(request.getAttendanceRegularizationEnabled());
-        entity.setMultipleBreaksAllowed(request.getMultipleBreaksAllowed());
-        entity.setMaximumBreakMinutes(request.getMaximumBreakMinutes());
-        entity.setMaximumBreaksPerDay(request.getMaximumBreaksPerDay());
+        // DISABLED: entity fields unused (no business-logic reader).
+//        entity.setAttendanceRegularizationEnabled(request.getAttendanceRegularizationEnabled());
+//        entity.setMultipleBreaksAllowed(request.getMultipleBreaksAllowed());
+//        entity.setMaximumBreakMinutes(request.getMaximumBreakMinutes());
+//        entity.setMaximumBreaksPerDay(request.getMaximumBreaksPerDay());
     }
 }
