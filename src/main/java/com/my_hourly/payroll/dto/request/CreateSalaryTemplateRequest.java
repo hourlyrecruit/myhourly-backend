@@ -26,37 +26,49 @@ public class CreateSalaryTemplateRequest {
 
     @NotNull(message = "Basic Salary is required.")
     @DecimalMin(value = "0.00", message = "Basic Salary cannot be negative.")
-    @Schema(example = "30000")
+    @Schema(example = "15000")
     private BigDecimal basicSalary;
 
     @NotNull(message = "HRA is required.")
     @DecimalMin(value = "0.00", message = "HRA cannot be negative.")
-    @Schema(example = "12000")
+    @Schema(example = "6000")
     private BigDecimal hra;
+
+//    //added after the salary slip, obtained
+//    @NotNull(message = "Conveyance Allowance is required.")
+//    @DecimalMin(value = "0.00", message = "conveyance Allowance cannot be negative.")
+//    @Schema(example = "0")
+//    private BigDecimal conveyance;
 
     @NotNull(message = "Special Allowance is required.")
     @DecimalMin(value = "0.00", message = "Special Allowance cannot be negative.")
-    @Schema(example = "5000")
+    @Schema(example = "0")
     private BigDecimal specialAllowance;
+
+//    //added after the salary slip, obtained
+//    @NotNull(message = "Relocation Bonus is required.")
+//    @DecimalMin(value = "0.00", message = "Relocation Bonus cannot be negative.")
+//    @Schema(example = "0")
+//    private BigDecimal relocationBonus;
 
     @NotNull(message = "Medical Allowance is required.")
     @DecimalMin(value = "0.00", message = "Medical Allowance cannot be negative.")
-    @Schema(example = "1500")
+    @Schema(example = "0")
     private BigDecimal medicalAllowance;
 
     @NotNull(message = "Travel Allowance is required.")
     @DecimalMin(value = "0.00", message = "Travel Allowance cannot be negative.")
-    @Schema(example = "2000")
+    @Schema(example = "0")
     private BigDecimal travelAllowance;
 
     @NotNull(message = "Bonus is required.")
     @DecimalMin(value = "0.00", message = "Bonus cannot be negative.")
-    @Schema(example = "3000")
+    @Schema(example = "0")
     private BigDecimal bonus;
 
     @NotNull(message = "Other Allowance is required.")
     @DecimalMin(value = "0.00", message = "Other Allowance cannot be negative.")
-    @Schema(example = "1000")
+    @Schema(example = "0")
     private BigDecimal otherAllowance;
 
     /* ==========================
@@ -65,7 +77,7 @@ public class CreateSalaryTemplateRequest {
 
     @NotNull(message = "PF is required.")
     @DecimalMin(value = "0.00", message = "PF cannot be negative.")
-    @Schema(example = "1800")
+    @Schema(example = "3000")
     private BigDecimal pf;
 
     @NotNull(message = "ESI is required.")
@@ -78,9 +90,9 @@ public class CreateSalaryTemplateRequest {
     @Schema(example = "200")
     private BigDecimal professionalTax;
 
-    @NotNull(message = "Income Tax is required.")
+    @NotNull(message = "Income Tax (TDS) is required.")
     @DecimalMin(value = "0.00", message = "Income Tax cannot be negative.")
-    @Schema(example = "0")
+    @Schema(example = "200")
     private BigDecimal incomeTax;
 
     @NotNull(message = "Other Deduction is required.")

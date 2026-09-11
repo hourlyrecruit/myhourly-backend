@@ -34,6 +34,8 @@ public class SalaryTemplateServiceImpl implements SalaryTemplateService {
                 .employeeType(request.getEmployeeType())
                 .basicSalary(request.getBasicSalary())
                 .hra(request.getHra())
+               // .conveyance(request.getConveyance()) //added after the salary slip, obtained
+               // .relocationBonus(request.getRelocationBonus()) //added after the salary slip, obtained
                 .specialAllowance(request.getSpecialAllowance())
                 .medicalAllowance(request.getMedicalAllowance())
                 .travelAllowance(request.getTravelAllowance())
@@ -61,6 +63,8 @@ public class SalaryTemplateServiceImpl implements SalaryTemplateService {
 
         template.setBasicSalary(request.getBasicSalary());
         template.setHra(request.getHra());
+       // template.setConveyance(request.getConveyance()); //added after the salary slip, obtained
+      //  template.setRelocationBonus(request.getRelocationBonus()); //added after the salary slip, obtained
         template.setSpecialAllowance(request.getSpecialAllowance());
         template.setMedicalAllowance(request.getMedicalAllowance());
         template.setTravelAllowance(request.getTravelAllowance());
@@ -75,6 +79,8 @@ public class SalaryTemplateServiceImpl implements SalaryTemplateService {
                         request.getMedicalAllowance(),
                         request.getTravelAllowance(),
                         request.getBonus(),
+                      //  request.getConveyance(), //added after the salary slip, obtained
+                       // request.getRelocationBonus(), //added after the salary slip, obtained
                         request.getOtherAllowance()));
 
         template.setPf(request.getPf());
@@ -165,6 +171,8 @@ public class SalaryTemplateServiceImpl implements SalaryTemplateService {
                 request.getMedicalAllowance(),
                 request.getTravelAllowance(),
                 request.getBonus(),
+               // request.getConveyance(),//added after the salary slip, obtained
+               // request.getRelocationBonus(),//added after the salary slip, obtained
                 request.getOtherAllowance());
     }
 
@@ -175,6 +183,8 @@ public class SalaryTemplateServiceImpl implements SalaryTemplateService {
             BigDecimal medical,
             BigDecimal travel,
             BigDecimal bonus,
+            //BigDecimal conveyance,//added after the salary slip, obtained
+           // BigDecimal relocationBonus,//added after the salary slip, obtained
             BigDecimal other) {
 
         return basic
@@ -183,6 +193,8 @@ public class SalaryTemplateServiceImpl implements SalaryTemplateService {
                 .add(medical)
                 .add(travel)
                 .add(bonus)
+               // .add(conveyance)//added after the salary slip, obtained
+                //.add(relocationBonus)//added after the salary slip, obtained
                 .add(other);
     }
 
@@ -194,6 +206,8 @@ public class SalaryTemplateServiceImpl implements SalaryTemplateService {
                 .employeeType(template.getEmployeeType())
                 .basicSalary(template.getBasicSalary())
                 .hra(template.getHra())
+                //.conveyance(template.getConveyance()) //added after the salary slip, obtained
+               // .relocationBonus(template.getRelocationBonus()) //added after the salary slip, obtained
                 .specialAllowance(template.getSpecialAllowance())
                 .medicalAllowance(template.getMedicalAllowance())
                 .travelAllowance(template.getTravelAllowance())

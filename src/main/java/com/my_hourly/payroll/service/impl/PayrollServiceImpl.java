@@ -554,6 +554,11 @@ public class PayrollServiceImpl implements PayrollService {
                 ? employee.getDesignation().getDesignationName()
                 : null;
 
+        //Added after the salary slip obtained
+        LocalDate dateOfJoining = employee.getDateOfJoining() != null
+                ? employee.getDateOfJoining()
+                : null;
+
         return Payroll.builder()
                 .payrollNumber(generatePayrollNumber(request.getPayrollMonth()))
                 .version(1)
@@ -568,6 +573,7 @@ public class PayrollServiceImpl implements PayrollService {
                 .employeeCode(employee.getEmployeeCode())
                 .departmentName(departmentName)
                 .designationName(designationName)
+                .dateOfJoining(dateOfJoining)  //added after the salary slip obtained
 
                 // Payment snapshot
                 .panNumber(paymentDetails.getPanNumber())
@@ -795,6 +801,7 @@ public class PayrollServiceImpl implements PayrollService {
                 .employeeId(payroll.getEmployee().getId())
                 .employeeCode(payroll.getEmployeeCode())
                 .employeeName(payroll.getEmployeeName())
+                .dateOfJoining(payroll.getDateOfJoining()) // Added after the salary slip obtained
                 .departmentName(payroll.getDepartmentName())
                 .designationName(payroll.getDesignationName())
 

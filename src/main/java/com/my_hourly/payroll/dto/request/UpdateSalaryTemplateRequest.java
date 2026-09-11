@@ -29,6 +29,18 @@ public class UpdateSalaryTemplateRequest {
     @Schema(example = "12000")
     private BigDecimal hra;
 
+//    //added after the salary slip, obtained
+//    @NotNull(message = "Conveyance Allowance is required.")
+//    @DecimalMin(value = "0.00", message = "Conveyance Allowance cannot be negative.")
+//    @Schema(example = "0")
+//    private BigDecimal conveyance;
+//
+//    //added after the salary slip, obtained
+//    @NotNull(message = "Leave Travel Allowance is required.")
+//    @DecimalMin(value = "0.00", message = "Leave Travel Allowance cannot be negative.")
+//    @Schema(example = "0")
+//    private BigDecimal relocationBonus;
+
     @NotNull(message = "Special Allowance is required.")
     @DecimalMin(value = "0.00", message = "Special Allowance cannot be negative.")
     @Schema(example = "5000")

@@ -139,6 +139,7 @@ public class EmployeePaymentDetailsServiceImpl
                 .employeeId(employee.getId())
                 .employeeCode(employee.getEmployeeCode())
                 .employeeName(employee.getFirstName() + " " + employee.getLastName())
+                .dateOfJoining(employee.getDateOfJoining())
                 .panNumber(paymentDetails.getPanNumber())
                 .bankName(paymentDetails.getBankName())
                 .accountNumber(paymentDetails.getAccountNumber())
