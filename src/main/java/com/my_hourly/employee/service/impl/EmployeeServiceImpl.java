@@ -61,14 +61,14 @@ public class EmployeeServiceImpl implements EmployeeService {
                 employeeRepository.findTopByOrderByEmployeeCodeDesc();
 
         if (lastEmployee.isEmpty()) {
-            return "EMP0001";
+            return "MYHR001";
         }
 
         String lastCode = lastEmployee.get().getEmployeeCode();
 
-        int number = Integer.parseInt(lastCode.substring(3));
+        int number = Integer.parseInt(lastCode.substring(4));
 
-        return String.format("EMP%04d", number + 1);
+        return String.format("MYHR%03d", number + 1);
     }
 
     private Department getDepartment(Long departmentId) {

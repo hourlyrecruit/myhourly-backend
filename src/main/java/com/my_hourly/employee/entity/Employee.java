@@ -22,7 +22,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class Employee extends BaseEntity {
 
-    @Column(name = "employee_code", nullable = false)
+    @Column(name = "employee_code", nullable = false, unique = true)
     private String employeeCode;
 
     @Column(nullable = false, length = 50)

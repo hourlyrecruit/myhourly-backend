@@ -1,4 +1,4 @@
-package com.my_hourly.payroll.pdf;
+package com.my_hourly.payroll.pdf.sample;
 
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfPCell;

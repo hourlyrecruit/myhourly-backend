@@ -19,7 +19,7 @@ import java.math.BigDecimal;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uk_salary_template_employee_type",
-                        columnNames = "employee_type_id"
+                        columnNames = "employee_type"
                 )
         }
 )
