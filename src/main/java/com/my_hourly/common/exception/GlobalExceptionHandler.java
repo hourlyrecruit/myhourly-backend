@@ -4,6 +4,8 @@ import com.my_hourly.common.enums.ErrorCode;
 import com.my_hourly.common.payload.response.ApiError;
 import com.my_hourly.common.payload.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -12,16 +14,46 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import tools.jackson.databind.exc.InvalidFormatException;
 
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler({
+            ClientAbortException.class,
+            AsyncRequestNotUsableException.class
+    })
+    public ResponseEntity<Void> handleClientDisconnect(Exception e) {
+        String msg = e.getMessage();
+        if (msg != null && (msg.contains("aborted by the software") || msg.contains("Connection reset")
+                || msg.contains("Broken pipe"))) {
+            log.debug("Client disconnected before response could be written: {}", msg);
+        } else {
+            log.debug("Client connection aborted: {}", msg);
+        }
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<Void> handleClientAbortIOException(IOException e) {
+        String msg = e.getMessage();
+        if (msg != null && (msg.contains("aborted by the software")
+                || msg.contains("Connection reset") || msg.contains("Broken pipe"))) {
+            log.debug("Client disconnected during response write: {}", msg);
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+        }
+        log.warn("Unhandled IOException during request handling", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleMethodArgumentTypeMismatch(

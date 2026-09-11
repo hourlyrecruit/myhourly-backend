@@ -92,7 +92,14 @@ public class Payroll extends BaseEntity {
     @Column(name = "employee_code", nullable = false, length = 30)
     private String employeeCode;
 
-    @Column(name = "date_of_joining", nullable = false)
+    /**
+     * NOTE: intentionally nullable. Hibernate's ddl-auto=update cannot add a NOT NULL
+     * column to a table that already has rows, which is why this column was never
+     * created on existing databases and payroll queries failed with
+     * "column p1_0.date_of_joining does not exist". The column is created and
+     * backfilled by V2__payrolls_date_of_joining_and_template_constraint.sql.
+     */
+    @Column(name = "date_of_joining")
     private LocalDate dateOfJoining; //added after the salary slip obtained
 
     @Column(name = "department_name", length = 100)

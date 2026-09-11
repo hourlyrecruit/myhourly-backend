@@ -153,6 +153,10 @@ public class PayrollController {
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=payslip-" + payrollId + ".pdf")
                 .contentType(MediaType.APPLICATION_PDF)
+                .contentLength(pdf.length)
+                .header(HttpHeaders.CONNECTION, "keep-alive")
+                .header("Accept-Ranges", "none")
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
                 .body(pdf);
     }
 
