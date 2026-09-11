@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.lowagie.text.pdf.BaseFont;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -725,7 +725,10 @@ public class PayslipGenerator {
     }
 
     private void subHeaderCell(PdfPTable table, String text) {
-        PdfPCell cell = new PdfPCell(new Phrase(text, boldBodyFont(9)));
+        PdfPCell cell = new PdfPCell(
+                new Phrase(text, unicodeBoldFont(9, BRAND_TEXT))
+        );
+
         cell.setBackgroundColor(HEADER_BG);
         cell.setBorder(Rectangle.BOX);
         cell.setBorderColor(TABLE_BORDER);
@@ -734,6 +737,7 @@ public class PayslipGenerator {
         cell.setPaddingRight(8);
         cell.setHorizontalAlignment(Element.ALIGN_LEFT);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
         table.addCell(cell);
     }
 
@@ -794,13 +798,34 @@ public class PayslipGenerator {
     }
 
     private static Font netPayLabelFont(float size) {
-        return FontFactory.getFont(FontFactory.HELVETICA_BOLD, size, BRAND_BLUE);
+        try {
+            BaseFont baseFont = BaseFont.createFont(
+                    "/fonts/NotoSans-Regular.ttf",
+                    BaseFont.IDENTITY_H,
+                    BaseFont.EMBEDDED
+            );
+
+            return new Font(baseFont, size, Font.BOLD, BRAND_BLUE);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to load Noto Sans Bold font", e);
+        }
     }
 
     private static Font netPayValueFont(float size) {
-        return FontFactory.getFont(FontFactory.HELVETICA_BOLD, size, BRAND_BLUE);
-    }
+        try {
+            BaseFont baseFont = BaseFont.createFont(
+                    "/fonts/NotoSans-Bold.ttf",
+                    BaseFont.IDENTITY_H,
+                    BaseFont.EMBEDDED
+            );
 
+            return new Font(baseFont, size, Font.BOLD, BRAND_BLUE);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to load Noto Sans Bold font", e);
+        }
+    }
     private static Font brandNameFont(float size) {
         return FontFactory.getFont(FontFactory.HELVETICA_BOLD, size, BRAND_TEXT);
     }
@@ -817,6 +842,23 @@ public class PayslipGenerator {
         return FontFactory.getFont(FontFactory.HELVETICA, size, MUTED_TEXT);
     }
 
+
+    private static Font unicodeBoldFont(float size, Color color) {
+        try {
+            BaseFont baseFont = BaseFont.createFont(
+                    "/fonts/NotoSans-Regular.ttf",
+                    BaseFont.IDENTITY_H,
+                    BaseFont.EMBEDDED
+            );
+
+            return new Font(baseFont, size, Font.BOLD, color);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to load Noto Sans Bold font", e);
+        }
+    }
+
+
     // -------------------------------------------------------------------------
     // Value Helpers
     // -------------------------------------------------------------------------
@@ -832,7 +874,7 @@ public class PayslipGenerator {
         if (blankZero && value.compareTo(BigDecimal.ZERO) == 0) {
             return "";
         }
-        return String.format("%,.2f", value);
+        return "₹ " + String.format("%,.2f", value);
     }
 
     private String valueOrZero(Integer value) {
