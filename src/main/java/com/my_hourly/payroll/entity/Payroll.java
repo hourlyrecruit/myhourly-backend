@@ -92,6 +92,9 @@ public class Payroll extends BaseEntity {
     @Column(name = "employee_code", nullable = false, length = 30)
     private String employeeCode;
 
+    @Column(name = "date_of_joining", nullable = false)
+    private LocalDate dateOfJoining; //added after the salary slip obtained
+
     @Column(name = "department_name", length = 100)
     private String departmentName;
 

@@ -34,6 +34,8 @@ public class PayrollResponse {
 
     private String employeeName;
 
+    private LocalDate dateOfJoining;
+
     private String departmentName;
 
     private String designationName;

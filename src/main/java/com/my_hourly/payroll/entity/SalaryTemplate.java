@@ -42,6 +42,14 @@ public class SalaryTemplate extends BaseEntity {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal hra;
 
+//    //added after the salary slip, obtained
+//    @Column(nullable = false, precision = 12, scale = 2)
+//    private BigDecimal conveyance;
+//
+//    //added after the salary slip, obtained
+//    @Column(nullable = false, precision = 12, scale = 2)
+//    private BigDecimal relocationBonus;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal specialAllowance;
 

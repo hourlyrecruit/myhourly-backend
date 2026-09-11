@@ -4,6 +4,7 @@ import com.my_hourly.payroll.enums.PaymentMode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -20,11 +21,14 @@ public class EmployeePaymentDetailsResponse {
     @Schema(description = "Employee Id", example = "101")
     private Long employeeId;
 
-    @Schema(description = "Employee Code", example = "EMP000101")
+    @Schema(description = "Employee Code", example = "MYHR016")
     private String employeeCode;
 
     @Schema(description = "Employee Name", example = "Jitendra Prajapati")
     private String employeeName;
+
+    @Schema(description = "Date of Joining", example = "2026-05-26")
+    private LocalDate dateOfJoining;
 
     @Schema(description = "PAN Number", example = "ABCDE1234F")
     private String panNumber;

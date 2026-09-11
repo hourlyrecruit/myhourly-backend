@@ -1,857 +1,1898 @@
 package com.my_hourly.payroll.pdf;
 
-import com.lowagie.text.*;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Image;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.pdf.draw.LineSeparator;
 import com.my_hourly.payroll.entity.Payroll;
+import com.my_hourly.settings.company.entity.CompanySettings;
+import com.my_hourly.settings.company.repository.CompanySettingsRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Generates a professionally formatted payslip PDF for an employee.
+ * Generates the payslip PDF.
  *
- * <p>The generated payslip contains:
- * <ol>
- *     <li>Company header and pay period</li>
- *     <li>Payroll metadata</li>
- *     <li>Employee information</li>
- *     <li>Payment and bank information</li>
- *     <li>Attendance summary</li>
- *     <li>Earnings and deductions</li>
- *     <li>Salary summary</li>
- *     <li>System-generated footer</li>
- * </ol>
+ * Logo:
+ * src/main/resources/payslip/hourlyrecruit-logo.png
+ *
+ * PDF:
+ * Letter size - 612 x 792 pt
  */
+@Slf4j
+@Service
+@RequiredArgsConstructor
 public class PayslipGenerator {
 
+    private final CompanySettingsRepository companySettingsRepository;
+
     // -------------------------------------------------------------------------
-    // Color Palette
+    // Constants
     // -------------------------------------------------------------------------
 
-    private static final Color BRAND_DARK = new Color(31, 41, 64);
-    private static final Color BRAND_ACCENT = new Color(59, 130, 246);
-    private static final Color HEADER_BACKGROUND = new Color(238, 242, 255);
-    private static final Color ALTERNATE_ROW_BACKGROUND = new Color(248, 250, 252);
-    private static final Color TOTAL_BACKGROUND = new Color(224, 231, 255);
-    private static final Color TEXT_GRAY = new Color(100, 116, 139);
-    private static final Color BORDER_COLOR = new Color(203, 213, 225);
-    private static final Color CELL_BORDER_COLOR = new Color(226, 232, 240);
-    private static final Color WHITE = Color.WHITE;
+    private static final float PAGE_W =
+            PageSize.LETTER.getWidth();
+
+    private static final float PAGE_H =
+            PageSize.LETTER.getHeight();
+
+    private static final float LEFT = 26f;
+    private static final float RIGHT = 586f;
+    private static final float TOP = 698f;
+    private static final float BOTTOM = 353f;
+
+    private static final Color BLACK =
+            Color.BLACK;
+
+    private static final DateTimeFormatter MONTH_FORMAT =
+            DateTimeFormatter.ofPattern("MMMM yyyy");
+
+    /**
+     * Classpath location of company logo.
+     *
+     * File:
+     * src/main/resources/payslip/hourlyrecruit-logo.png
+     */
+    private static final String LOGO_RESOURCE =
+            "/payslip/hourlyrecruit-logo.png";
+
+
+    // -------------------------------------------------------------------------
+    // Generate PDF
+    // -------------------------------------------------------------------------
+
+    /**
+     * Generates a payslip PDF.
+     *
+     * @param payroll payroll entity
+     * @return PDF as byte array
+     */
+    @Transactional(readOnly = true)
+    public byte[] generate(Payroll payroll) {
+
+        if (payroll == null) {
+
+            log.error(
+                    "Payslip generation failed: payroll is null"
+            );
+
+            throw new PayslipGenerationException(
+                    "Payroll cannot be null"
+            );
+        }
+
+        Long payrollId =
+                payroll.getId();
+
+        log.info(
+                "Starting payslip generation. payrollId={}",
+                payrollId
+        );
+
+        validatePayroll(payroll);
+
+        CompanySettings settings =
+                getActiveCompanySettings(payrollId);
+
+        try (
+                ByteArrayOutputStream output =
+                        new ByteArrayOutputStream()
+        ) {
+
+            Document document = null;
+
+            try {
+
+                // -------------------------------------------------------------
+                // Create document
+                // -------------------------------------------------------------
+
+                document =
+                        new Document(
+                                PageSize.LETTER,
+                                0,
+                                0,
+                                0,
+                                0
+                        );
+
+                PdfWriter writer =
+                        PdfWriter.getInstance(
+                                document,
+                                output
+                        );
+
+                document.open();
+
+                PdfContentByte canvas =
+                        writer.getDirectContent();
+
+                // -------------------------------------------------------------
+                // Fonts
+                // -------------------------------------------------------------
+
+                BaseFont font =
+                        createNormalFont();
+
+                BaseFont bold =
+                        createBoldFont();
+
+                // -------------------------------------------------------------
+                // Draw payslip
+                // -------------------------------------------------------------
+
+                drawLogo(canvas);
+
+                drawPayslip(
+                        canvas,
+                        payroll,
+                        font,
+                        bold,
+                        settings
+                );
+
+                drawBottomCompanyAddress(
+                        canvas,
+                        bold,
+                        font,
+                        settings
+                );
+
+                log.debug(
+                        "Payslip content drawn successfully. payrollId={}",
+                        payrollId
+                );
+
+            } catch (DocumentException e) {
+
+                log.error(
+                        "PDF document error. payrollId={}",
+                        payrollId,
+                        e
+                );
+
+                throw new PayslipGenerationException(
+                        "Unable to create payslip PDF",
+                        e
+                );
+
+            } catch (IOException e) {
+
+                log.error(
+                        "I/O error while generating payslip. payrollId={}",
+                        payrollId,
+                        e
+                );
+
+                throw new PayslipGenerationException(
+                        "Unable to load payslip resources",
+                        e
+                );
+
+            } catch (PayslipGenerationException e) {
+
+                throw e;
+
+            } catch (Exception e) {
+
+                log.error(
+                        "Unexpected error while drawing payslip. payrollId={}",
+                        payrollId,
+                        e
+                );
+
+                throw new PayslipGenerationException(
+                        "Unexpected error while generating payslip",
+                        e
+                );
+
+            } finally {
+
+                if (document != null &&
+                        document.isOpen()) {
+
+                    try {
+
+                        document.close();
+
+                    } catch (Exception e) {
+
+                        log.warn(
+                                "Error while closing PDF document. payrollId={}",
+                                payrollId,
+                                e
+                        );
+                    }
+                }
+            }
+
+            byte[] pdf =
+                    output.toByteArray();
+
+            if (pdf.length == 0) {
+
+                log.error(
+                        "Generated payslip PDF is empty. payrollId={}",
+                        payrollId
+                );
+
+                throw new PayslipGenerationException(
+                        "Generated payslip PDF is empty"
+                );
+            }
+
+            log.info(
+                    "Payslip generated successfully. payrollId={}, size={} bytes",
+                    payrollId,
+                    pdf.length
+            );
+
+            return pdf;
+
+        } catch (PayslipGenerationException e) {
+
+            log.error(
+                    "Payslip generation failed. payrollId={}",
+                    payrollId,
+                    e
+            );
+
+            throw e;
+
+        } catch (Exception e) {
+
+            log.error(
+                    "Unexpected payslip generation failure. payrollId={}",
+                    payrollId,
+                    e
+            );
+
+            throw new PayslipGenerationException(
+                    "Failed to generate payslip PDF",
+                    e
+            );
+        }
+    }
+
+
+    // -------------------------------------------------------------------------
+    // Company settings
+    // -------------------------------------------------------------------------
+
+    private CompanySettings getActiveCompanySettings(
+            Long payrollId) {
+
+        try {
+
+            return companySettingsRepository
+                    .findFirstByActiveTrue()
+                    .orElseThrow(() -> {
+
+                        log.error(
+                                "Active company settings not found. payrollId={}",
+                                payrollId
+                        );
+
+                        return new PayslipGenerationException(
+                                "Active company settings not found"
+                        );
+                    });
+
+        } catch (PayslipGenerationException e) {
+
+            throw e;
+
+        } catch (Exception e) {
+
+            log.error(
+                    "Error while loading company settings. payrollId={}",
+                    payrollId,
+                    e
+            );
+
+            throw new PayslipGenerationException(
+                    "Unable to load company settings",
+                    e
+            );
+        }
+    }
+
+
+    // -------------------------------------------------------------------------
+    // Payroll validation
+    // -------------------------------------------------------------------------
+
+    private void validatePayroll(
+            Payroll payroll) {
+
+        Long payrollId =
+                payroll.getId();
+
+        if (payroll.getPayrollMonth() == null) {
+
+            log.error(
+                    "Payroll month is null. payrollId={}",
+                    payrollId
+            );
+
+            throw new PayslipGenerationException(
+                    "Payroll month cannot be null"
+            );
+        }
+
+        log.debug(
+                "Payroll validation successful. payrollId={}",
+                payrollId
+        );
+    }
+
 
     // -------------------------------------------------------------------------
     // Fonts
     // -------------------------------------------------------------------------
 
-    private static Font headingFont(float size) {
-        return FontFactory.getFont(
-                FontFactory.HELVETICA_BOLD,
-                size,
-                BRAND_DARK
+    private BaseFont createNormalFont()
+            throws DocumentException, IOException {
+
+        return BaseFont.createFont(
+                BaseFont.HELVETICA,
+                BaseFont.WINANSI,
+                BaseFont.NOT_EMBEDDED
         );
     }
 
-    private static Font sectionHeadingFont(float size) {
-        return FontFactory.getFont(
-                FontFactory.HELVETICA_BOLD,
-                size,
-                BRAND_ACCENT
+
+    private BaseFont createBoldFont()
+            throws DocumentException, IOException {
+
+        return BaseFont.createFont(
+                BaseFont.HELVETICA_BOLD,
+                BaseFont.WINANSI,
+                BaseFont.NOT_EMBEDDED
         );
     }
 
-    private static Font boldFont(float size) {
-        return FontFactory.getFont(
-                FontFactory.HELVETICA_BOLD,
-                size,
-                BRAND_DARK
-        );
-    }
-
-    private static Font normalFont(float size) {
-        return FontFactory.getFont(
-                FontFactory.HELVETICA,
-                size,
-                BRAND_DARK
-        );
-    }
-
-    private static Font mutedFont(float size) {
-        return FontFactory.getFont(
-                FontFactory.HELVETICA,
-                size,
-                TEXT_GRAY
-        );
-    }
-
-    private static Font whiteBoldFont(float size) {
-        return FontFactory.getFont(
-                FontFactory.HELVETICA_BOLD,
-                size,
-                WHITE
-        );
-    }
 
     // -------------------------------------------------------------------------
-    // Date Formatting
+    // Main payslip
     // -------------------------------------------------------------------------
 
-    private static final DateTimeFormatter PAY_PERIOD_FORMATTER =
-            DateTimeFormatter.ofPattern("MMMM yyyy");
+    private void drawPayslip(
+            PdfContentByte c,
+            Payroll p,
+            BaseFont font,
+            BaseFont bold,
+            CompanySettings settings) {
 
-    // -------------------------------------------------------------------------
-    // Public API
-    // -------------------------------------------------------------------------
+        try {
 
-    /**
-     * Generates a payslip PDF for the supplied payroll record.
-     *
-     * @param payroll payroll information used to generate the payslip
-     * @return generated PDF as a byte array
-     * @throws RuntimeException if PDF generation fails
-     */
-    public static byte[] generate(Payroll payroll) {
+            final float left =
+                    LEFT;
 
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            final float right =
+                    RIGHT;
 
-            Document document = new Document(
-                    PageSize.A4,
-                    40,
-                    40,
-                    36,
-                    36
+            final float top =
+                    TOP;
+
+            final float bottom =
+                    BOTTOM;
+
+
+            // =================================================================
+            // OUTER BORDER
+            // =================================================================
+
+            line(
+                    c,
+                    left,
+                    top,
+                    right,
+                    top
             );
 
-            PdfWriter writer = PdfWriter.getInstance(
-                    document,
-                    outputStream
+            line(
+                    c,
+                    left,
+                    bottom,
+                    right,
+                    bottom
             );
 
-            document.open();
+            line(
+                    c,
+                    left,
+                    top,
+                    left,
+                    bottom
+            );
 
-            addHeader(document, payroll);
-            addPayrollMetadata(document, payroll);
-            addSectionDivider(document);
+            line(
+                    c,
+                    right,
+                    top,
+                    right,
+                    bottom
+            );
 
-            addEmployeeAndPaymentDetails(document, payroll);
-            addSectionDivider(document);
 
-            addAttendanceSummary(document, payroll);
-            addEarningsAndDeductions(document, payroll);
-            addSalarySummary(document, payroll);
+            // =================================================================
+            // HEADER
+            // =================================================================
 
-            addFooter(document);
+            float y =
+                    top;
 
-            document.close();
 
-            return outputStream.toByteArray();
+            String companyName =
+                    safe(settings.getCompanyName());
 
-        } catch (Exception exception) {
-            throw new RuntimeException(
-                    "Failed to generate payslip PDF",
-                    exception
+            String address =
+                    buildAddress(
+                            settings.getAddressLine1(),
+                            settings.getAddressLine2()
+                    );
+
+            String city =
+                    safe(settings.getCity());
+
+            String postalCode =
+                    safe(settings.getPostalCode());
+
+
+            // Company name
+            y =
+                    horizontalRow(
+                            c,
+                            y,
+                            17
+                    );
+
+            centerText(
+                    c,
+                    companyName,
+                    bold,
+                    10,
+                    306,
+                    y + 5
+            );
+
+
+            // Address
+            y =
+                    horizontalRow(
+                            c,
+                            y,
+                            17
+                    );
+
+            centerText(
+                    c,
+                    address,
+                    bold,
+                    9,
+                    306,
+                    y + 5
+            );
+
+
+            // City + Postal Code
+            y =
+                    horizontalRow(
+                            c,
+                            y,
+                            17
+                    );
+
+            centerText(
+                    c,
+                    city + postalCode,
+                    bold,
+                    9,
+                    306,
+                    y + 5
+            );
+
+
+            // Payslip month
+            y =
+                    horizontalRow(
+                            c,
+                            y,
+                            19
+                    );
+
+            String payrollMonth =
+                    p.getPayrollMonth()
+                            .format(MONTH_FORMAT)
+                            .toUpperCase();
+
+            leftText(
+                    c,
+                    "PAYSLIP FOR THE MONTH OF "
+                            + payrollMonth,
+                    bold,
+                    10,
+                    left + 6,
+                    y + 5
+            );
+
+
+            // =================================================================
+            // EMPLOYEE INFORMATION
+            // =================================================================
+
+            float infoTop =
+                    y;
+
+            float rowH =
+                    18;
+
+
+            // Six rows:
+            //
+            // 1. Employee Name
+            // 2. EMP.ID
+            // 3. UAN
+            // 4. Date of Joining
+            // 5. Designation
+            // 6. Bank A/C Details
+            //
+
+            float c1 =
+                    102;
+
+            float c2 =
+                    285;
+
+            float c3 =
+                    102;
+
+
+            float x1 =
+                    left + c1;
+
+            float x2 =
+                    x1 + c2;
+
+            float x3 =
+                    x2 + c3;
+
+
+            // -------------------------------------------------------------
+            // Horizontal lines
+            // -------------------------------------------------------------
+
+            for (int i = 0; i <= 6; i++) {
+
+                line(
+                        c,
+                        left,
+                        infoTop - i * rowH,
+                        right,
+                        infoTop - i * rowH
+                );
+            }
+
+
+            // -------------------------------------------------------------
+            // Vertical lines
+            // -------------------------------------------------------------
+
+            line(
+                    c,
+                    x1,
+                    infoTop,
+                    x1,
+                    infoTop - 6 * rowH
+            );
+
+            line(
+                    c,
+                    x2,
+                    infoTop,
+                    x2,
+                    infoTop - 6 * rowH
+            );
+
+            line(
+                    c,
+                    x3,
+                    infoTop,
+                    x3,
+                    infoTop - 6 * rowH
+            );
+
+
+            float yy =
+                    infoTop - rowH + 5;
+
+
+            // =================================================================
+            // ROW 1 - EMPLOYEE NAME
+            // =================================================================
+
+            labelValue(
+                    c,
+                    "Employee Name",
+                    safe(p.getEmployeeName()),
+                    left + 6,
+                    yy,
+                    bold,
+                    font
+            );
+
+            rightLabelValue(
+                    c,
+                    "Total Days",
+                    valueOrZero(
+                            p.getTotalWorkingDays()
+                    ),
+                    x2 + 6,
+                    x3 - 6,
+                    yy,
+                    bold,
+                    font
+            );
+
+
+            // =================================================================
+            // ROW 2 - EMPLOYEE ID
+            // =================================================================
+
+            yy -= rowH;
+
+            labelValue(
+                    c,
+                    "EMP.ID",
+                    safe(p.getEmployeeCode()),
+                    left + 6,
+                    yy,
+                    bold,
+                    font
+            );
+
+            rightLabelValue(
+                    c,
+                    "Working Days",
+                    valueOrZero(
+                            p.getWorkedDays()
+                    ),
+                    x2 + 6,
+                    x3 - 6,
+                    yy,
+                    bold,
+                    font
+            );
+
+
+            // =================================================================
+            // ROW 3 - UAN
+            // =================================================================
+
+            yy -= rowH;
+
+            labelValue(
+                    c,
+                    "UAN",
+                    safe(p.getUanNumber()),
+                    left + 6,
+                    yy,
+                    bold,
+                    font
+            );
+
+            rightLabelValue(
+                    c,
+                    "LOP",
+                    valueOrZero(
+                            p.getLopDays()
+                    ),
+                    x2 + 6,
+                    x3 - 6,
+                    yy,
+                    bold,
+                    font
+            );
+
+
+            // =================================================================
+            // ROW 4 - DATE OF JOINING
+            // =================================================================
+
+            yy -= rowH;
+
+            labelValue(
+                    c,
+                    "Date of Joining",
+                    safe(p.getDateOfJoining()),
+                    left + 6,
+                    yy,
+                    bold,
+                    font
+            );
+
+
+            // =================================================================
+            // ROW 5 - DESIGNATION
+            // =================================================================
+
+            yy -= rowH;
+
+            labelValue(
+                    c,
+                    "Designation",
+                    safe(p.getDesignationName()),
+                    left + 6,
+                    yy,
+                    bold,
+                    font
+            );
+
+
+            // =================================================================
+            // ROW 6 - BANK ACCOUNT
+            // =================================================================
+
+            yy -= rowH;
+
+            labelValue(
+                    c,
+                    "Bank A/C Details",
+                    safe(p.getAccountNumber()),
+                    left + 6,
+                    yy,
+                    bold,
+                    font
+            );
+
+
+            // =================================================================
+            // EARNINGS / DEDUCTIONS
+            // =================================================================
+
+            float edTop =
+                    infoTop - 6 * rowH;
+
+            float edHeaderH =
+                    18;
+
+
+            line(
+                    c,
+                    left,
+                    edTop - edHeaderH,
+                    right,
+                    edTop - edHeaderH
+            );
+
+
+            line(
+                    c,
+                    x2,
+                    edTop,
+                    x2,
+                    bottom
+            );
+
+
+            line(
+                    c,
+                    x3,
+                    edTop,
+                    x3,
+                    bottom
+            );
+
+
+            centerText(
+                    c,
+                    "EARNINGS",
+                    bold,
+                    9,
+                    (left + x2) / 2,
+                    edTop - 12
+            );
+
+
+            centerText(
+                    c,
+                    "DEDUCTIONS",
+                    bold,
+                    9,
+                    (x2 + right) / 2,
+                    edTop - 12
+            );
+
+
+            // =================================================================
+            // TABLE COLUMNS
+            // =================================================================
+
+            float eNameX =
+                    left;
+
+            float eAmountX =
+                    left + 225;
+
+            float eEnd =
+                    x2;
+
+
+            float dNameX =
+                    x2;
+
+            float dAmountX =
+                    x2 + 160;
+
+            float dEnd =
+                    right;
+
+
+            float tableTop =
+                    edTop - edHeaderH;
+
+            float itemH =
+                    20;
+
+
+            // =================================================================
+            // EARNINGS
+            // =================================================================
+
+            String[] earningNames = {
+
+                    "BASIC",
+                    "HRA",
+                    "CONVEYANCE",
+                    "SPECIAL ALLOWANCE",
+                    "Relocation Bonus",
+                    "TOTAL"
+            };
+
+
+            String[] earningValues = {
+
+                    amount(p.getBasicSalary()),
+
+                    amount(p.getHra()),
+
+                    amount(p.getTravelAllowance()),
+
+                    amount(p.getSpecialAllowance()),
+
+                    zeroAsBlank(p.getBonus()),
+
+                    amount(p.getGrossSalary())
+            };
+
+
+            // =================================================================
+            // DEDUCTIONS
+            // =================================================================
+
+            String[] deductionNames = {
+
+                    "TDS",
+                    "Employee PF",
+                    "Others",
+                    "",
+                    "TOTAL\nDEDUCTIONS",
+                    "AMOUNT PAYABLE"
+            };
+
+
+            String[] deductionValues = {
+
+                    amount(p.getIncomeTax()),
+
+                    amount(p.getPf()),
+
+                    amount(p.getOtherDeduction()),
+
+                    "",
+
+                    amount(p.getTotalDeduction()),
+
+                    amount(p.getNetPayable())
+            };
+
+
+            // =================================================================
+            // TABLE ROWS
+            // =================================================================
+
+            for (int i = 0; i < 6; i++) {
+
+                float rowBottom =
+                        tableTop -
+                                (i + 1) * itemH;
+
+
+                // Row line
+                line(
+                        c,
+                        left,
+                        rowBottom,
+                        right,
+                        rowBottom
+                );
+
+
+                // Earnings amount column
+                line(
+                        c,
+                        eAmountX,
+                        tableTop -
+                                i * itemH,
+                        eAmountX,
+                        rowBottom
+                );
+
+
+                // Deduction amount column
+                line(
+                        c,
+                        dAmountX,
+                        tableTop -
+                                i * itemH,
+                        dAmountX,
+                        rowBottom
+                );
+
+
+                BaseFont rowFont =
+                        i == 5
+                                ? bold
+                                : font;
+
+
+                float size =
+                        i == 5
+                                ? 9
+                                : 8.5f;
+
+
+                // Earnings name
+                multiLineLeft(
+                        c,
+                        earningNames[i],
+                        rowFont,
+                        size,
+                        eNameX + 6,
+                        rowBottom + 6,
+                        13
+                );
+
+
+                // Earnings amount
+                rightText(
+                        c,
+                        earningValues[i],
+                        rowFont,
+                        size,
+                        eEnd - 7,
+                        rowBottom + 6
+                );
+
+
+                // Deduction name
+                multiLineLeft(
+                        c,
+                        deductionNames[i],
+                        rowFont,
+                        size,
+                        dNameX + 6,
+                        rowBottom + 6,
+                        11
+                );
+
+
+                // Deduction amount
+                rightText(
+                        c,
+                        deductionValues[i],
+                        rowFont,
+                        size,
+                        dEnd - 7,
+                        rowBottom + 6
+                );
+            }
+
+
+            // =================================================================
+            // RUPEES IN WORDS
+            // =================================================================
+
+            float wordsY =
+                    tableTop -
+                            6 * itemH -
+                            18;
+
+
+            line(
+                    c,
+                    left,
+                    wordsY,
+                    right,
+                    wordsY
+            );
+
+
+            leftText(
+                    c,
+                    "Rupees "
+                            + numberToWords(
+                            toLong(
+                                    p.getNetPayable()
+                            )
+                    )
+                            + " Only /-",
+                    bold,
+                    9,
+                    left + 6,
+                    wordsY + 6
+            );
+
+
+            // =================================================================
+            // NOTE
+            // =================================================================
+
+            float noteY =
+                    wordsY - 22;
+
+
+            line(
+                    c,
+                    left,
+                    noteY,
+                    right,
+                    noteY
+            );
+
+
+            leftText(
+                    c,
+                    "Note: This is a system generated payslip and does not require signature.",
+                    font,
+                    8,
+                    left + 6,
+                    noteY + 7
+            );
+
+
+        } catch (Exception e) {
+
+            log.error(
+                    "Error while drawing payslip. payrollId={}",
+                    p.getId(),
+                    e
+            );
+
+            throw new PayslipGenerationException(
+                    "Unable to draw payslip",
+                    e
             );
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Header
-    // -------------------------------------------------------------------------
-
-    private static void addHeader(
-            Document document,
-            Payroll payroll
-    ) throws DocumentException {
-
-        PdfPTable banner = new PdfPTable(1);
-        banner.setWidthPercentage(100);
-        banner.setSpacingAfter(4);
-
-        PdfPCell companyCell = new PdfPCell();
-        companyCell.setBackgroundColor(BRAND_DARK);
-        companyCell.setPadding(14);
-        companyCell.setBorder(Rectangle.NO_BORDER);
-
-        Paragraph companyName = new Paragraph(
-                "MyHourly",
-                whiteBoldFont(18)
-        );
-        companyName.setAlignment(Element.ALIGN_LEFT);
-
-        companyCell.addElement(companyName);
-
-        Paragraph payslipTitle = new Paragraph(
-                "Payslip Statement",
-                mutedFont(10)
-        );
-        payslipTitle.setAlignment(Element.ALIGN_LEFT);
-
-        companyCell.addElement(payslipTitle);
-
-        banner.addCell(companyCell);
-        document.add(banner);
-
-        Paragraph payPeriod = new Paragraph(
-                "Pay Period:  " +
-                        payroll.getPayrollMonth().format(PAY_PERIOD_FORMATTER),
-                headingFont(13)
-        );
-
-        payPeriod.setSpacingBefore(10);
-        payPeriod.setSpacingAfter(2);
-
-        document.add(payPeriod);
-    }
 
     // -------------------------------------------------------------------------
-    // Payroll Metadata
+    // Logo
     // -------------------------------------------------------------------------
 
-    private static void addPayrollMetadata(
-            Document document,
-            Payroll payroll
-    ) throws DocumentException {
+    private void drawLogo(
+            PdfContentByte c)
+            throws IOException {
 
-        PdfPTable metadataTable = new PdfPTable(4);
-        metadataTable.setWidthPercentage(100);
-        metadataTable.setSpacingAfter(8);
-
-        addMetadataCell(
-                metadataTable,
-                "Payroll No.",
-                payroll.getPayrollNumber()
+        log.debug(
+                "Loading payslip logo. resource={}",
+                LOGO_RESOURCE
         );
 
-        addMetadataCell(
-                metadataTable,
-                "Version",
-                "v" + payroll.getVersion()
+        Image logo =
+                loadImage(
+                        LOGO_RESOURCE
+                );
+
+        /*
+         * Adjust dimensions if required.
+         */
+        logo.scaleAbsolute(
+                170,
+                43
         );
 
-        addMetadataCell(
-                metadataTable,
-                "Status",
-                payroll.getStatus().name()
+        logo.setAbsolutePosition(
+                25,
+                PAGE_H - 67
         );
 
-        addMetadataCell(
-                metadataTable,
-                "Pay Date",
-                payroll.getPaymentDate() != null
-                        ? payroll.getPaymentDate().toString()
-                        : "—"
-        );
+        try {
 
-        document.add(metadataTable);
-    }
+            c.addImage(logo);
 
-    private static void addMetadataCell(
-            PdfPTable table,
-            String label,
-            String value
-    ) {
+        } catch (DocumentException e) {
 
-        PdfPCell cell = new PdfPCell();
-        cell.setBorder(Rectangle.NO_BORDER);
-        cell.setBackgroundColor(HEADER_BACKGROUND);
-        cell.setPadding(8);
+            log.error(
+                    "Unable to add company logo to PDF. resource={}",
+                    LOGO_RESOURCE,
+                    e
+            );
 
-        cell.addElement(
-                new Phrase(label, mutedFont(8))
-        );
+            throw new PayslipGenerationException(
+                    "Unable to add company logo",
+                    e
+            );
+        }
 
-        cell.addElement(
-                new Phrase(value, boldFont(10))
-        );
-
-        table.addCell(cell);
-    }
-
-    // -------------------------------------------------------------------------
-    // Section Divider
-    // -------------------------------------------------------------------------
-
-    private static void addSectionDivider(
-            Document document
-    ) throws DocumentException {
-
-        LineSeparator separator = new LineSeparator(
-                0.5f,
-                100,
-                BRAND_ACCENT,
-                Element.ALIGN_CENTER,
-                -2
-        );
-
-        document.add(new Chunk(separator));
-        document.add(Chunk.NEWLINE);
-    }
-
-    // -------------------------------------------------------------------------
-    // Employee & Payment Details
-    // -------------------------------------------------------------------------
-
-    private static void addEmployeeAndPaymentDetails(
-            Document document,
-            Payroll payroll
-    ) throws DocumentException {
-
-        PdfPTable detailsTable = new PdfPTable(2);
-        detailsTable.setWidthPercentage(100);
-        detailsTable.setSpacingAfter(10);
-        detailsTable.setWidths(new float[]{1f, 1f});
-
-        // Employee Details
-        PdfPCell employeeCell = createDetailsCell();
-
-        employeeCell.addElement(
-                createSectionTitle("Employee Details")
-        );
-
-        employeeCell.addElement(
-                createLabelValue(
-                        "Name",
-                        safe(payroll.getEmployeeName())
-                )
-        );
-
-        employeeCell.addElement(
-                createLabelValue(
-                        "Code",
-                        safe(payroll.getEmployeeCode())
-                )
-        );
-
-        employeeCell.addElement(
-                createLabelValue(
-                        "Department",
-                        safe(payroll.getDepartmentName())
-                )
-        );
-
-        employeeCell.addElement(
-                createLabelValue(
-                        "Designation",
-                        safe(payroll.getDesignationName())
-                )
-        );
-
-        employeeCell.addElement(
-                createLabelValue(
-                        "PAN",
-                        safe(payroll.getPanNumber(), "Not provided")
-                )
-        );
-
-        employeeCell.addElement(
-                createLabelValue(
-                        "UAN",
-                        safe(payroll.getUanNumber(), "Not provided")
-                )
-        );
-
-        detailsTable.addCell(employeeCell);
-
-        // Payment Details
-        PdfPCell paymentCell = createDetailsCell();
-
-        paymentCell.addElement(
-                createSectionTitle("Payment Details")
-        );
-
-        paymentCell.addElement(
-                createLabelValue(
-                        "Bank Name",
-                        safe(payroll.getBankName())
-                )
-        );
-
-        paymentCell.addElement(
-                createLabelValue(
-                        "Account Number",
-                        safe(payroll.getAccountNumber())
-                )
-        );
-
-        paymentCell.addElement(
-                createLabelValue(
-                        "IFSC Code",
-                        safe(payroll.getIfscCode())
-                )
-        );
-
-        paymentCell.addElement(
-                createLabelValue(
-                        "Payment Mode",
-                        "Bank Transfer"
-                )
-        );
-
-        paymentCell.addElement(
-                createLabelValue(
-                        "Payment Ref.",
-                        safe(payroll.getPaymentReference(), "NA")
-                )
-        );
-
-        detailsTable.addCell(paymentCell);
-
-        document.add(detailsTable);
-    }
-
-    private static PdfPCell createDetailsCell() {
-
-        PdfPCell cell = new PdfPCell();
-
-        cell.setBorder(Rectangle.BOX);
-        cell.setBorderColor(BORDER_COLOR);
-        cell.setPadding(10);
-
-        return cell;
-    }
-
-    // -------------------------------------------------------------------------
-    // Attendance Summary
-    // -------------------------------------------------------------------------
-
-    private static void addAttendanceSummary(
-            Document document,
-            Payroll payroll
-    ) throws DocumentException {
-
-        document.add(
-                createSectionTitle("Attendance Summary")
-        );
-
-        document.add(Chunk.NEWLINE);
-
-        PdfPTable attendanceTable = new PdfPTable(3);
-
-        attendanceTable.setWidthPercentage(60);
-        attendanceTable.setHorizontalAlignment(Element.ALIGN_LEFT);
-        attendanceTable.setSpacingAfter(12);
-
-        addTableHeader(
-                attendanceTable,
-                "Total Working Days",
-                "Worked Days",
-                "LOP Days"
-        );
-
-        addTableRow(
-                attendanceTable,
-                valueOrZero(payroll.getTotalWorkingDays()),
-                valueOrZero(payroll.getWorkedDays()),
-                valueOrZero(payroll.getLopDays()),
-                false
-        );
-
-        document.add(attendanceTable);
-    }
-
-    // -------------------------------------------------------------------------
-    // Earnings & Deductions
-    // -------------------------------------------------------------------------
-
-    private static void addEarningsAndDeductions(
-            Document document,
-            Payroll payroll
-    ) throws DocumentException {
-
-        document.add(
-                createSectionTitle("Earnings & Deductions")
-        );
-
-        document.add(Chunk.NEWLINE);
-
-        PdfPTable salaryTable = new PdfPTable(4);
-
-        salaryTable.setWidthPercentage(100);
-        salaryTable.setSpacingAfter(8);
-        salaryTable.setWidths(
-                new float[]{2.5f, 1.5f, 2.5f, 1.5f}
-        );
-
-        addTableHeader(
-                salaryTable,
-                "Earnings",
-                "Amount (₹)",
-                "Deductions",
-                "Amount (₹)"
-        );
-
-        addEarningsAndDeductionsRow(
-                salaryTable,
-                "Basic Salary",
-                formatAmount(payroll.getBasicSalary()),
-                "Provident Fund (PF)",
-                formatAmount(payroll.getPf()),
-                false
-        );
-
-        addEarningsAndDeductionsRow(
-                salaryTable,
-                "HRA",
-                formatAmount(payroll.getHra()),
-                "ESI",
-                formatAmount(payroll.getEsi()),
-                true
-        );
-
-        addEarningsAndDeductionsRow(
-                salaryTable,
-                "Special Allowance",
-                formatAmount(payroll.getSpecialAllowance()),
-                "Professional Tax",
-                formatAmount(payroll.getProfessionalTax()),
-                false
-        );
-
-        addEarningsAndDeductionsRow(
-                salaryTable,
-                "Medical Allowance",
-                formatAmount(payroll.getMedicalAllowance()),
-                "Income Tax (TDS)",
-                formatAmount(payroll.getIncomeTax()),
-                true
-        );
-
-        addEarningsAndDeductionsRow(
-                salaryTable,
-                "Travel Allowance",
-                formatAmount(payroll.getTravelAllowance()),
-                "Other Deductions",
-                formatAmount(payroll.getOtherDeduction()),
-                false
-        );
-
-        addEarningsAndDeductionsRow(
-                salaryTable,
-                "Bonus",
-                formatAmount(payroll.getBonus()),
-                "LOP Deduction",
-                formatAmount(payroll.getLopAmount()),
-                true
-        );
-
-        addEarningsAndDeductionsRow(
-                salaryTable,
-                "Other Allowance",
-                formatAmount(payroll.getOtherAllowance()),
-                "",
-                "",
-                false
-        );
-
-        document.add(salaryTable);
-    }
-
-    private static void addEarningsAndDeductionsRow(
-            PdfPTable table,
-            String earningLabel,
-            String earningValue,
-            String deductionLabel,
-            String deductionValue,
-            boolean alternateRow
-    ) {
-
-        Color background =
-                alternateRow
-                        ? ALTERNATE_ROW_BACKGROUND
-                        : WHITE;
-
-        addSimpleCell(
-                table,
-                earningLabel,
-                background,
-                Element.ALIGN_LEFT
-        );
-
-        addSimpleCell(
-                table,
-                earningValue,
-                background,
-                Element.ALIGN_RIGHT
-        );
-
-        addSimpleCell(
-                table,
-                deductionLabel,
-                background,
-                Element.ALIGN_LEFT
-        );
-
-        addSimpleCell(
-                table,
-                deductionValue,
-                background,
-                Element.ALIGN_RIGHT
+        log.debug(
+                "Payslip logo added successfully"
         );
     }
 
+
     // -------------------------------------------------------------------------
-    // Salary Summary
+    // Load classpath image
     // -------------------------------------------------------------------------
 
-    private static void addSalarySummary(
-            Document document,
-            Payroll payroll
-    ) throws DocumentException {
+    private Image loadImage(
+            String resource)
+            throws IOException {
 
-        PdfPTable summaryTable = new PdfPTable(3);
+        if (resource == null ||
+                resource.isBlank()) {
 
-        summaryTable.setWidthPercentage(100);
-        summaryTable.setSpacingBefore(4);
-        summaryTable.setSpacingAfter(16);
+            log.error(
+                    "Image resource path is null or empty"
+            );
 
-        addSummaryCell(
-                summaryTable,
-                "Gross Salary",
-                formatAmount(payroll.getGrossSalary()),
-                HEADER_BACKGROUND
-        );
+            throw new IllegalArgumentException(
+                    "Image resource path cannot be empty"
+            );
+        }
 
-        addSummaryCell(
-                summaryTable,
-                "Total Deductions",
-                formatAmount(payroll.getTotalDeduction()),
-                new Color(254, 226, 226)
-        );
 
-        addSummaryCell(
-                summaryTable,
-                "Net Payable",
-                formatAmount(payroll.getNetPayable()),
-                TOTAL_BACKGROUND
-        );
+        try (
+                InputStream in =
+                        PayslipGenerator.class
+                                .getResourceAsStream(
+                                        resource
+                                )
+        ) {
 
-        document.add(summaryTable);
+            if (in == null) {
+
+                log.error(
+                        "Payslip image resource not found. resource={}",
+                        resource
+                );
+
+                throw new PayslipGenerationException(
+                        "Missing payslip image resource: "
+                                + resource
+                );
+            }
+
+
+            byte[] imageBytes =
+                    in.readAllBytes();
+
+
+            if (imageBytes.length == 0) {
+
+                log.error(
+                        "Payslip image resource is empty. resource={}",
+                        resource
+                );
+
+                throw new PayslipGenerationException(
+                        "Payslip image is empty: "
+                                + resource
+                );
+            }
+
+
+            try {
+
+                return Image.getInstance(
+                        imageBytes
+                );
+
+            } catch (Exception e) {
+
+                log.error(
+                        "Invalid image resource. resource={}",
+                        resource,
+                        e
+                );
+
+                throw new PayslipGenerationException(
+                        "Invalid payslip image: "
+                                + resource,
+                        e
+                );
+            }
+
+        } catch (PayslipGenerationException e) {
+
+            throw e;
+
+        } catch (IOException e) {
+
+            log.error(
+                    "Unable to read payslip image. resource={}",
+                    resource,
+                    e
+            );
+
+            throw e;
+
+        } catch (Exception e) {
+
+            log.error(
+                    "Unexpected error while loading payslip image. resource={}",
+                    resource,
+                    e
+            );
+
+            throw new PayslipGenerationException(
+                    "Unable to load payslip image",
+                    e
+            );
+        }
     }
 
-    private static void addSummaryCell(
-            PdfPTable table,
+
+    // -------------------------------------------------------------------------
+    // Bottom company address
+    // -------------------------------------------------------------------------
+
+    private void drawBottomCompanyAddress(
+            PdfContentByte c,
+            BaseFont bold,
+            BaseFont font,
+            CompanySettings settings) {
+
+        try {
+
+            leftText(
+                    c,
+                    safe(
+                            settings.getCompanyName()
+                    ),
+                    bold,
+                    9,
+                    12,
+                    20
+            );
+
+
+            String address =
+                    buildAddress(
+                            settings.getAddressLine1(),
+                            settings.getAddressLine2()
+                    );
+
+
+            leftText(
+                    c,
+                    address,
+                    font,
+                    7.5f,
+                    12,
+                    10
+            );
+
+        } catch (Exception e) {
+
+            log.error(
+                    "Error while drawing company address",
+                    e
+            );
+
+            throw new PayslipGenerationException(
+                    "Unable to draw company address",
+                    e
+            );
+        }
+    }
+
+
+    // -------------------------------------------------------------------------
+    // Drawing helpers
+    // -------------------------------------------------------------------------
+
+    private float horizontalRow(
+            PdfContentByte c,
+            float top,
+            float height) {
+
+        float y =
+                top - height;
+
+        line(
+                c,
+                LEFT,
+                y,
+                RIGHT,
+                y
+        );
+
+        return y;
+    }
+
+
+    private void line(
+            PdfContentByte c,
+            float x1,
+            float y1,
+            float x2,
+            float y2) {
+
+        c.saveState();
+
+        try {
+
+            c.setColorStroke(
+                    BLACK
+            );
+
+            c.setLineWidth(
+                    0.55f
+            );
+
+            c.moveTo(
+                    x1,
+                    y1
+            );
+
+            c.lineTo(
+                    x2,
+                    y2
+            );
+
+            c.stroke();
+
+        } finally {
+
+            c.restoreState();
+        }
+    }
+
+
+    private void leftText(
+            PdfContentByte c,
+            String text,
+            BaseFont font,
+            float size,
+            float x,
+            float y) {
+
+        c.beginText();
+
+        try {
+
+            c.setFontAndSize(
+                    font,
+                    size
+            );
+
+            c.setColorFill(
+                    BLACK
+            );
+
+            c.setTextMatrix(
+                    x,
+                    y
+            );
+
+            c.showText(
+                    text == null
+                            ? ""
+                            : text
+            );
+
+        } finally {
+
+            c.endText();
+        }
+    }
+
+
+    private void centerText(
+            PdfContentByte c,
+            String text,
+            BaseFont font,
+            float size,
+            float x,
+            float y) {
+
+        c.beginText();
+
+        try {
+
+            c.setFontAndSize(
+                    font,
+                    size
+            );
+
+            c.setColorFill(
+                    BLACK
+            );
+
+            c.showTextAligned(
+                    PdfContentByte.ALIGN_CENTER,
+                    text == null
+                            ? ""
+                            : text,
+                    x,
+                    y,
+                    0
+            );
+
+        } finally {
+
+            c.endText();
+        }
+    }
+
+
+    private void rightText(
+            PdfContentByte c,
+            String text,
+            BaseFont font,
+            float size,
+            float x,
+            float y) {
+
+        c.beginText();
+
+        try {
+
+            c.setFontAndSize(
+                    font,
+                    size
+            );
+
+            c.setColorFill(
+                    BLACK
+            );
+
+            c.showTextAligned(
+                    PdfContentByte.ALIGN_RIGHT,
+                    text == null
+                            ? ""
+                            : text,
+                    x,
+                    y,
+                    0
+            );
+
+        } finally {
+
+            c.endText();
+        }
+    }
+
+
+    private void multiLineLeft(
+            PdfContentByte c,
+            String text,
+            BaseFont font,
+            float size,
+            float x,
+            float y,
+            float leading) {
+
+        if (text == null ||
+                text.isBlank()) {
+
+            return;
+        }
+
+
+        String[] lines =
+                text.split("\\n");
+
+
+        for (int i = 0;
+             i < lines.length;
+             i++) {
+
+            leftText(
+                    c,
+                    lines[i],
+                    font,
+                    size,
+                    x,
+                    y +
+                            (
+                                    lines.length -
+                                            1 -
+                                            i
+                            ) * leading
+            );
+        }
+    }
+
+
+    private void labelValue(
+            PdfContentByte c,
             String label,
             String value,
-            Color background
-    ) {
+            float x,
+            float y,
+            BaseFont bold,
+            BaseFont normal) {
 
-        PdfPCell cell = new PdfPCell();
-
-        cell.setBackgroundColor(background);
-        cell.setBorder(Rectangle.BOX);
-        cell.setBorderColor(BORDER_COLOR);
-        cell.setPadding(12);
-        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-
-        cell.addElement(
-                new Paragraph(label, mutedFont(9))
+        leftText(
+                c,
+                safe(label),
+                bold,
+                8.2f,
+                x,
+                y
         );
 
-        Paragraph amount = new Paragraph(
-                value,
-                boldFont(13)
-        );
-
-        amount.setAlignment(Element.ALIGN_CENTER);
-
-        cell.addElement(amount);
-
-        table.addCell(cell);
-    }
-
-    // -------------------------------------------------------------------------
-    // Footer
-    // -------------------------------------------------------------------------
-
-    private static void addFooter(
-            Document document
-    ) throws DocumentException {
-
-        addSectionDivider(document);
-
-        Paragraph disclaimer = new Paragraph(
-                "This is a system-generated payslip. " +
-                        "No signature is required.",
-                mutedFont(8)
-        );
-
-        disclaimer.setAlignment(Element.ALIGN_CENTER);
-        disclaimer.setSpacingBefore(4);
-
-        document.add(disclaimer);
-
-        Paragraph generatedBy = new Paragraph(
-                "Generated by MyHourly HRMS",
-                mutedFont(7)
-        );
-
-        generatedBy.setAlignment(Element.ALIGN_CENTER);
-
-        document.add(generatedBy);
-    }
-
-    // -------------------------------------------------------------------------
-    // Table Helpers
-    // -------------------------------------------------------------------------
-
-    private static void addTableHeader(
-            PdfPTable table,
-            String... headers
-    ) {
-
-        for (String header : headers) {
-
-            PdfPCell cell = new PdfPCell(
-                    new Phrase(header, whiteBoldFont(9))
-            );
-
-            cell.setBackgroundColor(BRAND_DARK);
-            cell.setPadding(7);
-            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-
-            table.addCell(cell);
-        }
-    }
-
-    private static void addTableRow(
-            PdfPTable table,
-            String firstColumn,
-            String secondColumn,
-            String thirdColumn,
-            boolean alternateRow
-    ) {
-
-        Color background =
-                alternateRow
-                        ? ALTERNATE_ROW_BACKGROUND
-                        : WHITE;
-
-        addSimpleCell(
-                table,
-                firstColumn,
-                background,
-                Element.ALIGN_CENTER
-        );
-
-        addSimpleCell(
-                table,
-                secondColumn,
-                background,
-                Element.ALIGN_CENTER
-        );
-
-        addSimpleCell(
-                table,
-                thirdColumn,
-                background,
-                Element.ALIGN_CENTER
+        leftText(
+                c,
+                safe(value),
+                normal,
+                8.2f,
+                x + 112,
+                y
         );
     }
 
-    private static void addSimpleCell(
-            PdfPTable table,
-            String text,
-            Color background,
-            int alignment
-    ) {
 
-        PdfPCell cell = new PdfPCell(
-                new Phrase(
-                        text != null ? text : "",
-                        normalFont(9)
-                )
-        );
-
-        cell.setBackgroundColor(background);
-        cell.setPadding(6);
-        cell.setHorizontalAlignment(alignment);
-        cell.setBorderColor(CELL_BORDER_COLOR);
-
-        table.addCell(cell);
-    }
-
-    // -------------------------------------------------------------------------
-    // Paragraph Helpers
-    // -------------------------------------------------------------------------
-
-    private static Paragraph createSectionTitle(
-            String title
-    ) {
-
-        Paragraph paragraph = new Paragraph(
-                title,
-                sectionHeadingFont(10)
-        );
-
-        paragraph.setSpacingBefore(6);
-        paragraph.setSpacingAfter(4);
-
-        return paragraph;
-    }
-
-    private static Paragraph createLabelValue(
+    private void rightLabelValue(
+            PdfContentByte c,
             String label,
-            String value
-    ) {
+            String value,
+            float left,
+            float right,
+            float y,
+            BaseFont bold,
+            BaseFont normal) {
 
-        Paragraph paragraph = new Paragraph();
-
-        paragraph.add(
-                new Chunk(
-                        label + ":  ",
-                        mutedFont(9)
-                )
+        leftText(
+                c,
+                safe(label),
+                bold,
+                8.2f,
+                left,
+                y
         );
 
-        paragraph.add(
-                new Chunk(
-                        value,
-                        boldFont(9)
-                )
+        rightText(
+                c,
+                safe(value),
+                normal,
+                8.2f,
+                right,
+                y
         );
-
-        paragraph.setSpacingAfter(3);
-
-        return paragraph;
     }
 
+
     // -------------------------------------------------------------------------
-    // Utility Methods
+    // Value helpers
     // -------------------------------------------------------------------------
 
-    private static String formatAmount(BigDecimal value) {
+    private String amount(
+            BigDecimal value) {
 
         if (value == null) {
-            return "0.00";
+            return "0";
         }
 
-        return String.format("%,.2f", value);
+        try {
+
+            return String.format(
+                    "%,.0f",
+                    value
+            );
+
+        } catch (Exception e) {
+
+            log.warn(
+                    "Unable to format payroll amount",
+                    e
+            );
+
+            return "0";
+        }
     }
 
-    private static String valueOrZero(Integer value) {
+
+    private String zeroAsBlank(
+            BigDecimal value) {
+
+        if (value == null ||
+                value.compareTo(
+                        BigDecimal.ZERO
+                ) == 0) {
+
+            return "";
+        }
+
+        return amount(value);
+    }
+
+
+    private String valueOrZero(
+            Integer value) {
 
         return value == null
                 ? "0"
                 : value.toString();
     }
 
-    private static String safe(String value) {
 
-        return value != null
-                ? value
-                : "—";
+    private String safe(
+            String value) {
+
+        return value == null
+                ? ""
+                : value;
     }
 
-    private static String safe(
-            String value,
-            String fallback
-    ) {
 
-        return value != null && !value.isBlank()
-                ? value
-                : fallback;
+    private String safe(
+            Object value) {
+
+        return value == null
+                ? ""
+                : value.toString();
+    }
+
+
+    private long toLong(
+            BigDecimal value) {
+
+        return value == null
+                ? 0L
+                : value.longValue();
+    }
+
+
+    private String buildAddress(
+            String address1,
+            String address2) {
+
+        String first =
+                safe(address1)
+                        .trim();
+
+        String second =
+                safe(address2)
+                        .trim();
+
+
+        if (first.isEmpty()) {
+            return second;
+        }
+
+
+        if (second.isEmpty()) {
+            return first;
+        }
+
+
+        return first +
+                ", " +
+                second;
+    }
+
+
+    // -------------------------------------------------------------------------
+    // Number to words
+    // -------------------------------------------------------------------------
+
+    private String numberToWords(
+            long number) {
+
+        if (number == 0) {
+            return "Zero";
+        }
+
+
+        if (number < 0) {
+
+            return "Minus " +
+                    numberToWords(
+                            -number
+                    );
+        }
+
+
+        StringBuilder result =
+                new StringBuilder();
+
+
+        // Crore
+        if (number / 10000000 > 0) {
+
+            result.append(
+                            numberToWords(
+                                    number / 10000000
+                            )
+                    )
+                    .append(
+                            " Crore "
+                    );
+
+            number %= 10000000;
+        }
+
+
+        // Lakh
+        if (number / 100000 > 0) {
+
+            result.append(
+                            numberToWords(
+                                    number / 100000
+                            )
+                    )
+                    .append(
+                            " Lakh "
+                    );
+
+            number %= 100000;
+        }
+
+
+        // Thousand
+        if (number / 1000 > 0) {
+
+            result.append(
+                            numberToWords(
+                                    number / 1000
+                            )
+                    )
+                    .append(
+                            " Thousand "
+                    );
+
+            number %= 1000;
+        }
+
+
+        // Hundred
+        if (number / 100 > 0) {
+
+            result.append(
+                            numberToWords(
+                                    number / 100
+                            )
+                    )
+                    .append(
+                            " Hundred "
+                    );
+
+            number %= 100;
+        }
+
+
+        if (number > 0) {
+
+            if (result.length() > 0) {
+
+                result.append(
+                        "and "
+                );
+            }
+
+
+            result.append(
+                    twoDigitWords(
+                            (int) number
+                    )
+            );
+        }
+
+
+        return result
+                .toString()
+                .trim()
+                .replaceAll(
+                        "\\s+",
+                        " "
+                );
+    }
+
+
+    private String twoDigitWords(
+            int number) {
+
+        String[] ones = {
+
+                "",
+                "One",
+                "Two",
+                "Three",
+                "Four",
+                "Five",
+                "Six",
+                "Seven",
+                "Eight",
+                "Nine",
+                "Ten",
+                "Eleven",
+                "Twelve",
+                "Thirteen",
+                "Fourteen",
+                "Fifteen",
+                "Sixteen",
+                "Seventeen",
+                "Eighteen",
+                "Nineteen"
+        };
+
+
+        String[] tens = {
+
+                "",
+                "",
+                "Twenty",
+                "Thirty",
+                "Forty",
+                "Fifty",
+                "Sixty",
+                "Seventy",
+                "Eighty",
+                "Ninety"
+        };
+
+
+        if (number < 20) {
+
+            return ones[number];
+        }
+
+
+        return tens[number / 10] +
+                (
+                        number % 10 == 0
+                                ? ""
+                                : " " +
+                                  ones[
+                                  number % 10
+                                  ]
+                );
     }
 }
