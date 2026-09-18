@@ -207,7 +207,7 @@ Generate monthly payrolls, manage their states (Draft -> Approved -> Paid), and 
 | `GET` | `/status` | Get by Status | `?status=DRAFT` |
 | `PUT` | `/{id}` | Update a `DRAFT` payroll | Edit values before approval |
 | `PATCH`| `/{id}/status` | Update Status | E.g. Approve or Mark Paid |
-| `POST` | `/{id}/regenerate` | Regenerate Payroll | Supersedes current version and creates a new one |
+| `POST` | `/{id}/regenerate` | Regenerate Payroll | Supersedes current version and creates a new one. Body optional |
 | `GET` | `/{id}/payslip` | Download Payslip | Returns `application/pdf` |
 
 ### Payloads
@@ -229,6 +229,18 @@ Used to manually adjust days and amounts for a `DRAFT` payroll before finalizati
 * `basicSalary`, `hra`, `specialAllowance`, `medicalAllowance`, `travelAllowance`, `bonus`, `otherAllowance`
 * `pf`, `esi`, `professionalTax`, `incomeTax`, `otherDeduction`
 * `remarks`
+
+#### `RegeneratePayrollRequest`
+Optional partial body. **Any omitted (`null`) field keeps the value from the existing payroll**; calculated fields (`grossSalary`, `lopAmount`, `totalDeduction`, `netPayable`, `payableDays`) are always recalculated.
+```json
+{
+  "basicSalary": 35000,
+  "bonus": 5000,
+  "lopDays": 1,
+  "remarks": "Salary corrected before approval"
+}
+```
+Contains the same editable fields as `UpdateDraftPayrollRequest`: attendance (`totalWorkingDays`, `workedDays`, `lopDays`), earnings (`basicSalary`, `hra`, `specialAllowance`, `medicalAllowance`, `travelAllowance`, `bonus`, `otherAllowance`), deductions (`pf`, `esi`, `professionalTax`, `incomeTax`, `otherDeduction`) and `remarks`. Send no body at all to simply create a new version with identical values.
 
 #### `UpdatePayrollStatusRequest`
 ```json

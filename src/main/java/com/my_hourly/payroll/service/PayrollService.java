@@ -1,6 +1,7 @@
 package com.my_hourly.payroll.service;
 
 import com.my_hourly.payroll.dto.request.CreatePayrollRequest;
+import com.my_hourly.payroll.dto.request.RegeneratePayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdateDraftPayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdatePayrollStatusRequest;
 import com.my_hourly.payroll.dto.response.PayrollResponse;
@@ -54,7 +55,8 @@ public interface PayrollService {
 
     /**
      * Regenerate a payroll (supersedes current, creates new version).
+     * The request is optional; omitted fields keep the old payroll value.
      */
-    PayrollResponse regenerate(Long payrollId);
+    PayrollResponse regenerate(Long payrollId, RegeneratePayrollRequest request);
 
 }

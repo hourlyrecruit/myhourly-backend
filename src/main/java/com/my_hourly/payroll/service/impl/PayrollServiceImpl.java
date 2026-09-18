@@ -10,6 +10,7 @@ import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.employee.service.EmployeeService;
 import com.my_hourly.payroll.dto.AttendanceSummary;
 import com.my_hourly.payroll.dto.request.CreatePayrollRequest;
+import com.my_hourly.payroll.dto.request.RegeneratePayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdateDraftPayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdatePayrollStatusRequest;
 import com.my_hourly.payroll.dto.response.FailedPayroll;
@@ -271,6 +272,9 @@ public class PayrollServiceImpl implements PayrollService {
         return mapToResponse(payroll);
     }
 
+
+
+
     @Override
     @Transactional
     public PayrollResponse updateStatus(Long payrollId, UpdatePayrollStatusRequest request) {
@@ -335,7 +339,7 @@ public class PayrollServiceImpl implements PayrollService {
 
     @Override
     @Transactional
-    public PayrollResponse regenerate(Long payrollId) {
+    public PayrollResponse regenerate(Long payrollId, RegeneratePayrollRequest request) {
 
         Payroll oldPayroll = getPayroll(payrollId);
 
@@ -349,12 +353,65 @@ public class PayrollServiceImpl implements PayrollService {
                     "Only the active payroll version can be regenerated.", ErrorCode.BAD_REQUEST);
         }
 
-        // Mark old version as superseded
-        oldPayroll.setStatus(PayrollStatus.SUPERSEDED);
-        oldPayroll.setActive(false);
-        payrollRepository.save(oldPayroll);
+        // A missing body means "no client overrides" (behaves like a plain copy)
+        RegeneratePayrollRequest updates = request != null
+                ? request : new RegeneratePayrollRequest();
 
-        // Create new version (carry over snapshots)
+        // ---------------------------------------------------------
+        // Step 1: Merge client values with old payroll values.
+        //         Priority: client value > old payroll value (null keeps old)
+        // ---------------------------------------------------------
+
+        int totalWorkingDays = merge(
+                updates.getTotalWorkingDays(), oldPayroll.getTotalWorkingDays());
+        int workedDays = merge(
+                updates.getWorkedDays(), oldPayroll.getWorkedDays());
+        int lopDays = merge(
+                updates.getLopDays(), oldPayroll.getLopDays());
+
+        if (workedDays + lopDays > totalWorkingDays) {
+            throw new BadRequestException(
+                    "Worked days + LOP days cannot exceed total working days.", ErrorCode.BAD_REQUEST);
+        }
+
+        BigDecimal basicSalary = merge(updates.getBasicSalary(), oldPayroll.getBasicSalary());
+        BigDecimal hra = merge(updates.getHra(), oldPayroll.getHra());
+        BigDecimal specialAllowance = merge(updates.getSpecialAllowance(), oldPayroll.getSpecialAllowance());
+        BigDecimal medicalAllowance = merge(updates.getMedicalAllowance(), oldPayroll.getMedicalAllowance());
+        BigDecimal travelAllowance = merge(updates.getTravelAllowance(), oldPayroll.getTravelAllowance());
+        BigDecimal bonus = merge(updates.getBonus(), oldPayroll.getBonus());
+        BigDecimal otherAllowance = merge(updates.getOtherAllowance(), oldPayroll.getOtherAllowance());
+
+        BigDecimal pf = merge(updates.getPf(), oldPayroll.getPf());
+        BigDecimal esi = merge(updates.getEsi(), oldPayroll.getEsi());
+        BigDecimal professionalTax = merge(updates.getProfessionalTax(), oldPayroll.getProfessionalTax());
+        BigDecimal incomeTax = merge(updates.getIncomeTax(), oldPayroll.getIncomeTax());
+        BigDecimal otherDeduction = merge(updates.getOtherDeduction(), oldPayroll.getOtherDeduction());
+
+        String remarks = merge(updates.getRemarks(), oldPayroll.getRemarks());
+
+        // ---------------------------------------------------------
+        // Step 2: Recalculate from the merged values.
+        //         Never carry over the old calculated totals.
+        // ---------------------------------------------------------
+
+        BigDecimal grossSalary = calculateGross(
+                safe(basicSalary),
+                safe(hra),
+                safe(specialAllowance),
+                safe(medicalAllowance),
+                safe(travelAllowance),
+                safe(bonus),
+                safe(otherAllowance));
+
+        BigDecimal lopAmount = calculateLop(
+                grossSalary, totalWorkingDays, lopDays);
+
+        // ---------------------------------------------------------
+        // Step 3: Build the new version (snapshots copied from the old
+        //         payroll, editable fields merged, editable days merged)
+        // ---------------------------------------------------------
+
         Payroll newPayroll = Payroll.builder()
                 .payrollNumber(generatePayrollNumber(oldPayroll.getPayrollMonth()))
                 .version(oldPayroll.getVersion() + 1)
@@ -367,6 +424,7 @@ public class PayrollServiceImpl implements PayrollService {
                 // Employee snapshot
                 .employeeName(oldPayroll.getEmployeeName())
                 .employeeCode(oldPayroll.getEmployeeCode())
+                .dateOfJoining(oldPayroll.getDateOfJoining())
                 .departmentName(oldPayroll.getDepartmentName())
                 .designationName(oldPayroll.getDesignationName())
 
@@ -377,38 +435,57 @@ public class PayrollServiceImpl implements PayrollService {
                 .accountNumber(oldPayroll.getAccountNumber())
                 .ifscCode(oldPayroll.getIfscCode())
 
-                // Attendance Snapshot
-                .totalWorkingDays(oldPayroll.getTotalWorkingDays())
-                .workedDays(oldPayroll.getWorkedDays())
-                .lopDays(oldPayroll.getLopDays())
-                .payableDays(oldPayroll.getPayableDays())
+                // Attendance (merged)
+                .totalWorkingDays(totalWorkingDays)
+                .workedDays(workedDays)
+                .lopDays(lopDays)
+                .payableDays(workedDays)
 
-                // Salary Snapshot
-                .basicSalary(oldPayroll.getBasicSalary())
-                .hra(oldPayroll.getHra())
-                .specialAllowance(oldPayroll.getSpecialAllowance())
-                .medicalAllowance(oldPayroll.getMedicalAllowance())
-                .travelAllowance(oldPayroll.getTravelAllowance())
-                .bonus(oldPayroll.getBonus())
-                .otherAllowance(oldPayroll.getOtherAllowance())
-                .grossSalary(oldPayroll.getGrossSalary())
+                // Earnings (merged)
+                .basicSalary(basicSalary)
+                .hra(hra)
+                .specialAllowance(specialAllowance)
+                .medicalAllowance(medicalAllowance)
+                .travelAllowance(travelAllowance)
+                .bonus(bonus)
+                .otherAllowance(otherAllowance)
+                .grossSalary(grossSalary)
 
-                // Deductions
-                .lopAmount(oldPayroll.getLopAmount())
-                .pf(oldPayroll.getPf())
-                .esi(oldPayroll.getEsi())
-                .professionalTax(oldPayroll.getProfessionalTax())
-                .incomeTax(oldPayroll.getIncomeTax())
-                .otherDeduction(oldPayroll.getOtherDeduction())
-                .totalDeduction(oldPayroll.getTotalDeduction())
+                // Deductions (merged, LOP recalculated)
+                .lopAmount(lopAmount)
+                .pf(pf)
+                .esi(esi)
+                .professionalTax(professionalTax)
+                .incomeTax(incomeTax)
+                .otherDeduction(otherDeduction)
 
                 // Final
-                .netPayable(oldPayroll.getNetPayable())
                 .status(PayrollStatus.GENERATED)
-                .remarks(oldPayroll.getRemarks())
+                .remarks(remarks)
                 .build();
 
+        // ---------------------------------------------------------
+        // Step 4: Recalculate deduction & net payable, then validate.
+        //         Nothing is persisted until everything checks out.
+        // ---------------------------------------------------------
+
+        BigDecimal totalDeduction = calculateTotalDeduction(newPayroll);
+        BigDecimal netPayable = grossSalary.subtract(totalDeduction);
+
+        validateSalaryConstraints(grossSalary, totalDeduction, netPayable);
+
+        newPayroll.setTotalDeduction(totalDeduction);
+        newPayroll.setNetPayable(netPayable);
+
+        // ---------------------------------------------------------
+        // Step 5: Persist the new version first, then supersede the old one
+        // ---------------------------------------------------------
+
         payrollRepository.save(newPayroll);
+
+        oldPayroll.setStatus(PayrollStatus.SUPERSEDED);
+        oldPayroll.setActive(false);
+        payrollRepository.save(oldPayroll);
 
         payrollHistoryService.saveHistory(
                 oldPayroll,
@@ -739,6 +816,21 @@ public class PayrollServiceImpl implements PayrollService {
 
     private BigDecimal safe(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value;
+    }
+
+    /**
+     * Regeneration merge: a client-provided value wins, a null value keeps the old payroll value.
+     */
+    private BigDecimal merge(BigDecimal clientValue, BigDecimal oldValue) {
+        return clientValue != null ? clientValue : oldValue;
+    }
+
+    private Integer merge(Integer clientValue, Integer oldValue) {
+        return clientValue != null ? clientValue : oldValue;
+    }
+
+    private String merge(String clientValue, String oldValue) {
+        return clientValue != null ? clientValue : oldValue;
     }
 
     private String generatePayrollNumber(LocalDate payrollMonth) {
