@@ -1,6 +1,7 @@
 package com.my_hourly.payroll.controller;
 
 import com.my_hourly.payroll.dto.request.CreatePayrollRequest;
+import com.my_hourly.payroll.dto.request.RegeneratePayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdateDraftPayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdatePayrollStatusRequest;
 import com.my_hourly.payroll.dto.response.PayrollResponse;
@@ -128,13 +129,14 @@ public class PayrollController {
     }
 
     @PostMapping("/{payrollId}/regenerate")
-    @Operation(summary = "Supersede the current payroll and create a new version, 'SUPER_ADMIN','HR_ADMIN'")
+    @Operation(summary = "Supersede the current payroll and create a new version. Body is optional; omitted fields keep the old payroll value. 'SUPER_ADMIN','HR_ADMIN'")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN')")
     public ResponseEntity<PayrollResponse> regenerate(
-            @PathVariable Long payrollId) {
+            @PathVariable Long payrollId,
+            @Valid @RequestBody(required = false) RegeneratePayrollRequest request) {
 
         return ResponseEntity.ok(
-                payrollService.regenerate(payrollId));
+                payrollService.regenerate(payrollId, request));
     }
 
     /* =====================================================
