@@ -28,9 +28,8 @@ public class SalaryTemplate extends BaseEntity {
     /**
      * One active template per Employee Type.
      */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "employee_type", nullable = false, length = 30)
-    private EmploymentType employeeType;
+    @Column(name = "employee_type", length = 100, nullable = false)
+    private String employeeType;
 
     /* ===========================
        Earnings

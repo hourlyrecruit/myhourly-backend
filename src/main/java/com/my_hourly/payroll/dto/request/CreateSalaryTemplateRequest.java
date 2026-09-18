@@ -18,7 +18,7 @@ public class CreateSalaryTemplateRequest {
 
     @NotNull(message = "Employee Type is required.")
     @Schema(description = "Employee Type", example = "FULL_TIME")
-    private EmploymentType employeeType;
+    private String employeeType;
 
     /* ==========================
        Earnings

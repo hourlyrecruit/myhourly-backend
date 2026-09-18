@@ -26,13 +26,13 @@ public interface SalaryTemplateRepository
      * Check whether template exists for employee type.
      */
     boolean existsByEmployeeType(
-            EmploymentType employeeType);
+            String employeeType);
 
     /**
      * Check duplicate except current template.
      */
     boolean existsByEmployeeTypeAndIdNot(
-            EmploymentType employeeType,
+            String employeeType,
             Long id);
 
     /**

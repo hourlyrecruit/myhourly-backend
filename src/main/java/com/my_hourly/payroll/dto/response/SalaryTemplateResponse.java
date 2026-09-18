@@ -19,7 +19,7 @@ public class SalaryTemplateResponse {
     private Long id;
 
     @Schema(description = "Employee Type", example = "FULL_TIME")
-    private EmploymentType employeeType;
+    private String employeeType;
 
     /* ==========================
        Earnings

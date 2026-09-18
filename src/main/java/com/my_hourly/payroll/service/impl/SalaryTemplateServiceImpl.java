@@ -152,7 +152,7 @@ public class SalaryTemplateServiceImpl implements SalaryTemplateService {
                                 "Salary Template not found with id: " + id, ErrorCode.RESOURCE_NOT_FOUND));
     }
 
-    private void validateDuplicate(EmploymentType employeeType) {
+    private void validateDuplicate(String employeeType) {
 
         if (salaryTemplateRepository.existsByEmployeeType(employeeType)) {
             throw new DuplicateResourceException(
