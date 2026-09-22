@@ -6,12 +6,12 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
-import com.lowagie.text.FontFactory;
 import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
@@ -37,6 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 
@@ -52,6 +53,12 @@ public class PayslipGenerator {
     // -------------------------------------------------------------------------
 
     private static final String LOGO_RESOURCE = "/payslip/hourlyrecruit-logo.png";
+
+    // Unicode TTF fonts (must contain the ₹ glyph, e.g. Noto Sans / Noto Sans Bold).
+    // Place these two files under src/main/resources/fonts/
+    private static final String FONT_REGULAR_RESOURCE = "/fonts/NotoSans-Regular.ttf";
+    private static final String FONT_BOLD_RESOURCE     = "/fonts/NotoSans-Bold.ttf";
+
     private static final DateTimeFormatter MONTH_FORMAT = DateTimeFormatter.ofPattern("MMMM yyyy");
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
@@ -70,6 +77,58 @@ public class PayslipGenerator {
     private static final Color TABLE_BORDER     = new Color(226, 232, 240);
     private static final Color SEPARATOR_LINE   = new Color(148, 163, 184);
     private static final Color WHITE            = Color.WHITE;
+
+    // -------------------------------------------------------------------------
+    // Embedded Unicode BaseFonts (loaded once, reused for every Font instance)
+    // -------------------------------------------------------------------------
+    // FontFactory + FontFactory.HELVETICA use the Base-14 Helvetica font with
+    // Cp1252/WinAnsi encoding, which has no glyph for ₹ (U+20B9) — that's why
+    // the rupee symbol was not rendering. Loading a real TTF with
+    // BaseFont.IDENTITY_H encoding fixes it, and BaseFont.EMBEDDED bakes the
+    // font into the PDF so it renders identically on every viewer.
+
+    private static volatile BaseFont REGULAR_BASE_FONT;
+    private static volatile BaseFont BOLD_BASE_FONT;
+
+    private static synchronized BaseFont regularBaseFont() {
+        if (REGULAR_BASE_FONT == null) {
+            REGULAR_BASE_FONT = loadEmbeddedBaseFont(FONT_REGULAR_RESOURCE);
+        }
+        return REGULAR_BASE_FONT;
+    }
+
+    private static synchronized BaseFont boldBaseFont() {
+        if (BOLD_BASE_FONT == null) {
+            BOLD_BASE_FONT = loadEmbeddedBaseFont(FONT_BOLD_RESOURCE);
+        }
+        return BOLD_BASE_FONT;
+    }
+
+    private static BaseFont loadEmbeddedBaseFont(String classpathResource) {
+        try {
+            URL url = PayslipGenerator.class.getResource(classpathResource);
+            if (url == null) {
+                throw new PayslipGenerationException(
+                        "Unicode font not found on classpath: " + classpathResource
+                                + " (expected under src/main/resources" + classpathResource + ")"
+                );
+            }
+            // BaseFont.createFont needs a filesystem-style path/resource identifier;
+            // passing the resolved URL's external form lets OpenPDF read it whether
+            // running from an exploded classes dir or from inside a packaged jar.
+            return BaseFont.createFont(
+                    url.toExternalForm(),
+                    BaseFont.IDENTITY_H,
+                    BaseFont.EMBEDDED
+            );
+        } catch (PayslipGenerationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PayslipGenerationException(
+                    "Unable to load embedded Unicode font: " + classpathResource, e
+            );
+        }
+    }
 
     // -------------------------------------------------------------------------
     // Public API
@@ -510,6 +569,8 @@ public class PayslipGenerator {
         titleCell.addElement(new Paragraph("Earnings & Deductions", boldBodyFont(11)));
         outer.addCell(titleCell);
 
+        // Header uses ₹ — this is exactly the string that was rendering blank
+        // before, because AMOUNT_HEADER_TEXT went through FontFactory.HELVETICA.
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100);
         table.setWidths(new float[]{2.6f, 1.4f, 2.6f, 1.4f});
@@ -520,19 +581,19 @@ public class PayslipGenerator {
         subHeaderCell(table, "AMOUNT (₹)");
 
         edDataRow(table, false, "Basic",              formatAmount(payroll.getBasicSalary()),
-                            "TDS",                formatAmount(payroll.getIncomeTax()));
+                "TDS",                formatAmount(payroll.getIncomeTax()));
         edDataRow(table, true,  "HRA",                formatAmount(payroll.getHra()),
-                            "Employee PF",        formatAmount(payroll.getPf()));
+                "Employee PF",        formatAmount(payroll.getPf()));
         edDataRow(table, false, "Conveyance",         formatAmount(payroll.getTravelAllowance()),
-                            "ESI",                formatAmount(payroll.getEsi()));
+                "ESI",                formatAmount(payroll.getEsi()));
         edDataRow(table, true,  "Special Allowance",  formatAmount(payroll.getSpecialAllowance()),
-                            "Professional Tax",   formatAmount(payroll.getProfessionalTax()));
+                "Professional Tax",   formatAmount(payroll.getProfessionalTax()));
         edDataRow(table, false, "Medical Allowance",  formatAmount(payroll.getMedicalAllowance()),
-                            "LOP Deduction",      formatAmount(payroll.getLopAmount()));
+                "LOP Deduction",      formatAmount(payroll.getLopAmount()));
         edDataRow(table, true,  "Bonus",              formatAmount(payroll.getBonus(), true),
-                            "Others",             formatAmount(payroll.getOtherDeduction()));
+                "Others",             formatAmount(payroll.getOtherDeduction()));
         edDataRow(table, false, "Other Allowance",    formatAmount(payroll.getOtherAllowance()),
-                            "",                   "");
+                "",                   "");
 
         grossRow(table,
                 "GROSS SALARY",       formatAmount(payroll.getGrossSalary()),
@@ -786,35 +847,37 @@ public class PayslipGenerator {
     }
 
     // -------------------------------------------------------------------------
-    // Fonts
+    // Fonts — all backed by the embedded Unicode TTF (IDENTITY_H) so ₹ and any
+    // other non-Cp1252 character renders correctly. FontFactory.HELVETICA_* is
+    // no longer used anywhere in this class.
     // -------------------------------------------------------------------------
 
     private static Font titleFont(float size) {
-        return FontFactory.getFont(FontFactory.HELVETICA_BOLD, size, BRAND_TEXT);
+        return new Font(boldBaseFont(), size, Font.NORMAL, BRAND_TEXT);
     }
 
     private static Font netPayLabelFont(float size) {
-        return FontFactory.getFont(FontFactory.HELVETICA_BOLD, size, BRAND_BLUE);
+        return new Font(boldBaseFont(), size, Font.NORMAL, BRAND_BLUE);
     }
 
     private static Font netPayValueFont(float size) {
-        return FontFactory.getFont(FontFactory.HELVETICA_BOLD, size, BRAND_BLUE);
+        return new Font(boldBaseFont(), size, Font.NORMAL, BRAND_BLUE);
     }
 
     private static Font brandNameFont(float size) {
-        return FontFactory.getFont(FontFactory.HELVETICA_BOLD, size, BRAND_TEXT);
+        return new Font(boldBaseFont(), size, Font.NORMAL, BRAND_TEXT);
     }
 
     private static Font boldBodyFont(float size) {
-        return FontFactory.getFont(FontFactory.HELVETICA_BOLD, size, BRAND_TEXT);
+        return new Font(boldBaseFont(), size, Font.NORMAL, BRAND_TEXT);
     }
 
     private static Font bodyFont(float size) {
-        return FontFactory.getFont(FontFactory.HELVETICA, size, BRAND_TEXT);
+        return new Font(regularBaseFont(), size, Font.NORMAL, BRAND_TEXT);
     }
 
     private static Font mutedFont(float size) {
-        return FontFactory.getFont(FontFactory.HELVETICA, size, MUTED_TEXT);
+        return new Font(regularBaseFont(), size, Font.NORMAL, MUTED_TEXT);
     }
 
     // -------------------------------------------------------------------------
