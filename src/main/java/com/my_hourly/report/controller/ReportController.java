@@ -55,7 +55,7 @@ public class ReportController {
         @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
         @ApiResponse(responseCode = "403", description = "Access denied - requires HR or Manager role")
     })
-    @PreAuthorize("hasAnyRole('HR','MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN','MANAGER')")
     public ResponseEntity<?> getAttendanceReport(
             @Parameter(description = "Response format: json, excel, or pdf", example = "json")
             @RequestParam(defaultValue = "json") String format,
@@ -151,7 +151,7 @@ public class ReportController {
         @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
         @ApiResponse(responseCode = "403", description = "Access denied - requires HR or Manager role")
     })
-    @PreAuthorize("hasAnyRole('HR','MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN','MANAGER')")
     public ResponseEntity<?> getLeaveReport(
             @Parameter(description = "Response format: json, excel, or pdf", example = "json")
             @RequestParam(defaultValue = "json") String format,

@@ -2,6 +2,8 @@ package com.my_hourly.settings.company.entity;
 
 import com.my_hourly.settings.BaseSettings;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 @Entity
@@ -25,6 +27,8 @@ public class CompanySettings extends BaseSettings {
     private String email;
 
     @Column(length = 20)
+    @NotBlank(message = "Phone number is required.")
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Phone number must be a valid 10-digit Indian mobile number.")
     private String phoneNumber;
 
     @Column(length = 150)
