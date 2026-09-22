@@ -7,32 +7,73 @@ import java.util.List;
 
 public interface Form16EmployerMasterService {
 
+
+    // =========================================================
+    // CREATE
+    // =========================================================
+
     Form16EmployerMasterResponse createEmployerMaster(
             Form16EmployerMasterRequest request
     );
 
+
+    // =========================================================
+    // GET ACTIVE
+    // =========================================================
+
     Form16EmployerMasterResponse getActiveEmployerMaster();
+
+
+    // =========================================================
+    // GET BY ID
+    // =========================================================
 
     Form16EmployerMasterResponse getEmployerMasterById(
             Long id
     );
+
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
 
     Form16EmployerMasterResponse updateEmployerMaster(
             Long id,
             Form16EmployerMasterRequest request
     );
 
+
+    // =========================================================
+    // ACTIVATE
+    // =========================================================
+
     Form16EmployerMasterResponse activateEmployerMaster(
             Long id
     );
+
+
+    // =========================================================
+    // DEACTIVATE
+    // =========================================================
 
     Form16EmployerMasterResponse deactivateEmployerMaster(
             Long id
     );
 
+
+    // =========================================================
+    // DELETE
+    // =========================================================
+
     void deleteEmployerMaster(
             Long id
     );
 
-    List<Form16EmployerMasterResponse> getAllEmployerMasters();
+
+    // =========================================================
+    // GET ALL
+    // =========================================================
+
+    List<Form16EmployerMasterResponse>
+    getAllEmployerMasters();
 }
