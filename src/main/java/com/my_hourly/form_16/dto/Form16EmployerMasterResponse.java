@@ -27,7 +27,6 @@ public class Form16EmployerMasterResponse {
 
     private String citTdsAddress;
 
-    // ADD THIS
     private Boolean active;
 
     private LocalDateTime createdAt;
