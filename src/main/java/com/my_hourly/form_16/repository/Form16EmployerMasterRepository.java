@@ -11,9 +11,43 @@ import java.util.Optional;
 public interface Form16EmployerMasterRepository
         extends JpaRepository<Form16EmployerMaster, Long> {
 
+
+    // =========================================================
+    // ACTIVE EMPLOYER
+    // =========================================================
+
     Optional<Form16EmployerMaster> findByActiveTrue();
 
-    List<Form16EmployerMaster> findAllByOrderByIdDesc();
+
+    // =========================================================
+    // ALL EMPLOYERS
+    // =========================================================
+
+    List<Form16EmployerMaster>
+    findAllByOrderByIdDesc();
+
+
+    // =========================================================
+    // CHECK ACTIVE EMPLOYER
+    // =========================================================
 
     boolean existsByActiveTrue();
+
+
+    // =========================================================
+    // PAN
+    // =========================================================
+
+    boolean existsByDeductorPan(
+            String deductorPan
+    );
+
+
+    // =========================================================
+    // TAN
+    // =========================================================
+
+    boolean existsByDeductorTan(
+            String deductorTan
+    );
 }

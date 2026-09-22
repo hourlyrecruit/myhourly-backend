@@ -55,7 +55,7 @@ public class Form16Quarter {
 
     @Column(
             name = "q1_receipt_number",
-            length = 8,
+            length = 100,
             nullable = false,
             unique = true
     )
@@ -101,7 +101,7 @@ public class Form16Quarter {
 
     @Column(
             name = "q2_receipt_number",
-            length = 8,
+            length = 100,
             nullable = false,
             unique = true
     )
@@ -147,7 +147,7 @@ public class Form16Quarter {
 
     @Column(
             name = "q3_receipt_number",
-            length = 8,
+            length = 100,
             nullable = false,
             unique = true
     )
@@ -193,7 +193,7 @@ public class Form16Quarter {
 
     @Column(
             name = "q4_receipt_number",
-            length = 8,
+            length = 100,
             nullable = false,
             unique = true
     )
