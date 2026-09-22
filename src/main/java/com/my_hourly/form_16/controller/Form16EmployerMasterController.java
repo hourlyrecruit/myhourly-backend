@@ -7,6 +7,8 @@ import com.my_hourly.form_16.service.Form16EmployerMasterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -20,10 +22,13 @@ import java.util.List;
 @RequestMapping("/api/form16/employer-master")
 @RequiredArgsConstructor
 @Tag(
-        name = "22 - Form 16 Employeer Master",
-        description = "Form 16 APIs"
+        name = "22 - Form 16 Employer Master",
+        description = "Form 16 Employer Master APIs"
 )
 public class Form16EmployerMasterController {
+
+
+    private final Form16EmployerMasterService service;
 
 
     // =========================================================
@@ -31,19 +36,27 @@ public class Form16EmployerMasterController {
     // =========================================================
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize(
+            "hasAnyRole('HR', 'MANAGER')"
+    )
     @Operation(
             summary = "Create Employer Master",
-            description = "Creates a new employer master as inactive"
+            description =
+                    "Creates a new employer master as inactive"
     )
     public ResponseEntity<Form16EmployerMasterResponse>
     createEmployerMaster(
-            @RequestBody Form16EmployerMasterRequest request) {
+            @Valid
+            @RequestBody
+            Form16EmployerMasterRequest request
+    ) {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(
-                        service.createEmployerMaster(request)
+                        service.createEmployerMaster(
+                                request
+                        )
                 );
     }
 
@@ -53,7 +66,9 @@ public class Form16EmployerMasterController {
     // =========================================================
 
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'HR', 'MANAGER')")
+    @PreAuthorize(
+            "hasAnyRole('EMPLOYEE', 'HR', 'MANAGER')"
+    )
     @Operation(
             summary = "Get Active Employer Master"
     )
@@ -71,16 +86,21 @@ public class Form16EmployerMasterController {
     // =========================================================
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'HR', 'MANAGER')")
+    @PreAuthorize(
+            "hasAnyRole('EMPLOYEE', 'HR', 'MANAGER')"
+    )
     @Operation(
             summary = "Get Employer Master By ID"
     )
     public ResponseEntity<Form16EmployerMasterResponse>
     getEmployerMasterById(
-            @PathVariable Long id) {
+            @PathVariable Long id
+    ) {
 
         return ResponseEntity.ok(
-                service.getEmployerMasterById(id)
+                service.getEmployerMasterById(
+                        id
+                )
         );
     }
 
@@ -90,14 +110,20 @@ public class Form16EmployerMasterController {
     // =========================================================
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize(
+            "hasAnyRole('HR', 'MANAGER')"
+    )
     @Operation(
             summary = "Update Employer Master"
     )
     public ResponseEntity<Form16EmployerMasterResponse>
     updateEmployerMaster(
             @PathVariable Long id,
-            @RequestBody Form16EmployerMasterRequest request) {
+
+            @Valid
+            @RequestBody
+            Form16EmployerMasterRequest request
+    ) {
 
         return ResponseEntity.ok(
                 service.updateEmployerMaster(
@@ -113,7 +139,9 @@ public class Form16EmployerMasterController {
     // =========================================================
 
     @PatchMapping("/{id}/activate")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize(
+            "hasAnyRole('HR', 'MANAGER')"
+    )
     @Operation(
             summary = "Activate Employer Master",
             description =
@@ -122,10 +150,13 @@ public class Form16EmployerMasterController {
     )
     public ResponseEntity<Form16EmployerMasterResponse>
     activateEmployerMaster(
-            @PathVariable Long id) {
+            @PathVariable Long id
+    ) {
 
         return ResponseEntity.ok(
-                service.activateEmployerMaster(id)
+                service.activateEmployerMaster(
+                        id
+                )
         );
     }
 
@@ -135,16 +166,21 @@ public class Form16EmployerMasterController {
     // =========================================================
 
     @PatchMapping("/{id}/deactivate")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize(
+            "hasAnyRole('HR', 'MANAGER')"
+    )
     @Operation(
             summary = "Deactivate Employer Master"
     )
     public ResponseEntity<Form16EmployerMasterResponse>
     deactivateEmployerMaster(
-            @PathVariable Long id) {
+            @PathVariable Long id
+    ) {
 
         return ResponseEntity.ok(
-                service.deactivateEmployerMaster(id)
+                service.deactivateEmployerMaster(
+                        id
+                )
         );
     }
 
@@ -154,17 +190,24 @@ public class Form16EmployerMasterController {
     // =========================================================
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize(
+            "hasAnyRole('HR', 'MANAGER')"
+    )
     @Operation(
             summary = "Delete Employer Master"
     )
     public ResponseEntity<Void>
     deleteEmployerMaster(
-            @PathVariable Long id) {
+            @PathVariable Long id
+    ) {
 
-        service.deleteEmployerMaster(id);
+        service.deleteEmployerMaster(
+                id
+        );
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 
 
@@ -173,22 +216,19 @@ public class Form16EmployerMasterController {
     // =========================================================
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize(
+            "hasAnyRole('HR', 'MANAGER')"
+    )
     @Operation(
             summary = "Get All Employer Masters"
     )
-    public ResponseEntity<List<Form16EmployerMasterResponse>>
+    public ResponseEntity<
+            List<Form16EmployerMasterResponse>
+            >
     getAllEmployerMasters() {
 
         return ResponseEntity.ok(
                 service.getAllEmployerMasters()
         );
     }
-
-
-    // =========================================================
-    // SERVICE
-    // =========================================================
-
-    private final Form16EmployerMasterService service;
 }
