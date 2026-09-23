@@ -72,7 +72,7 @@ public class PayrollController {
 
     @GetMapping("/employee/{employeeId}")
     @Operation(summary = "Employee Payroll History (all versions, all months), 'SUPER_ADMIN','HR_ADMIN'")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN','EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','PAYROLL_ADMIN','EMPLOYEE', 'MANAGER')")
     public ResponseEntity<List<PayrollResponse>> getByEmployee(
             @PathVariable Long employeeId) {
 
@@ -145,7 +145,7 @@ public class PayrollController {
 
     @GetMapping("/{payrollId}/payslip")
     @Operation(summary = "Download Payslip PDF (APPROVED or PAID only), 'EMPLOYEE','HR_ADMIN','SUPER_ADMIN'")
-    @PreAuthorize("hasAnyRole('EMPLOYEE','HR_ADMIN','PAYROLL_ADMIN','SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','HR_ADMIN','PAYROLL_ADMIN','SUPER_ADMIN', 'MANAGER')")
     public ResponseEntity<byte[]> downloadPayslip(
             @PathVariable Long payrollId) {
 
