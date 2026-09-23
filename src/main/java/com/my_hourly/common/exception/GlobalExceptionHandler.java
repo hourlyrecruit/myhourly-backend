@@ -33,22 +33,18 @@ public class GlobalExceptionHandler {
             AsyncRequestNotUsableException.class
     })
     public ResponseEntity<Void> handleClientDisconnect(Exception e) {
-        String msg = e.getMessage();
-        if (msg != null && (msg.contains("aborted by the software") || msg.contains("Connection reset")
-                || msg.contains("Broken pipe"))) {
-            log.debug("Client disconnected before response could be written: {}", msg);
+        if (isClientDisconnect(e)) {
+            log.debug("Client disconnected before response could be written: {}", e.getMessage());
         } else {
-            log.debug("Client connection aborted: {}", msg);
+            log.debug("Client connection aborted: {}", e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
     }
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Void> handleClientAbortIOException(IOException e) {
-        String msg = e.getMessage();
-        if (msg != null && (msg.contains("aborted by the software")
-                || msg.contains("Connection reset") || msg.contains("Broken pipe"))) {
-            log.debug("Client disconnected during response write: {}", msg);
+        if (isClientDisconnect(e)) {
+            log.debug("Client disconnected during response write: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
         log.warn("Unhandled IOException during request handling", e);
@@ -139,7 +135,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleUnexpected(
             Exception exception,
             HttpServletRequest request) {
-        exception.printStackTrace(); // Log the unexpected exception details
+
+        // A client that goes away while the response body is being written surfaces
+        // here as a serialization failure (Jackson wraps the aborted socket write in
+        // a DatabindException), not as a ClientAbortException. It is not a server
+        // fault, so it must not be logged as an unexpected error.
+        if (isClientDisconnect(exception)) {
+            log.debug("Client disconnected before response could be written: {}", exception.getMessage());
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+        }
+
+        log.error("Unhandled exception while processing {}", request.getRequestURI(), exception);
         String errorMsg = exception.getMessage() != null ? exception.getClass().getSimpleName() + ": " + exception.getMessage() : exception.getClass().getSimpleName();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseFactory.build(
@@ -230,5 +236,41 @@ public class GlobalExceptionHandler {
                         ErrorCode.VALIDATION_FAILED,
                         request.getRequestURI()
                 ));
+    }
+
+
+    /**
+     * True when the exception - or anything in its cause chain - means the client
+     * went away while the response was being written (closed tab, aborted fetch,
+     * proxy dropping the socket).
+     *
+     * This cannot be decided by exception type alone: when the abort happens inside
+     * the response body serializer, Jackson wraps the failed write in a
+     * DatabindException ("ServletOutputStream failed to write: ...") whose cause is
+     * an AsyncRequestNotUsableException / ClientAbortException.
+     */
+    private static boolean isClientDisconnect(Throwable throwable) {
+        Throwable current = throwable;
+        for (int depth = 0; current != null && depth < 20; depth++) {
+            if (current instanceof ClientAbortException
+                    || current instanceof AsyncRequestNotUsableException
+                    || isClientDisconnectMessage(current.getMessage())) {
+                return true;
+            }
+            Throwable cause = current.getCause();
+            current = (cause == current) ? null : cause;
+        }
+        return false;
+    }
+
+    private static boolean isClientDisconnectMessage(String message) {
+        if (message == null) {
+            return false;
+        }
+        return message.contains("aborted by the software")
+                || message.contains("An established connection was aborted")
+                || message.contains("Connection reset")
+                || message.contains("Broken pipe")
+                || message.contains("ServletOutputStream failed to write");
     }
 }

@@ -302,3 +302,101 @@ Contains the same editable fields as `UpdateDraftPayrollRequest`: attendance (`t
 }
 ```
 *(Simplified for brevity: contains all individual allowance and deduction fields as well).*
+
+---
+
+### Payslip Download & UI Gating
+
+| Method | Endpoint | Roles | Response |
+|--------|----------|-------|----------|
+| `GET` | `/{payrollId}/payslip` | `EMPLOYEE`, `HR_ADMIN`, `PAYROLL_ADMIN`, `SUPER_ADMIN` | `200 application/pdf` |
+
+**Headers returned:**
+```
+Content-Disposition: attachment; filename=payslip-{payrollId}.pdf
+Content-Type: application/pdf
+Cache-Control: no-cache, no-store, must-revalidate
+```
+
+#### Precondition — the frontend MUST gate this action
+
+A payslip can only be downloaded for a payroll that is **`APPROVED` or `PAID`** *and* `active = true`. Calling it in any other state returns **`400`**. This is intentional business behaviour, not a backend bug.
+
+| `status` | `active` | Result |
+|----------|----------|--------|
+| `APPROVED` or `PAID` | `true` | `200` PDF |
+| `DRAFT`, `GENERATED`, `CANCELLED` | `true` | `400` — not approved yet |
+| any | `false` | `400` — superseded/cancelled version |
+| id does not exist | — | `404` |
+
+`PayrollResponse` already includes `status` and `active`, so the UI can decide this locally — there is no need to call the endpoint to find out:
+
+```ts
+const canDownloadPayslip = (p: PayrollResponse) =>
+  p.active === true && (p.status === 'APPROVED' || p.status === 'PAID');
+```
+
+Render the button **disabled** when this is false (tooltip: "Available after the payroll is approved") instead of letting the request fail.
+
+#### Error responses
+
+`400` — payroll not approved (most common):
+```json
+{
+  "success": false,
+  "message": "Payslip can only be generated for APPROVED or PAID payrolls. Current status: GENERATED",
+  "errorCode": "BAD_REQUEST",
+  "path": "/api/v1/payroll/72/payslip",
+  "timestamp": "2026-09-23T13:40:00"
+}
+```
+`400` — superseded/cancelled version: `"Payslip cannot be generated for a superseded or cancelled payroll version."`
+
+`404` — unknown id: `"Payroll not found with id: 72"`
+
+> The browser console only prints `Failed to load resource: the server responded with a status of 400` and **never** the reason. Always read `message` from the response body and surface it in the UI, otherwise every failure looks identical to the user.
+
+#### Regeneration resets the gate
+
+`POST /{id}/regenerate` creates a new version with `status = GENERATED`, so a payroll that previously had a downloadable payslip loses it until the new version is approved. Two consequences for the UI:
+
+1. After a successful regeneration, replace local state with the **returned** payroll (new `id`, new `version`) and re-disable the payslip action until it is approved again.
+2. A button wired to the **superseded** id fails with the superseded-version `400` above.
+
+#### Fetching the PDF in the browser
+
+The endpoint is authenticated, so a plain `<a href>` or `window.open` will not work — the `Authorization` header would be missing. Download it as a blob:
+
+```ts
+const downloadPayslip = async (payroll: PayrollResponse, token: string) => {
+  const res = await fetch(`/api/v1/payroll/${payroll.id}/payslip`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const error = await res.json();          // { message, errorCode, ... }
+    throw new Error(error.message);
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `payslip-${payroll.payrollNumber}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+```
+
+With axios, set `responseType: 'blob'`. Note that a failed request then arrives as a **Blob**, not JSON — so the error message needs an extra step before it can be shown:
+
+```ts
+try {
+  const res = await api.get(`/api/v1/payroll/${id}/payslip`, { responseType: 'blob' });
+  saveBlob(res.data, `payslip-${payrollNumber}.pdf`);
+} catch (e: any) {
+  const text = await e.response?.data?.text?.();   // Blob -> string
+  const message = text ? JSON.parse(text).message : 'Unable to download payslip';
+  toast.error(message);
+}
+```
