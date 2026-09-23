@@ -1,13 +1,17 @@
 package com.my_hourly.payroll.controller;
 
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.payroll.dto.request.CreatePayrollRequest;
 import com.my_hourly.payroll.dto.request.RegeneratePayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdateDraftPayrollRequest;
 import com.my_hourly.payroll.dto.request.UpdatePayrollStatusRequest;
 import com.my_hourly.payroll.dto.response.PayrollResponse;
 import com.my_hourly.payroll.dto.response.PayrollSummaryResponse;
+import com.my_hourly.payroll.entity.Payroll;
 import com.my_hourly.payroll.enums.PayrollStatus;
 import com.my_hourly.payroll.pdf.PayslipPdfService;
+import com.my_hourly.payroll.repository.PayrollRepository;
 import com.my_hourly.payroll.service.PayrollService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +25,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -31,6 +36,7 @@ public class PayrollController {
 
     private final PayrollService payrollService;
     private final PayslipPdfService payslipPdfService;
+    private final PayrollRepository payrollRepository;
 
     /* =====================================================
        Generate
@@ -149,18 +155,43 @@ public class PayrollController {
     public ResponseEntity<byte[]> downloadPayslip(
             @PathVariable Long payrollId) {
 
+        Payroll payroll = payrollRepository.findById(payrollId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Payroll not found with id: " + payrollId, ErrorCode.RESOURCE_NOT_FOUND
+                        )
+                );
+
         byte[] pdf = payslipPdfService.generatePayslip(payrollId);
 
+        String employeeName = payroll.getEmployeeName()
+                .replaceAll("[^a-zA-Z0-9]", "_");
+
+        String month = payroll.getPayrollMonth()
+                .format(DateTimeFormatter.ofPattern("MMMM_yyyy"));
+
+        String fileName = "HourlyRecruit_Payslip_"
+                + employeeName
+                + "_"
+                + month
+                + ".pdf";
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=payslip-" + payrollId + ".pdf")
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + fileName + "\""
+                )
                 .contentType(MediaType.APPLICATION_PDF)
                 .contentLength(pdf.length)
                 .header(HttpHeaders.CONNECTION, "keep-alive")
                 .header("Accept-Ranges", "none")
-                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .header(
+                        HttpHeaders.CACHE_CONTROL,
+                        "no-cache, no-store, must-revalidate"
+                )
                 .body(pdf);
     }
+
 
 
 }
