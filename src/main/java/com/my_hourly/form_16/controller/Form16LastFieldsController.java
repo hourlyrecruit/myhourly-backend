@@ -32,7 +32,7 @@ public class Form16LastFieldsController {
     // =========================================================
 
     @PostMapping("/{form16Id}/last-fields")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     @Operation(
             summary = "Create Form16 Last Fields"
     )
@@ -60,7 +60,7 @@ public class Form16LastFieldsController {
 
     @GetMapping("/{form16Id}/last-fields")
     @PreAuthorize(
-            "hasAnyRole('EMPLOYEE', 'HR', 'MANAGER')"
+            "hasAnyRole('EMPLOYEE', 'HR_ADMIN', 'MANAGER')"
     )
     @Operation(
             summary = "Get Form16 Last Fields"
@@ -82,7 +82,7 @@ public class Form16LastFieldsController {
     // =========================================================
 
     @PutMapping("/{form16Id}/last-fields")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     @Operation(
             summary = "Update Form16 Last Fields"
     )
@@ -106,7 +106,7 @@ public class Form16LastFieldsController {
     // =========================================================
 
     @PatchMapping("/{form16Id}/last-fields")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     @Operation(
             summary = "Auto Save Form16 Last Fields"
     )
@@ -130,7 +130,7 @@ public class Form16LastFieldsController {
     // =========================================================
 
     @DeleteMapping("/{form16Id}/last-fields")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     @Operation(
             summary = "Delete Form16 Last Fields"
     )
