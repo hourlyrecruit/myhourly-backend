@@ -2,11 +2,10 @@
 
 package com.my_hourly.Form_16A.controller;
 
+import com.my_hourly.form_16.dto.Form16VerificationRequest;
+import com.my_hourly.form_16.dto.Form16VerificationResponse;
+import com.my_hourly.form_16.service.Form16VerificationService;
 
-
-import com.my_hourly.Form_16A.dto.Form16VerificationRequest;
-import com.my_hourly.Form_16A.dto.Form16VerificationResponse;
-import com.my_hourly.Form_16A.service.Form16VerificationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
@@ -43,7 +42,7 @@ public class Form16VerificationController {
     // =========================================================
 
     @PostMapping("/{form16Id}/verification")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<Form16VerificationResponse> createVerification(
             @PathVariable Long form16Id,
             @Valid @RequestBody Form16VerificationRequest request) {
@@ -70,7 +69,7 @@ public class Form16VerificationController {
     // =========================================================
 
     @GetMapping("/{form16Id}/verification")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16VerificationResponse> getVerification(
             @PathVariable Long form16Id) {
 
@@ -94,7 +93,7 @@ public class Form16VerificationController {
     // =========================================================
 
     @PutMapping("/{form16Id}/verification")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<Form16VerificationResponse> updateVerification(
             @PathVariable Long form16Id,
             @Valid @RequestBody Form16VerificationRequest request) {
@@ -119,7 +118,7 @@ public class Form16VerificationController {
     // =========================================================
 
     @DeleteMapping("/{form16Id}/verification")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<Void> deleteVerification(
             @PathVariable Long form16Id) {
 
