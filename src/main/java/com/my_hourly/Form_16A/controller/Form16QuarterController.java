@@ -37,7 +37,7 @@ public class Form16QuarterController {
     // =========================================================
 
     @PostMapping("/{form16Id}/quarter")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<Form16QuarterResponse> createQuarter(
             @PathVariable Long form16Id,
             @Valid @RequestBody Form16QuarterRequest request) {
@@ -60,7 +60,7 @@ public class Form16QuarterController {
     // =========================================================
 
     @GetMapping("/{form16Id}/quarter")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16QuarterResponse> getQuarter(
             @PathVariable Long form16Id) {
 
@@ -80,7 +80,7 @@ public class Form16QuarterController {
     // =========================================================
 
     @PutMapping("/{form16Id}/quarter")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<Form16QuarterResponse> updateQuarter(
             @PathVariable Long form16Id,
             @Valid @RequestBody Form16QuarterRequest request) {
@@ -101,7 +101,7 @@ public class Form16QuarterController {
     // =========================================================
 
     @DeleteMapping("/{form16Id}/quarter")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<Void> deleteQuarter(
             @PathVariable Long form16Id) {
 
