@@ -34,7 +34,7 @@ public class Form16SalaryController {
     // =========================================================
 
     @PostMapping("/{form16Id}/salary")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16Salary> createSalary(
             @PathVariable Long form16Id,
             @Valid @RequestBody Form16SalaryRequest request) {
@@ -57,7 +57,7 @@ public class Form16SalaryController {
     // =========================================================
 
     @GetMapping("/{form16Id}/salary")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16Salary> getSalary(
             @PathVariable Long form16Id) {
 
@@ -76,7 +76,7 @@ public class Form16SalaryController {
     // =========================================================
 
     @PutMapping("/{form16Id}/salary")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16Salary> updateSalary(
             @PathVariable Long form16Id,
             @Valid @RequestBody Form16SalaryRequest request) {
@@ -97,7 +97,7 @@ public class Form16SalaryController {
     // =========================================================
 
     @DeleteMapping("/{form16Id}/salary")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Void> deleteSalary(
             @PathVariable Long form16Id) {
 
