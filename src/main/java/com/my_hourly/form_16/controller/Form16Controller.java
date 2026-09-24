@@ -35,7 +35,7 @@ public class Form16Controller {
 
     @PostMapping("/{employeeId}")
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     public ResponseEntity<Form16Response> createForm16(
 
@@ -64,7 +64,7 @@ public class Form16Controller {
 
     @GetMapping("/{id}")
     @PreAuthorize(
-            "hasAnyRole('EMPLOYEE', 'HR', 'MANAGER')"
+            "hasAnyRole('EMPLOYEE', 'HR_ADMIN', 'MANAGER')"
     )
     public ResponseEntity<Form16Response> getForm16(
 
@@ -88,7 +88,7 @@ public class Form16Controller {
 
     @GetMapping("/employee/{employeeId}")
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     public ResponseEntity<Form16Response>
     getForm16ByEmployeeAndAssessmentYear(
@@ -118,7 +118,7 @@ public class Form16Controller {
             "/employee/{employeeId}/activate"
     )
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     public ResponseEntity<String>
     activateEmployeeForm16(
@@ -146,7 +146,7 @@ public class Form16Controller {
 
     @PatchMapping("/activate-all")
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     public ResponseEntity<String>
     activateAllForm16() {
@@ -169,7 +169,7 @@ public class Form16Controller {
             "/employee/{employeeId}/deactivate"
     )
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     public ResponseEntity<String>
     deactivateEmployeeForm16(
@@ -199,7 +199,7 @@ public class Form16Controller {
             "/employee/{employeeId}"
     )
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     public ResponseEntity<String>
     deleteEmployeeForm16(
