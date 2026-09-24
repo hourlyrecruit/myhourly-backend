@@ -35,7 +35,7 @@ public class Form16ExemptionController {
     // =========================================================
 
     @PostMapping("/{form16Id}/exemption")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16ExemptionResponse>
     createExemption(
             @PathVariable Long form16Id,
@@ -63,7 +63,7 @@ public class Form16ExemptionController {
 
     @GetMapping("/{form16Id}/exemption")
     @PreAuthorize(
-            "hasAnyRole('EMPLOYEE', 'MANAGER', 'HR')"
+            "hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')"
     )
     public ResponseEntity<Form16ExemptionResponse>
     getExemption(
@@ -89,7 +89,7 @@ public class Form16ExemptionController {
     // =========================================================
 
     @PutMapping("/{form16Id}/exemption")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16ExemptionResponse>
     updateExemption(
             @PathVariable Long form16Id,
@@ -116,7 +116,7 @@ public class Form16ExemptionController {
     // =========================================================
 
     @DeleteMapping("/{form16Id}/exemption")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Void> deleteExemption(
             @PathVariable Long form16Id) {
 
