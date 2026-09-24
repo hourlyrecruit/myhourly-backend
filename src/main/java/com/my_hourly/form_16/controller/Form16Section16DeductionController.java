@@ -32,7 +32,7 @@ public class Form16Section16DeductionController {
     // =========================================================
 
     @PostMapping("/{form16Id}/section16-deduction")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16Section16DeductionResponse>
     createDeduction(
             @PathVariable Long form16Id,
@@ -54,7 +54,7 @@ public class Form16Section16DeductionController {
     // =========================================================
 
     @GetMapping("/{form16Id}/section16-deduction")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16Section16DeductionResponse>
     getDeduction(
             @PathVariable Long form16Id) {
@@ -72,7 +72,7 @@ public class Form16Section16DeductionController {
     // =========================================================
 
     @PutMapping("/{form16Id}/section16-deduction")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16Section16DeductionResponse>
     updateDeduction(
             @PathVariable Long form16Id,
@@ -95,7 +95,7 @@ public class Form16Section16DeductionController {
     // =========================================================
 
     @PatchMapping("/{form16Id}/section16-deduction/auto-save")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16Section16DeductionResponse>
     autoSaveDeduction(
             @PathVariable Long form16Id,
@@ -115,7 +115,7 @@ public class Form16Section16DeductionController {
     // =========================================================
 
     @DeleteMapping("/{form16Id}/section16-deduction")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Void> deleteDeduction(
             @PathVariable Long form16Id) {
 
