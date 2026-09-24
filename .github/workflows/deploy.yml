@@ -1,0 +1,203 @@
+name: Deploy backend to DigitalOcean
+
+# Triggered by a push to the production branch. `main` exists on origin, so it is
+# the production branch; change the branch name here if that changes.
+#
+# workflow_dispatch allows a manual redeploy of the current main without a new commit.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+# The workflow only reads the repository; no token scopes are needed to deploy
+# because deployment happens over SSH with a dedicated key.
+permissions:
+  contents: read
+
+# Never run two backend deploys at once. cancel-in-progress stays false so a
+# deploy that is already rebuilding is allowed to finish rather than leaving the
+# container half-recreated.
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+env:
+  JAVA_VERSION: '21'
+
+  # Paths and names on the Droplet. These mirror the layout in DEPLOYMENT.md and
+  # must match docker-compose.yml in /opt/myhourly.
+  APP_DIR: /opt/myhourly/backend
+  COMPOSE_DIR: /opt/myhourly
+  COMPOSE_SERVICE: backend
+  CONTAINER_NAME: myhourly-backend
+  PRODUCTION_BRANCH: main
+
+jobs:
+
+  # ---------------------------------------------------------------------------
+  # CI: compile and run the test suite before anything is deployed.
+  # A failure here stops the workflow, so `deploy` is never reached.
+  # ---------------------------------------------------------------------------
+  test:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    # MyHourlyApplicationTests is a full @SpringBootTest that boots the whole
+    # application context, so the job needs a real PostgreSQL. This container is
+    # throwaway and exists only for the build - production uses DigitalOcean
+    # Managed PostgreSQL, which is never a container.
+    services:
+      postgres:
+        # Matches the PostgreSQL major version verified during development.
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: myhourly_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      # application-dev.properties hard-codes the Aiven development database and
+      # the default profile is `dev`. The three SPRING_DATASOURCE_* variables win
+      # over any properties file, which points the tests at the container above
+      # instead of a shared remote database.
+      #
+      # Flyway then builds the schema from db/migration and every profile runs
+      # ddl-auto=validate, so this step also proves the migrations match the
+      # entities. `verify` fails the job on compile errors, test failures or
+      # context-load failures.
+      - name: Run tests
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/myhourly_test
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+        run: ./mvnw -B -ntp verify
+
+  # ---------------------------------------------------------------------------
+  # CD: SSH to the Droplet and rebuild the backend container there.
+  #
+  # No registry is involved - neither DigitalOcean Container Registry nor Docker
+  # Hub. The image is built on the Droplet from the freshly pulled checkout.
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy to Droplet
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install SSH key
+        env:
+          SSH_KEY: ${{ secrets.DROPLET_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DROPLET_HOST }}
+          SSH_PORT: ${{ secrets.DROPLET_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          # umask before the key is written so it is never briefly group-readable.
+          ( umask 077 && printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key )
+          chmod 600 ~/.ssh/deploy_key
+          # Pin the host key so the deploy cannot be redirected to another host.
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy backend
+        env:
+          SSH_HOST: ${{ secrets.DROPLET_HOST }}
+          SSH_USER: ${{ secrets.DROPLET_USER }}
+          SSH_PORT: ${{ secrets.DROPLET_PORT || '22' }}
+        run: |
+          set -euo pipefail
+
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" \
+              -o IdentitiesOnly=yes -o BatchMode=yes \
+              -o StrictHostKeyChecking=yes \
+              "$SSH_USER@$SSH_HOST" \
+              APP_DIR="${{ env.APP_DIR }}" \
+              COMPOSE_DIR="${{ env.COMPOSE_DIR }}" \
+              COMPOSE_SERVICE="${{ env.COMPOSE_SERVICE }}" \
+              CONTAINER_NAME="${{ env.CONTAINER_NAME }}" \
+              PRODUCTION_BRANCH="${{ env.PRODUCTION_BRANCH }}" \
+              DEPLOY_SHA="${{ github.sha }}" \
+              'bash -s' <<'REMOTE_SCRIPT'
+          set -euo pipefail
+
+          echo "Deploying commit ${DEPLOY_SHA:0:7} to ${APP_DIR}"
+
+          # --- 1. Update the checkout -------------------------------------------
+          # /opt/myhourly/backend is a clone of this repository. --ff-only keeps
+          # the step non-destructive: if the server tree has diverged, the deploy
+          # stops loudly instead of silently discarding server-side edits.
+          # The untracked .env is never touched by git.
+          cd "$APP_DIR"
+          git fetch --prune origin "$PRODUCTION_BRANCH"
+          git checkout "$PRODUCTION_BRANCH"
+          git pull --ff-only origin "$PRODUCTION_BRANCH"
+          git --no-pager log -1 --format='Deployed revision %h %s'
+
+          if [ ! -f "$APP_DIR/.env" ]; then
+            echo "ERROR: $APP_DIR/.env is missing. Create it before deploying." >&2
+            exit 1
+          fi
+
+          if [ ! -f "$COMPOSE_DIR/docker-compose.yml" ]; then
+            echo "ERROR: $COMPOSE_DIR/docker-compose.yml is missing." >&2
+            exit 1
+          fi
+
+          # --- 2. Rebuild and recreate ONLY the backend -------------------------
+          # No `docker compose down`: the frontend container keeps running.
+          # Flyway migrations run inside the new container on startup.
+          cd "$COMPOSE_DIR"
+          docker compose up -d --build "$COMPOSE_SERVICE"
+
+          # --- 3. Wait for the context to come up -------------------------------
+          # Spring Boot logs this only after the web server is accepting traffic.
+          # The app needs ~30-40s, so poll rather than sleeping a fixed time.
+          echo "Waiting for the application to start..."
+          started=0
+          for _ in $(seq 1 60); do
+            if docker logs --tail 200 "$CONTAINER_NAME" 2>&1 | grep -q "Started MyHourlyApplication"; then
+              started=1
+              break
+            fi
+            if docker logs --tail 200 "$CONTAINER_NAME" 2>&1 | grep -q "APPLICATION FAILED TO START"; then
+              echo "ERROR: startup failed. See the logs below." >&2
+              break
+            fi
+            sleep 5
+          done
+
+          if [ "$started" -ne 1 ]; then
+            echo "ERROR: the application did not report a successful start." >&2
+            echo "--- docker ps ---" >&2
+            docker ps -a --filter "name=$CONTAINER_NAME" >&2 || true
+            echo "--- last 100 log lines ---" >&2
+            docker logs --tail 100 "$CONTAINER_NAME" >&2 || true
+            exit 1
+          fi
+
+          # --- 4. Report status -------------------------------------------------
+          # Logs can contain user data, so only a bounded tail is printed.
+          docker ps --filter "name=$CONTAINER_NAME" \
+                    --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+          docker logs --tail 25 "$CONTAINER_NAME"
+          echo "Backend deploy finished successfully."
+          REMOTE_SCRIPT

@@ -33,3 +33,13 @@ build/
 .vscode/
 HRMS/
 .freebuff/
+
+### Environment / secrets ###
+# The production .env lives only on the Droplet at /opt/myhourly/backend/.env and
+# must never be committed. Keep a committed .env.example for documentation.
+.env
+.env.*
+!.env.example
+
+### Docker / deployment scratch ###
+*.log

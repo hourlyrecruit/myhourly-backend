@@ -1,2 +1,7 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+
+# Docker reads the Dockerfile with LF semantics. A CRLF Dockerfile breaks `\`
+# line continuations, so keep it LF on every platform.
+Dockerfile text eol=lf
+.dockerignore text eol=lf
