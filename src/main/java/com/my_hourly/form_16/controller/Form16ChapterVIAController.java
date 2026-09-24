@@ -30,7 +30,7 @@ public class Form16ChapterVIAController {
     // =========================================================
 
     @PostMapping("/{form16Id}/chapter-via")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16ChapterVIAResponse> createChapterVIA(
             @PathVariable Long form16Id,
             @RequestBody Form16ChapterVIARequest request
@@ -54,7 +54,7 @@ public class Form16ChapterVIAController {
     // =========================================================
 
     @GetMapping("/{form16Id}/chapter-via")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16ChapterVIAResponse>
     getChapterVIA(
             @PathVariable Long form16Id
@@ -73,7 +73,7 @@ public class Form16ChapterVIAController {
     // =========================================================
 
     @PutMapping("/{form16Id}/chapter-via")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16ChapterVIAResponse>
     updateChapterVIA(
             @PathVariable Long form16Id,
@@ -100,7 +100,7 @@ public class Form16ChapterVIAController {
     // =========================================================
 
     @PatchMapping("/{form16Id}/chapter-via")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Form16ChapterVIAResponse>
     autoSaveChapterVIA(
             @PathVariable Long form16Id,
@@ -123,7 +123,7 @@ public class Form16ChapterVIAController {
     // =========================================================
 
     @DeleteMapping("/{form16Id}/chapter-via")
-    @PreAuthorize("hasAnyRole('MANAGER', 'HR')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'HR_ADMIN')")
     public ResponseEntity<Void> deleteChapterVIA(
             @PathVariable Long form16Id
     ) {
