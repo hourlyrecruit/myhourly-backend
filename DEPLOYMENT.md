@@ -317,7 +317,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_DO
     image: myhourly-backend:local
     container_name: myhourly-backend
     env_file:
