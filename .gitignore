@@ -35,11 +35,13 @@ HRMS/
 .freebuff/
 
 ### Environment / secrets ###
-# The production .env lives only on the Droplet at /opt/myhourly/backend/.env and
-# must never be committed. Keep a committed .env.example for documentation.
+# Real secrets live only in the untracked per-environment files (.env.do on the
+# Droplet, .env.aws on the AWS host) and must never be committed. The committed
+# .env.*.example files are placeholders-only templates.
 .env
 .env.*
 !.env.example
+!.env.*.example
 
 ### Docker / deployment scratch ###
 *.log

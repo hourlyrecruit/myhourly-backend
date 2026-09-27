@@ -59,6 +59,10 @@ public class LeaveEmailService {
                         + "\n"
 
                         + " Employee Email: "
+                        + employee.getEmployeeCode()
+                        + "\n\n"
+
+                        + " Employee Email: "
                         + employee.getEmail()
                         + "\n\n"
 

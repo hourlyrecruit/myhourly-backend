@@ -97,9 +97,13 @@ host — the JVM and Maven both come from the Docker build images.
 
 ```text
 /opt/myhourly/
-├── docker-compose.yml          # server-side only, NOT in this repository (see §8)
 ├── backend/                    # git clone of hourlyrecruit/myhourly-backend
-│   ├── .env                    # production secrets, never committed
+│   ├── docker-compose.do.yml   # DigitalOcean stack, committed (see §8)
+│   ├── docker-compose.aws.yml  # AWS stack, committed (see §8)
+│   ├── .env.do.example         # committed placeholders-only template
+│   ├── .env.do                 # real DigitalOcean secrets, never committed
+│   ├── .env.aws.example        # committed placeholders-only template
+│   ├── .env.aws                # real AWS secrets, never committed
 │   ├── Dockerfile
 │   ├── pom.xml
 │   └── src/
@@ -132,8 +136,8 @@ All production configuration is read from `/opt/myhourly/backend/.env`, which
 Docker Compose loads through `env_file`. **This file must never be committed** —
 `.gitignore` now blocks `.env`, `.env.*` and `*.env`.
 
-The application is started with `SPRING_PROFILES_ACTIVE=prod`, so
-`application-prod.properties` is the profile in effect. The variable names below
+The application is started with `SPRING_PROFILES_ACTIVE=do`, so
+`application-do.properties` is the profile in effect. The variable names below
 are the ones that file actually reads; nothing is invented.
 
 ### 4.1 Required
@@ -156,7 +160,7 @@ The application **fails to start** with
 `DO_SPACES_*` map onto properties still named `b2.*` in the code
 (`B2StorageConfig`, `B2FileStorageServiceImpl`). That prefix is historical — the
 client has always spoken the S3 API, and Spaces is S3-compatible, so no code
-change was needed. There is **no Backblaze dependency** in the `prod` profile.
+change was needed. There is **no Backblaze dependency** in the `do` profile.
 
 ### 4.2 Optional
 
@@ -182,7 +186,7 @@ Every one of these has a working default. Set them only to override.
 
 | Variable | Value | Why |
 |---|---|---|
-| `SPRING_PROFILES_ACTIVE` | `prod` | `application.properties` defaults to `dev`, which points at the **development Aiven database**. This must be `prod` in production. It is set in `docker-compose.yml` so the backend cannot accidentally start on the wrong profile. |
+| `SPRING_PROFILES_ACTIVE` | `do` | `application.properties` defaults to `dev`, which points at the **development Aiven database**. This must be `do` in production. It is set in `docker-compose.yml` so the backend cannot accidentally start on the wrong profile. |
 | `PORT` | `8080` | Container-internal port. Do not change; `docker-compose.yml` maps it. |
 
 ### 4.4 Creating the file
@@ -304,11 +308,23 @@ JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=60 -Xss512k"
 
 ## 8. Docker Compose setup
 
-The Compose file lives at **`/opt/myhourly/docker-compose.yml`** — on the server,
-next to (not inside) the backend checkout, because it also coordinates the
-frontend container. It is intentionally **not committed to this repository**: it
-references a sibling directory from a different repository and is server-specific.
-The deploy pipeline fails with a clear message if it is missing.
+Compose files **are committed to this repository**, one per environment, and each
+runs the `backend` service only:
+
+| File | Environment | Env file | Profile | Host port |
+|---|---|---|---|---|
+| `docker-compose.do.yml` | DigitalOcean | `.env.do` | `do` | `127.0.0.1:8081` |
+| `docker-compose.aws.yml` | AWS | `.env.aws` | `aws` | `8080` |
+
+`.env.do.example` and `.env.aws.example` are committed and contain placeholders
+only. Copy one to the real filename, fill it in, then `chmod 600` it. The real
+`.env.do` / `.env.aws` are gitignored, so `git pull` on the host can never
+conflict with them.
+
+The legacy server-side file `/opt/myhourly/docker-compose.yml` (shown below) is
+**superseded by `docker-compose.do.yml`** for the DigitalOcean stack. The deploy
+pipeline still expects the old path until its `COMPOSE_DIR` is pointed at the
+backend checkout.
 
 ```yaml
 name: myhourly
@@ -317,7 +333,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile_DO
+      dockerfile: Dockerfile
     image: myhourly-backend:local
     container_name: myhourly-backend
     env_file:
@@ -325,7 +341,7 @@ services:
     environment:
       # application.properties defaults to the `dev` profile, which points at the
       # shared development database. Pin it here.
-      SPRING_PROFILES_ACTIVE: prod
+      SPRING_PROFILES_ACTIVE: do
     ports:
       # Loopback only: reachable by a reverse proxy on the host, not from the
       # internet. Change the left-hand port if 8081 is taken.
@@ -343,10 +359,15 @@ Apply it:
 
 ```bash
 su - deploy
-cd /opt/myhourly
-docker compose up -d --build backend
-docker compose ps
+cd /opt/myhourly/backend
+cp .env.do.example .env.do
+vim .env.do                       # fill in every CHANGE_ME
+chmod 600 .env.do
+docker compose -f docker-compose.do.yml up -d --build backend
+docker compose -f docker-compose.do.yml ps
 ```
+
+For AWS the steps are identical with `docker-compose.aws.yml` and `.env.aws`.
 
 Notes:
 
@@ -356,6 +377,9 @@ Notes:
   Only `myhourly-backend` is recreated, so a frontend container keeps running.
 * `container_name: myhourly-backend` is required — the deploy pipeline uses it for
   the readiness check and log tail.
+* `SPRING_PROFILES_ACTIVE` and `PORT` are set in the compose file's `environment:`
+  block rather than in `.env`. `environment:` wins over `env_file`, so the profile
+  cannot be changed from the secrets file by accident.
 
 ---
 
@@ -664,7 +688,7 @@ is.
 * Rotation impact: rotating `JWT_SECRET` signs everyone out; rotating
   `DATABASE_PASSWORD` requires a redeploy; rotating Spaces keys requires a redeploy
   and invalidates outstanding presigned URLs.
-* **`spring.jpa.show-sql=true` is set in `application-prod.properties`.** It logs
+* **`spring.jpa.show-sql=true` is set in `application-do.properties`.** It logs
   every SQL statement at INFO. That is log volume and noise in production, and it
   should be turned off (`show-sql=false`) — left as-is here because it is existing
   application configuration rather than a deployment concern.
@@ -672,7 +696,7 @@ is.
   part of this pipeline; make sure no Jenkins job builds `main` any more, or two
   systems will deploy the same application.
 * The `aws` profile (`application-aws.properties`) is untouched and still aims at
-  AWS RDS/SES/S3. `prod` is now the DigitalOcean profile.
+  AWS RDS/SES/S3. `do` is now the DigitalOcean profile.
 
 ---
 
@@ -686,15 +710,20 @@ is.
 | `.github/workflows/deploy.yml` | CI (Java 21 + PostgreSQL 18 service container + `./mvnw verify`) then SSH deploy that rebuilds only `myhourly-backend`. No registry involved. |
 | `src/main/resources/db/migration/V5__form16_table_suite.sql` | The 10 missing Form 16 tables. Without it a fresh managed database could not start. |
 | `DEPLOYMENT.md` | This guide. |
+| `docker-compose.do.yml` | DigitalOcean stack: the `backend` service only — no `postgres` and no `frontend` service. Pins `SPRING_PROFILES_ACTIVE=do` and loads `.env.do`. |
+| `docker-compose.aws.yml` | AWS stack: the `backend` service only. Pins `SPRING_PROFILES_ACTIVE=aws` and loads `.env.aws`. |
+| `.env.do.example` | Committed, placeholders-only template for the DigitalOcean secrets file. |
+| `.env.aws.example` | Committed, placeholders-only template for the AWS secrets file. |
 
 ### Files modified
 
 | File | Why |
 |---|---|
 | `pom.xml` | Added `spring-boot-starter-flyway` and `flyway-database-postgresql`. **Flyway was not on the classpath at all** — the migration files and every `spring.flyway.*` setting were inert, so migrations had never run. Version managed by the Spring Boot 4.0.7 BOM; no libraries were otherwise introduced. |
-| `src/main/resources/application-prod.properties` | Repointed storage from Backblaze B2 (`B2_*`) to DigitalOcean Spaces (`DO_SPACES_*`); the endpoint is derived from the region. Documented the required/optional variables. Gave the two token lifetimes and the reset-link lifetime defaults so a missing optional value cannot block startup. No property *names* changed, so the application code is untouched. |
+| `src/main/resources/application-do.properties` | Repointed storage from Backblaze B2 (`B2_*`) to DigitalOcean Spaces (`DO_SPACES_*`); the endpoint is derived from the region. Documented the required/optional variables. Gave the two token lifetimes and the reset-link lifetime defaults so a missing optional value cannot block startup. No property *names* changed, so the application code is untouched. |
 | `Dockerfile` | Cached the dependency layer (previously `COPY . .` re-downloaded everything on every deploy), pinned the exact JAR name, run as a non-root `spring` user, added container-aware JVM flags. The base images and port are unchanged. |
-| `.gitignore` | Blocks `.env`, `.env.*` and `*.log` so production secrets cannot be committed. |
+| `.gitignore` | Blocks `.env`, `.env.*` and `*.log` so production secrets cannot be committed, while un-ignoring the `!.env.*.example` templates so those can be. |
+| `.gitattributes` | Pins LF for `Dockerfile`, `.dockerignore`, `docker-compose*.yml` and `.env*`. A CRLF `.env` leaves a stray `\r` at the end of every value, which corrupts secrets and URLs. |
 
 ### Files intentionally unchanged
 
@@ -704,9 +733,9 @@ is.
 | `V1`–`V4` migrations | Already applied to existing databases. Editing them would break every environment. |
 | `application.properties` | Already externalises the profile (`SPRING_PROFILES_ACTIVE`) and port (`PORT`), and already carries the Flyway baseline settings. No change was needed. |
 | `application-dev.properties` | Development-only. It does still contain a live Aiven database password, B2 keys and a Gmail app password **committed to the repository** — worth rotating and externalising, but changing it would break local development for the team, so it was left alone. |
-| `application-aws.properties` | AWS-specific; irrelevant to DigitalOcean. |
+| `application-aws.properties` | AWS-specific and used as-is by the AWS stack (`docker-compose.aws.yml`); no DigitalOcean concern. |
 | All `src/main/java/**` | No business logic, entity, API contract, security or calculation code was modified. |
-| `docker-compose.yml` | Does not exist in this repository by design — it belongs to `/opt/myhourly` on the server (§8). |
+| `docker-compose.yml` | The legacy server-side file at `/opt/myhourly/docker-compose.yml` is superseded by the committed `docker-compose.do.yml` (§8). While the pipeline still looks for the old path, a deploy fails with a clear message. |
 
 ### Not done, on purpose
 
@@ -716,3 +745,20 @@ is.
   suitable for Spaces.
 * No actuator added: the project does not have it, and it was not needed. The
   deploy pipeline waits on the application's own startup log line instead.
+
+### Known blocker: the storage configuration is mid-migration
+
+The `aws` stack cannot boot until this is resolved. `B2StorageConfig` and
+`S3StorageConfig` are both unconditional `@Configuration` classes:
+
+* both declare a bean named `s3Presigner`, so the context fails with a
+  duplicate-bean-definition error on **every** profile;
+* `B2StorageConfig` requires `b2.access-key`, `b2.secret-key`, `b2.endpoint` and
+  `b2.region`, which the `aws` profile no longer defines (it sets `aws.s3.*`);
+* `S3StorageConfig` requires `aws.s3.region`, which `dev`, `do` and `render` do
+  not define.
+
+Gating the pairs with `@Profile({"dev", "do", "render"})` and `@Profile("aws")`,
+and renaming one of the `s3Presigner` beans, fixes all three.
+`NotificationServiceImpl` still injects `FileStorageServiceB2`, so the `do`
+profile must keep that pair even though its properties are Spaces values.
