@@ -2,10 +2,11 @@
 
 package com.my_hourly.Form_16A.controller;
 
-import com.my_hourly.form_16.dto.Form16VerificationRequest;
-import com.my_hourly.form_16.dto.Form16VerificationResponse;
-import com.my_hourly.form_16.service.Form16VerificationService;
 
+
+import com.my_hourly.Form_16A.dto.Form16VerificationRequest;
+import com.my_hourly.Form_16A.dto.Form16VerificationResponse;
+import com.my_hourly.Form_16A.service.Form16VerificationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
