@@ -8,7 +8,7 @@ Amazon RDS for PostgreSQL, Amazon SES for email, Amazon S3 for file storage.
 | Source of truth | `src/main/resources/application-aws.properties` |
 | Base file (always loaded) | `src/main/resources/application.properties` |
 | Activate with | `SPRING_PROFILES_ACTIVE=aws` |
-| Companion doc | [`AWS_DEPLOYMENT_GUIDE.html`](../AWS_DEPLOYMENT_GUIDE.html) — infrastructure/CLI walkthrough |
+| Companion doc | [`AWS_DEPLOYMENT_GUIDE.html`](AWS_DEPLOYMENT_GUIDE.html) — infrastructure/CLI walkthrough |
 | Runtime | Spring Boot 4.0.7, Java 21, Tomcat on port 8080 |
 
 > `AWS_DEPLOYMENT_GUIDE.html` describes the older **`prod`** profile, which reads the same settings

@@ -1,0 +1,63 @@
+# =============================================================================
+# MyHourly backend - DIGITALOCEAN stack
+# -----------------------------------------------------------------------------
+# Builds and runs the backend only. PostgreSQL is DigitalOcean Managed PostgreSQL
+# and object storage is a DigitalOcean Space, so neither is a container here.
+#
+#   cp .env.do.example .env.do                                  # once, then edit
+#   docker compose -f docker-compose.do.yml up -d --build backend
+#   docker compose -f docker-compose.do.yml ps
+#   docker compose -f docker-compose.do.yml logs -f backend
+#
+# Pairs with .github/workflows/deploy.yml, which SSHes to the Droplet and runs the
+# same `up -d --build backend`.
+#
+# The AWS twin of this file is docker-compose.yml. Keep the two in step.
+# =============================================================================
+
+name: myhourly-do
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: ../Dockerfile
+
+    image: myhourly-backend:do
+    # Fixed name: the deploy pipeline tails the logs of this exact container, so
+    # renaming it silently breaks the readiness check.
+    container_name: myhourly-backend
+
+    env_file:
+      - .env.do
+
+    environment:
+      # application.properties defaults to the `dev` profile, which points at the
+      # shared Aiven development database. Pin the profile here so the container
+      # can never start against it. Values here override .env.do.
+      SPRING_PROFILES_ACTIVE: do
+      PORT: 8080
+
+    ports:
+      # Loopback only: a reverse proxy on the host reaches it, the internet does
+      # not. Change the left-hand port if 8081 is already taken; leave the
+      # container port at 8080.
+      - "127.0.0.1:8081:8080"
+
+    restart: unless-stopped
+
+    # Let Spring finish in-flight requests and close the Hikari pool before Docker
+    # escalates to SIGKILL.
+    stop_grace_period: 30s
+
+    # Unbounded json-file logs eventually fill the Droplet's disk.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# There is no `postgres` service: production uses DigitalOcean Managed PostgreSQL.
+# There is no `frontend` service: the frontend is a separate repository, deployed
+# on its own, and would reach this container at http://backend:8080 over the
+# default compose network.

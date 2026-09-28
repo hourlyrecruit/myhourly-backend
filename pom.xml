@@ -64,6 +64,22 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!--
+			Flyway: owns the schema (src/main/resources/db/migration). The migration
+			scripts and spring.flyway.* settings already existed but the dependency was
+			missing, so migrations never ran. flyway-database-postgresql is required
+			separately since Flyway 10 (version managed by the Spring Boot BOM).
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

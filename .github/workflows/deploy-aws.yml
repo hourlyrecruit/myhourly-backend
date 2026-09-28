@@ -1,0 +1,125 @@
+name: Deploy backend to AWS EC2
+
+on:
+  push:
+    branches:
+      - deployment
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+env:
+  JAVA_VERSION: '21'
+  APP_DIR: /opt/myhourly/backend
+  COMPOSE_DIR: /opt/myhourly/backend
+  COMPOSE_SERVICE: backend
+  CONTAINER_NAME: myhourly-backend
+  PRODUCTION_BRANCH: deployment
+
+jobs:
+
+  test:
+    name: Test application
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: myhourly_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d myhourly_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Run tests
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/myhourly_test
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+        run: ./mvnw -B -ntp verify
+
+  deploy:
+    name: Deploy to AWS EC2
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy through SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -e
+
+            echo "Starting AWS EC2 deployment..."
+
+            mkdir -p "${{ env.COMPOSE_DIR }}"
+            cd "${{ env.APP_DIR }}"
+
+            git fetch origin
+            git checkout "${{ env.PRODUCTION_BRANCH }}"
+            git reset --hard "origin/${{ env.PRODUCTION_BRANCH }}"
+
+            if [ ! -f "${{ env.COMPOSE_DIR }}/.env" ]; then
+              echo "ERROR: ${{ env.COMPOSE_DIR }}/.env is missing"
+              exit 1
+            fi
+
+            if [ ! -f "${{ env.COMPOSE_DIR }}/docker-compose.yml" ]; then
+              echo "ERROR: docker-compose.yml is missing"
+              exit 1
+            fi
+
+            cd "${{ env.COMPOSE_DIR }}"
+
+            docker compose config
+
+            docker compose up -d --build "${{ env.COMPOSE_SERVICE }}"
+
+            echo "Waiting for application startup..."
+
+            for i in $(seq 1 60); do
+              if docker logs "${{ env.CONTAINER_NAME }}" 2>&1 | grep -q "Started MyHourlyApplication"; then
+                echo "Application started successfully."
+                exit 0
+              fi
+
+              if docker logs "${{ env.CONTAINER_NAME }}" 2>&1 | grep -q "APPLICATION FAILED TO START"; then
+                echo "Application failed to start."
+                docker logs --tail 200 "${{ env.CONTAINER_NAME }}"
+                exit 1
+              fi
+
+              sleep 5
+            done
+
+            echo "Application did not report successful startup."
+            docker compose ps
+            docker logs --tail 200 "${{ env.CONTAINER_NAME }}"
+            exit 1

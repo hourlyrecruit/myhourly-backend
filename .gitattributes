@@ -1,2 +1,13 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+
+# Docker reads the Dockerfile with LF semantics. A CRLF Dockerfile breaks `\`
+# line continuations, so keep it LF on every platform.
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+
+# Compose and environment files are read literally. A CRLF .env leaves a stray
+# \r at the end of every value, which corrupts secrets and URLs, and a CRLF
+# compose file makes YAML parse errors unnecessarily hard to read.
+docker-compose*.yml text eol=lf
+.env* text eol=lf

@@ -238,8 +238,8 @@ public class DataInitializer implements ApplicationRunner {
         }
 
         CompanySettings settings = CompanySettings.builder()
-                .companyName("MyHourly")
-                .companyCode("MHR")
+                .companyName("HourlyRecruit")
+                .companyCode("MYHR")
                 .email(superAdminEmail)
                 .phoneNumber("9876543210")
                 .timeZone("Asia/Kolkata")
