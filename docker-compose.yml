@@ -20,7 +20,7 @@ name: myhourly-aws
 services:
   backend:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
 
     image: myhourly-backend:aws

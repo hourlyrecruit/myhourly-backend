@@ -16,7 +16,7 @@ concurrency:
 env:
   JAVA_VERSION: '21'
   APP_DIR: /opt/myhourly/backend
-  COMPOSE_DIR: /opt/myhourly
+  COMPOSE_DIR: /opt/myhourly/backend
   COMPOSE_SERVICE: backend
   CONTAINER_NAME: myhourly-backend
   PRODUCTION_BRANCH: deployment
