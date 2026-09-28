@@ -1,4 +1,5 @@
-package com.my_hourly.Form_16A.serviceImpl;
+
+        package com.my_hourly.Form_16A.serviceImpl;
 
 import com.my_hourly.Form_16A.dto.Form16ChallanListResponse;
 import com.my_hourly.Form_16A.dto.Form16ChallanRequest;
@@ -6,6 +7,9 @@ import com.my_hourly.Form_16A.dto.Form16ChallanResponse;
 import com.my_hourly.Form_16A.entity.Form16Challan;
 import com.my_hourly.Form_16A.repository.Form16ChallanRepository;
 import com.my_hourly.Form_16A.service.Form16ChallanService;
+
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
 
 import com.my_hourly.form_16.entity.Form16;
 import com.my_hourly.form_16.repository.Form16Repository;
@@ -46,9 +50,10 @@ public class Form16ChallanServiceImpl
                 form16Repository
                         .findById(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 not found with id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -72,15 +77,13 @@ public class Form16ChallanServiceImpl
 
         if (nextSerial > 12) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Maximum 12 challan records are allowed for Form16 id: "
                             + form16Id
             );
         }
 
-        challan.setSerialNumber(
-                nextSerial
-        );
+        challan.setSerialNumber(nextSerial);
 
 
         // =====================================================
@@ -138,9 +141,10 @@ public class Form16ChallanServiceImpl
         form16Repository
                 .findById(form16Id)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Form16 not found with id: "
-                                        + form16Id
+                                        + form16Id,
+                                ErrorCode.RESOURCE_NOT_FOUND
                         )
                 );
 
@@ -214,8 +218,12 @@ public class Form16ChallanServiceImpl
                                 form16Id
                         )
                         .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Challan not found."
+                                new ResourceNotFoundException(
+                                        "Challan not found with id: "
+                                                + challanId
+                                                + " for Form16 id: "
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -246,8 +254,12 @@ public class Form16ChallanServiceImpl
                                 form16Id
                         )
                         .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Challan not found."
+                                new ResourceNotFoundException(
+                                        "Challan not found with id: "
+                                                + challanId
+                                                + " for Form16 id: "
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -314,8 +326,12 @@ public class Form16ChallanServiceImpl
                                 form16Id
                         )
                         .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Challan not found."
+                                new ResourceNotFoundException(
+                                        "Challan not found with id: "
+                                                + challanId
+                                                + " for Form16 id: "
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -335,6 +351,17 @@ public class Form16ChallanServiceImpl
             Long form16Id) {
 
         validateForm16Id(form16Id);
+
+        // Verify Form16 exists before deleting
+        form16Repository
+                .findById(form16Id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Form16 not found with id: "
+                                        + form16Id,
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        )
+                );
 
         challanRepository.deleteByForm16Id(
                 form16Id
