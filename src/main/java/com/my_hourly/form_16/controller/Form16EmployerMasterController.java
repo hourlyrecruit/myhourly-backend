@@ -37,7 +37,7 @@ public class Form16EmployerMasterController {
 
     @PostMapping
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     @Operation(
             summary = "Create Employer Master",
@@ -67,7 +67,7 @@ public class Form16EmployerMasterController {
 
     @GetMapping("/active")
     @PreAuthorize(
-            "hasAnyRole('EMPLOYEE', 'HR', 'MANAGER')"
+            "hasAnyRole('EMPLOYEE', 'HR_ADMIN', 'MANAGER')"
     )
     @Operation(
             summary = "Get Active Employer Master"

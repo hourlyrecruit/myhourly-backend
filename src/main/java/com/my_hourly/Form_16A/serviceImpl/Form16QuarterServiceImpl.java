@@ -1,4 +1,8 @@
-package com.my_hourly.Form_16A.serviceImpl;
+
+        package com.my_hourly.Form_16A.serviceImpl;
+
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
 
 import com.my_hourly.form_16.entity.Form16;
 import com.my_hourly.form_16.repository.Form16Repository;
@@ -10,11 +14,13 @@ import com.my_hourly.Form_16A.repository.Form16QuarterRepository;
 import com.my_hourly.Form_16A.service.Form16QuarterService;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -44,9 +50,10 @@ public class Form16QuarterServiceImpl
         Form16 form16 =
                 form16Repository.findById(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 not found with id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -59,17 +66,17 @@ public class Form16QuarterServiceImpl
                 .findByForm16Id(form16Id)
                 .isPresent()) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "Quarter details already exist for Form16 id: "
-                            + form16Id
+                            + form16Id,
+                    ErrorCode.RESOURCE_NOT_FOUND
             );
         }
 
 
         // --------------------------------------------------------
         // 3. Generate BOOK ADJUSTMENT SERIAL NUMBER
-        //
-        // Employee-specific
+        //    Employee-specific
         // --------------------------------------------------------
 
         Integer bookAdjustmentSerialNumber =
@@ -77,21 +84,6 @@ public class Form16QuarterServiceImpl
                         .getNextBookAdjustmentSerialNumber(
                                 form16Id
                         );
-
-
-        /*
-         * First employee:
-         *
-         * Form16 1 → 1
-         *
-         * Second employee:
-         *
-         * Form16 2 → 1
-         *
-         * Third employee:
-         *
-         * Form16 3 → 1
-         */
 
 
         // --------------------------------------------------------
@@ -184,7 +176,6 @@ public class Form16QuarterServiceImpl
                 Form16Quarter.builder()
 
                         .form16(form16)
-
 
                         // ==============================
                         // Q1
@@ -291,9 +282,6 @@ public class Form16QuarterServiceImpl
                         // BOOK ADJUSTMENT
                         // ==============================
 
-                        /*
-                         * SYSTEM GENERATED
-                         */
                         .bookAdjustmentSerialNumber(
                                 bookAdjustmentSerialNumber
                         )
@@ -302,40 +290,25 @@ public class Form16QuarterServiceImpl
                                 request.getBookAdjustmentTaxDeposited()
                         )
 
-
-                        /*
-                         * SYSTEM GENERATED
-                         */
                         .receiptNumberForm24G(
                                 receiptNumberForm24G
                         )
 
-
-                        /*
-                         * SYSTEM GENERATED
-                         */
                         .ddoSerialNumberForm24G(
                                 ddoSerialNumberForm24G
                         )
 
-
-                        /*
-                         * MANUAL
-                         */
                         .dateOfTransferVoucher(
                                 request.getDateOfTransferVoucher()
                         )
-
 
                         .statusOfMatchingWithForm24G(
                                 request.getStatusOfMatchingWithForm24G()
                         )
 
-
                         .totalBookAdjustmentTaxDeposited(
                                 totalBookAdjustmentTaxDeposited
                         )
-
 
                         .build();
 
@@ -372,9 +345,10 @@ public class Form16QuarterServiceImpl
                 form16QuarterRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Quarter details not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -397,9 +371,10 @@ public class Form16QuarterServiceImpl
                 form16QuarterRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Quarter details not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -534,23 +509,21 @@ public class Form16QuarterServiceImpl
          * DO NOT CHANGE:
          *
          * bookAdjustmentSerialNumber
-         *
          * receiptNumberForm24G
-         *
          * ddoSerialNumberForm24G
          *
          * They remain the original generated values.
          */
-
 
         quarter.setBookAdjustmentTaxDeposited(
                 request.getBookAdjustmentTaxDeposited()
         );
 
 
-        /*
-         * MANUAL DATE
-         */
+        // --------------------------------------------------------
+        // MANUAL DATE
+        // --------------------------------------------------------
+
         quarter.setDateOfTransferVoucher(
                 request.getDateOfTransferVoucher()
         );
@@ -593,9 +566,10 @@ public class Form16QuarterServiceImpl
                 form16QuarterRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Quarter details not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 

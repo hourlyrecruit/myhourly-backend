@@ -2,6 +2,7 @@ package com.my_hourly.form_16.serviceImpl;
 
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.repository.EmployeeRepository;
+
 import com.my_hourly.form_16.dto.Form16Request;
 import com.my_hourly.form_16.dto.Form16Response;
 import com.my_hourly.form_16.entity.Form16;
@@ -9,8 +10,12 @@ import com.my_hourly.form_16.entity.Form16EmployerMaster;
 import com.my_hourly.form_16.repository.Form16EmployerMasterRepository;
 import com.my_hourly.form_16.repository.Form16Repository;
 import com.my_hourly.form_16.service.Form16Service;
+
 import com.my_hourly.payroll.entity.EmployeePaymentDetails;
 import com.my_hourly.payroll.repository.EmployeePaymentDetailsRepository;
+
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,9 +36,11 @@ public class Form16ServiceImpl implements Form16Service {
 
     private final EmployeeRepository employeeRepository;
 
-    private final EmployeePaymentDetailsRepository employeePaymentDetailsRepository;
+    private final EmployeePaymentDetailsRepository
+            employeePaymentDetailsRepository;
 
-    private final Form16EmployerMasterRepository employerMasterRepository;
+    private final Form16EmployerMasterRepository
+            employerMasterRepository;
 
 
     // =========================================================
@@ -49,12 +56,15 @@ public class Form16ServiceImpl implements Form16Service {
         // 1. Find Employee
         // -----------------------------------------------------
 
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Employee not found with ID: " + employeeId
-                        )
-                );
+        Employee employee =
+                employeeRepository.findById(employeeId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Employee not found with ID: "
+                                                + employeeId,
+                                        ErrorCode.RESOURCE_NOT_FOUND
+                                )
+                        );
 
 
         // -----------------------------------------------------
@@ -64,8 +74,9 @@ public class Form16ServiceImpl implements Form16Service {
         Form16EmployerMaster employerMaster =
                 employerMasterRepository.findByActiveTrue()
                         .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Active employer master not found."
+                                new ResourceNotFoundException(
+                                        "Active employer master not found.",
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -94,7 +105,7 @@ public class Form16ServiceImpl implements Form16Service {
         if (employeeAddress == null
                 || employeeAddress.trim().isEmpty()) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Employee address is required."
             );
         }
@@ -103,7 +114,7 @@ public class Form16ServiceImpl implements Form16Service {
         if (assessmentYear == null
                 || assessmentYear.trim().isEmpty()) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Assessment year is required."
             );
         }
@@ -111,7 +122,7 @@ public class Form16ServiceImpl implements Form16Service {
 
         if (employmentFrom == null) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Employment from date is required."
             );
         }
@@ -119,7 +130,7 @@ public class Form16ServiceImpl implements Form16Service {
 
         if (employmentTo == null) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Employment to date is required."
             );
         }
@@ -127,7 +138,7 @@ public class Form16ServiceImpl implements Form16Service {
 
         if (employmentFrom.isAfter(employmentTo)) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Employment from date cannot be after employment to date."
             );
         }
@@ -142,7 +153,7 @@ public class Form16ServiceImpl implements Form16Service {
                         employeeId,
                         assessmentYear)) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Form16 already exists for employee ID "
                             + employeeId
                             + " and assessment year "
@@ -157,7 +168,8 @@ public class Form16ServiceImpl implements Form16Service {
 
         String employeePan = null;
 
-        Optional<EmployeePaymentDetails> paymentDetailsOptional =
+        Optional<EmployeePaymentDetails>
+                paymentDetailsOptional =
                 employeePaymentDetailsRepository
                         .findByEmployeeId(employeeId);
 
@@ -191,6 +203,7 @@ public class Form16ServiceImpl implements Form16Service {
                         // -------------------------------------------------
 
                         .employee(employee)
+
 
                         // -------------------------------------------------
                         // Certificate
@@ -340,8 +353,10 @@ public class Form16ServiceImpl implements Form16Service {
         Form16 form16 =
                 form16Repository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Form16 not found with ID: " + id
+                                new ResourceNotFoundException(
+                                        "Form16 not found with ID: "
+                                                + id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -361,18 +376,16 @@ public class Form16ServiceImpl implements Form16Service {
         Form16 form16 =
                 form16Repository.findById(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 not found with ID: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
         /*
          * Keep your existing logged-in employee
-         * authorization logic here if you already have
-         * employee authentication lookup.
-         *
-         * This method currently returns the Form16.
+         * authorization logic here if required.
          */
 
         return mapToResponse(form16);
@@ -396,11 +409,12 @@ public class Form16ServiceImpl implements Form16Service {
                                 assessmentYear
                         )
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 not found for employee ID "
                                                 + employeeId
                                                 + " and assessment year "
-                                                + assessmentYear
+                                                + assessmentYear,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -413,16 +427,20 @@ public class Form16ServiceImpl implements Form16Service {
     // =========================================================
 
     @Override
-    public void activateEmployeeForm16(Long employeeId) {
+    public void activateEmployeeForm16(
+            Long employeeId) {
 
         List<Form16> form16List =
-                form16Repository.findAllByEmployeeId(employeeId);
+                form16Repository.findAllByEmployeeId(
+                        employeeId
+                );
 
         if (form16List.isEmpty()) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "Form16 not found for employee ID: "
-                            + employeeId
+                            + employeeId,
+                    ErrorCode.RESOURCE_NOT_FOUND
             );
         }
 
@@ -453,8 +471,9 @@ public class Form16ServiceImpl implements Form16Service {
 
         if (form16List.isEmpty()) {
 
-            throw new RuntimeException(
-                    "No Form16 records found."
+            throw new ResourceNotFoundException(
+                    "No Form16 records found.",
+                    ErrorCode.RESOURCE_NOT_FOUND
             );
         }
 
@@ -482,13 +501,16 @@ public class Form16ServiceImpl implements Form16Service {
             Long employeeId) {
 
         List<Form16> form16List =
-                form16Repository.findAllByEmployeeId(employeeId);
+                form16Repository.findAllByEmployeeId(
+                        employeeId
+                );
 
         if (form16List.isEmpty()) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "Form16 not found for employee ID: "
-                            + employeeId
+                            + employeeId,
+                    ErrorCode.RESOURCE_NOT_FOUND
             );
         }
 
@@ -516,13 +538,16 @@ public class Form16ServiceImpl implements Form16Service {
             Long employeeId) {
 
         List<Form16> form16List =
-                form16Repository.findAllByEmployeeId(employeeId);
+                form16Repository.findAllByEmployeeId(
+                        employeeId
+                );
 
         if (form16List.isEmpty()) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "Form16 not found for employee ID: "
-                            + employeeId
+                            + employeeId,
+                    ErrorCode.RESOURCE_NOT_FOUND
             );
         }
 
@@ -551,7 +576,6 @@ public class Form16ServiceImpl implements Form16Service {
                         )
         );
 
-
         return certificateNo;
     }
 
@@ -560,7 +584,8 @@ public class Form16ServiceImpl implements Form16Service {
     // RANDOM ALPHANUMERIC
     // =========================================================
 
-    private String randomAlphaNumeric(int length) {
+    private String randomAlphaNumeric(
+            int length) {
 
         String characters =
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -600,20 +625,9 @@ public class Form16ServiceImpl implements Form16Service {
 
         String designation = null;
 
+
         if (employee != null
                 && employee.getDesignation() != null) {
-
-            /*
-             * If your Designation entity has:
-             *
-             * getDesignationName()
-             *
-             * then preferably use:
-             *
-             * designation =
-             *     employee.getDesignation()
-             *             .getDesignationName();
-             */
 
             designation =
                     employee.getDesignation()

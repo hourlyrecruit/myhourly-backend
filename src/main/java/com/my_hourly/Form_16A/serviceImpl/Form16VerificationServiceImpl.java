@@ -1,14 +1,19 @@
+
+//package com.my_hourly.form_16.service.impl;
+
 package com.my_hourly.Form_16A.serviceImpl;
 
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
 
-
-import com.my_hourly.Form_16A.dto.Form16VerificationRequest;
-import com.my_hourly.Form_16A.dto.Form16VerificationResponse;
-import com.my_hourly.Form_16A.entity.Form16Verification;
-import com.my_hourly.Form_16A.repository.Form16VerificationRepository;
-import com.my_hourly.Form_16A.service.Form16VerificationService;
+import com.my_hourly.form_16.dto.Form16VerificationRequest;
+import com.my_hourly.form_16.dto.Form16VerificationResponse;
 import com.my_hourly.form_16.entity.Form16;
+import com.my_hourly.form_16.entity.Form16Verification;
 import com.my_hourly.form_16.repository.Form16Repository;
+import com.my_hourly.form_16.repository.Form16VerificationRepository;
+import com.my_hourly.form_16.service.Form16VerificationService;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -28,7 +33,7 @@ public class Form16VerificationServiceImpl
 
 
     // =========================================================
-    // CREATE
+    // CREATE VERIFICATION
     // =========================================================
 
     @Override
@@ -42,8 +47,9 @@ public class Form16VerificationServiceImpl
 
         Form16 form16 = form16Repository.findById(form16Id)
                 .orElseThrow(() ->
-                        new RuntimeException(
-                                "Form 16 not found with id: " + form16Id
+                        new ResourceNotFoundException(
+                                "Form 16 not found with id: " + form16Id,
+                                ErrorCode.RESOURCE_NOT_FOUND
                         )
                 );
 
@@ -54,7 +60,7 @@ public class Form16VerificationServiceImpl
 
         if (verificationRepository.existsByForm16Id(form16Id)) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Verification already exists for Form 16 id: "
                             + form16Id
             );
@@ -70,7 +76,9 @@ public class Form16VerificationServiceImpl
 
         verification.setForm16(form16);
 
-        verification.setPlace(request.getPlace());
+        verification.setPlace(
+                request.getPlace()
+        );
 
         verification.setDesignation(
                 request.getDesignation()
@@ -86,7 +94,7 @@ public class Form16VerificationServiceImpl
 
 
         // -----------------------------------------------------
-        // AUTOMATIC VERIFICATION DATE
+        // Automatic verification date
         // -----------------------------------------------------
 
         verification.setDate(LocalDate.now());
@@ -105,7 +113,7 @@ public class Form16VerificationServiceImpl
 
 
     // =========================================================
-    // GET BY FORM 16 ID
+    // GET VERIFICATION BY FORM 16 ID
     // =========================================================
 
     @Override
@@ -117,9 +125,10 @@ public class Form16VerificationServiceImpl
                 verificationRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Verification not found for Form 16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -129,7 +138,7 @@ public class Form16VerificationServiceImpl
 
 
     // =========================================================
-    // UPDATE
+    // UPDATE VERIFICATION
     // =========================================================
 
     @Override
@@ -145,9 +154,10 @@ public class Form16VerificationServiceImpl
                 verificationRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Verification not found for Form 16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -174,7 +184,7 @@ public class Form16VerificationServiceImpl
 
 
         // -----------------------------------------------------
-        // AUTOMATICALLY UPDATE VERIFICATION DATE
+        // Automatically update verification date
         // -----------------------------------------------------
 
         verification.setDate(LocalDate.now());
@@ -193,7 +203,7 @@ public class Form16VerificationServiceImpl
 
 
     // =========================================================
-    // DELETE
+    // DELETE VERIFICATION
     // =========================================================
 
     @Override
@@ -206,9 +216,10 @@ public class Form16VerificationServiceImpl
 
         if (!verificationRepository.existsByForm16Id(form16Id)) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "Verification not found for Form 16 id: "
-                            + form16Id
+                            + form16Id,
+                    ErrorCode.RESOURCE_NOT_FOUND
             );
         }
 
@@ -230,7 +241,9 @@ public class Form16VerificationServiceImpl
 
         return Form16VerificationResponse.builder()
 
-                .id(verification.getId())
+                .id(
+                        verification.getId()
+                )
 
                 .form16Id(
                         verification.getForm16().getId()
@@ -259,3 +272,4 @@ public class Form16VerificationServiceImpl
                 .build();
     }
 }
+

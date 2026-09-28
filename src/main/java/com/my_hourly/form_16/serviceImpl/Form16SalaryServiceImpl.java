@@ -1,10 +1,13 @@
-package com.my_hourly.form_16.serviceImpl;
+
+        package com.my_hourly.form_16.serviceImpl;
 
 import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.form_16.dto.Form16SalaryRequest;
 import com.my_hourly.form_16.entity.Form16;
 import com.my_hourly.form_16.entity.Form16Salary;
@@ -44,9 +47,10 @@ public class Form16SalaryServiceImpl
                 form16Repository
                         .findById(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 not found with id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -58,7 +62,7 @@ public class Form16SalaryServiceImpl
         if (form16SalaryRepository
                 .existsByForm16Id(form16Id)) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Salary details already exist for Form16 id: "
                             + form16Id
             );
@@ -116,9 +120,10 @@ public class Form16SalaryServiceImpl
         return form16SalaryRepository
                 .findByForm16Id(form16Id)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Salary details not found for Form16 id: "
-                                        + form16Id
+                                        + form16Id,
+                                ErrorCode.RESOURCE_NOT_FOUND
                         )
                 );
     }
@@ -144,9 +149,10 @@ public class Form16SalaryServiceImpl
                 form16SalaryRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Salary details not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -191,12 +197,17 @@ public class Form16SalaryServiceImpl
         if (!form16SalaryRepository
                 .existsByForm16Id(form16Id)) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "Salary details not found for Form16 id: "
-                            + form16Id
+                            + form16Id,
+                    ErrorCode.RESOURCE_NOT_FOUND
             );
         }
 
+
+        // -----------------------------------------------------
+        // Delete
+        // -----------------------------------------------------
 
         form16SalaryRepository
                 .deleteByForm16Id(form16Id);
