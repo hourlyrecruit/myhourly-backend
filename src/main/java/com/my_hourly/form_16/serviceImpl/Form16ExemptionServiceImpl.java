@@ -1,4 +1,8 @@
-package com.my_hourly.form_16.serviceImpl;
+
+        package com.my_hourly.form_16.serviceImpl;
+
+import com.my_hourly.common.exception.ResourceNotFoundException;
+import com.my_hourly.common.enums.ErrorCode;
 
 import com.my_hourly.form_16.dto.Form16ExemptionRequest;
 import com.my_hourly.form_16.dto.Form16ExemptionResponse;
@@ -26,17 +30,11 @@ import java.math.BigDecimal;
 public class Form16ExemptionServiceImpl
         implements Form16ExemptionService {
 
+    private final Form16ExemptionRepository form16ExemptionRepository;
 
-    private final Form16ExemptionRepository
-            form16ExemptionRepository;
+    private final Form16Repository form16Repository;
 
-
-    private final Form16Repository
-            form16Repository;
-
-
-    private final Form16SalaryRepository
-            form16SalaryRepository;
+    private final Form16SalaryRepository form16SalaryRepository;
 
 
     // =========================================================
@@ -48,17 +46,13 @@ public class Form16ExemptionServiceImpl
             Long form16Id,
             Form16ExemptionRequest request) {
 
-
         if (form16Id == null) {
-
             throw new IllegalArgumentException(
                     "Form16 ID is required."
             );
         }
 
-
         if (request == null) {
-
             throw new IllegalArgumentException(
                     "Exemption request is required."
             );
@@ -73,9 +67,10 @@ public class Form16ExemptionServiceImpl
                 form16Repository
                         .findById(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 not found with ID: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -84,10 +79,8 @@ public class Form16ExemptionServiceImpl
         // DUPLICATE CHECK
         // =====================================================
 
-        if (
-                form16ExemptionRepository
-                        .existsByForm16Id(form16Id)
-        ) {
+        if (form16ExemptionRepository
+                .existsByForm16Id(form16Id)) {
 
             throw new IllegalStateException(
                     "Exemption already exists for Form16 ID: "
@@ -106,9 +99,10 @@ public class Form16ExemptionServiceImpl
                 form16SalaryRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 Salary not found for Form16 ID: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -176,10 +170,8 @@ public class Form16ExemptionServiceImpl
         // PREVENT NEGATIVE
         // =====================================================
 
-        if (
-                totalSalaryReceived
-                        .compareTo(BigDecimal.ZERO) < 0
-        ) {
+        if (totalSalaryReceived
+                .compareTo(BigDecimal.ZERO) < 0) {
 
             totalSalaryReceived =
                     BigDecimal.ZERO;
@@ -259,14 +251,21 @@ public class Form16ExemptionServiceImpl
     getExemptionByForm16Id(
             Long form16Id) {
 
+        if (form16Id == null) {
+            throw new IllegalArgumentException(
+                    "Form16 ID is required."
+            );
+        }
+
 
         Form16Exemption exemption =
                 form16ExemptionRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Exemption not found for Form16 ID: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -279,9 +278,10 @@ public class Form16ExemptionServiceImpl
                 form16SalaryRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 Salary not found for Form16 ID: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -308,9 +308,13 @@ public class Form16ExemptionServiceImpl
             Long form16Id,
             Form16ExemptionRequest request) {
 
+        if (form16Id == null) {
+            throw new IllegalArgumentException(
+                    "Form16 ID is required."
+            );
+        }
 
         if (request == null) {
-
             throw new IllegalArgumentException(
                     "Exemption request is required."
             );
@@ -325,9 +329,10 @@ public class Form16ExemptionServiceImpl
                 form16ExemptionRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Exemption not found for Form16 ID: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -340,9 +345,10 @@ public class Form16ExemptionServiceImpl
                 form16SalaryRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 Salary not found for Form16 ID: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -402,10 +408,12 @@ public class Form16ExemptionServiceImpl
                         .subtract(totalExemption);
 
 
-        if (
-                totalSalaryReceived
-                        .compareTo(BigDecimal.ZERO) < 0
-        ) {
+        // =====================================================
+        // PREVENT NEGATIVE
+        // =====================================================
+
+        if (totalSalaryReceived
+                .compareTo(BigDecimal.ZERO) < 0) {
 
             totalSalaryReceived =
                     BigDecimal.ZERO;
@@ -484,15 +492,20 @@ public class Form16ExemptionServiceImpl
     public void deleteExemption(
             Long form16Id) {
 
+        if (form16Id == null) {
+            throw new IllegalArgumentException(
+                    "Form16 ID is required."
+            );
+        }
 
-        if (
-                !form16ExemptionRepository
-                        .existsByForm16Id(form16Id)
-        ) {
 
-            throw new RuntimeException(
+        if (!form16ExemptionRepository
+                .existsByForm16Id(form16Id)) {
+
+            throw new ResourceNotFoundException(
                     "Exemption not found for Form16 ID: "
-                            + form16Id
+                            + form16Id,
+                    ErrorCode.RESOURCE_NOT_FOUND
             );
         }
 
@@ -511,7 +524,6 @@ public class Form16ExemptionServiceImpl
     private Form16ExemptionResponse mapToResponse(
             Form16Exemption exemption,
             BigDecimal grossSalary) {
-
 
         return Form16ExemptionResponse.builder()
 
@@ -592,3 +604,4 @@ public class Form16ExemptionServiceImpl
                 : value;
     }
 }
+
