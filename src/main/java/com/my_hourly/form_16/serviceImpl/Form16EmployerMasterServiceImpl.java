@@ -1,3 +1,4 @@
+
 package com.my_hourly.form_16.service.impl;
 
 import com.my_hourly.form_16.dto.Form16EmployerMasterRequest;
@@ -5,6 +6,9 @@ import com.my_hourly.form_16.dto.Form16EmployerMasterResponse;
 import com.my_hourly.form_16.entity.Form16EmployerMaster;
 import com.my_hourly.form_16.repository.Form16EmployerMasterRepository;
 import com.my_hourly.form_16.service.Form16EmployerMasterService;
+
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,21 +34,15 @@ public class Form16EmployerMasterServiceImpl
 
     @Override
     public Form16EmployerMasterResponse createEmployerMaster(
-            Form16EmployerMasterRequest request
-    ) {
+            Form16EmployerMasterRequest request) {
 
         validateRequest(request);
 
-
         String pan =
-                normalizePan(
-                        request.getDeductorPan()
-                );
+                normalizePan(request.getDeductorPan());
 
         String tan =
-                normalizeTan(
-                        request.getDeductorTan()
-                );
+                normalizeTan(request.getDeductorTan());
 
 
         // =====================================================
@@ -128,9 +126,7 @@ public class Form16EmployerMasterServiceImpl
 
 
         Form16EmployerMaster saved =
-                repository.save(
-                        employerMaster
-                );
+                repository.save(employerMaster);
 
 
         return mapToResponse(saved);
@@ -143,21 +139,19 @@ public class Form16EmployerMasterServiceImpl
 
     @Override
     @Transactional(readOnly = true)
-    public Form16EmployerMasterResponse
-    getActiveEmployerMaster() {
+    public Form16EmployerMasterResponse getActiveEmployerMaster() {
 
         Form16EmployerMaster employerMaster =
                 repository.findByActiveTrue()
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Active employer master not found"
+                                new ResourceNotFoundException(
+                                        "Active employer master not found",
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
-        return mapToResponse(
-                employerMaster
-        );
+        return mapToResponse(employerMaster);
     }
 
 
@@ -167,10 +161,8 @@ public class Form16EmployerMasterServiceImpl
 
     @Override
     @Transactional(readOnly = true)
-    public Form16EmployerMasterResponse
-    getEmployerMasterById(
-            Long id
-    ) {
+    public Form16EmployerMasterResponse getEmployerMasterById(
+            Long id) {
 
         validateId(id);
 
@@ -178,16 +170,15 @@ public class Form16EmployerMasterServiceImpl
         Form16EmployerMaster employerMaster =
                 repository.findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Employer master not found with id: "
-                                                + id
+                                                + id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
-        return mapToResponse(
-                employerMaster
-        );
+        return mapToResponse(employerMaster);
     }
 
 
@@ -196,11 +187,9 @@ public class Form16EmployerMasterServiceImpl
     // =========================================================
 
     @Override
-    public Form16EmployerMasterResponse
-    updateEmployerMaster(
+    public Form16EmployerMasterResponse updateEmployerMaster(
             Long id,
-            Form16EmployerMasterRequest request
-    ) {
+            Form16EmployerMasterRequest request) {
 
         validateId(id);
 
@@ -210,22 +199,19 @@ public class Form16EmployerMasterServiceImpl
         Form16EmployerMaster employerMaster =
                 repository.findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Employer master not found with id: "
-                                                + id
+                                                + id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
         String pan =
-                normalizePan(
-                        request.getDeductorPan()
-                );
+                normalizePan(request.getDeductorPan());
 
         String tan =
-                normalizeTan(
-                        request.getDeductorTan()
-                );
+                normalizeTan(request.getDeductorTan());
 
 
         // =====================================================
@@ -314,14 +300,10 @@ public class Form16EmployerMasterServiceImpl
 
 
         Form16EmployerMaster updated =
-                repository.save(
-                        employerMaster
-                );
+                repository.save(employerMaster);
 
 
-        return mapToResponse(
-                updated
-        );
+        return mapToResponse(updated);
     }
 
 
@@ -330,10 +312,8 @@ public class Form16EmployerMasterServiceImpl
     // =========================================================
 
     @Override
-    public Form16EmployerMasterResponse
-    activateEmployerMaster(
-            Long id
-    ) {
+    public Form16EmployerMasterResponse activateEmployerMaster(
+            Long id) {
 
         validateId(id);
 
@@ -341,9 +321,10 @@ public class Form16EmployerMasterServiceImpl
         Form16EmployerMaster employerMaster =
                 repository.findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Employer master not found with id: "
-                                                + id
+                                                + id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -356,10 +337,7 @@ public class Form16EmployerMasterServiceImpl
                 repository.findAll();
 
 
-        for (
-                Form16EmployerMaster master
-                : allMasters
-        ) {
+        for (Form16EmployerMaster master : allMasters) {
 
             if (Boolean.TRUE.equals(
                     master.getActive()
@@ -388,14 +366,10 @@ public class Form16EmployerMasterServiceImpl
 
 
         Form16EmployerMaster activated =
-                repository.save(
-                        employerMaster
-                );
+                repository.save(employerMaster);
 
 
-        return mapToResponse(
-                activated
-        );
+        return mapToResponse(activated);
     }
 
 
@@ -404,10 +378,8 @@ public class Form16EmployerMasterServiceImpl
     // =========================================================
 
     @Override
-    public Form16EmployerMasterResponse
-    deactivateEmployerMaster(
-            Long id
-    ) {
+    public Form16EmployerMasterResponse deactivateEmployerMaster(
+            Long id) {
 
         validateId(id);
 
@@ -415,9 +387,10 @@ public class Form16EmployerMasterServiceImpl
         Form16EmployerMaster employerMaster =
                 repository.findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Employer master not found with id: "
-                                                + id
+                                                + id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -430,14 +403,10 @@ public class Form16EmployerMasterServiceImpl
 
 
         Form16EmployerMaster updated =
-                repository.save(
-                        employerMaster
-                );
+                repository.save(employerMaster);
 
 
-        return mapToResponse(
-                updated
-        );
+        return mapToResponse(updated);
     }
 
 
@@ -446,9 +415,7 @@ public class Form16EmployerMasterServiceImpl
     // =========================================================
 
     @Override
-    public void deleteEmployerMaster(
-            Long id
-    ) {
+    public void deleteEmployerMaster(Long id) {
 
         validateId(id);
 
@@ -456,9 +423,10 @@ public class Form16EmployerMasterServiceImpl
         Form16EmployerMaster employerMaster =
                 repository.findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Employer master not found with id: "
-                                                + id
+                                                + id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -478,9 +446,7 @@ public class Form16EmployerMasterServiceImpl
         }
 
 
-        repository.delete(
-                employerMaster
-        );
+        repository.delete(employerMaster);
     }
 
 
@@ -506,8 +472,7 @@ public class Form16EmployerMasterServiceImpl
     // =========================================================
 
     private void validateRequest(
-            Form16EmployerMasterRequest request
-    ) {
+            Form16EmployerMasterRequest request) {
 
         if (request == null) {
 
@@ -521,11 +486,9 @@ public class Form16EmployerMasterServiceImpl
         // EMPLOYER NAME
         // =====================================================
 
-        if (
-                request.getEmployerName() == null
-                        ||
-                        request.getEmployerName().isBlank()
-        ) {
+        if (request.getEmployerName() == null
+                ||
+                request.getEmployerName().isBlank()) {
 
             throw new IllegalArgumentException(
                     "Employer name is required"
@@ -537,11 +500,9 @@ public class Form16EmployerMasterServiceImpl
         // EMPLOYER ADDRESS
         // =====================================================
 
-        if (
-                request.getEmployerAddress() == null
-                        ||
-                        request.getEmployerAddress().isBlank()
-        ) {
+        if (request.getEmployerAddress() == null
+                ||
+                request.getEmployerAddress().isBlank()) {
 
             throw new IllegalArgumentException(
                     "Employer address is required"
@@ -553,11 +514,9 @@ public class Form16EmployerMasterServiceImpl
         // PAN REQUIRED
         // =====================================================
 
-        if (
-                request.getDeductorPan() == null
-                        ||
-                        request.getDeductorPan().isBlank()
-        ) {
+        if (request.getDeductorPan() == null
+                ||
+                request.getDeductorPan().isBlank()) {
 
             throw new IllegalArgumentException(
                     "Deductor PAN is required"
@@ -575,11 +534,9 @@ public class Form16EmployerMasterServiceImpl
         // PAN FORMAT
         // =====================================================
 
-        if (
-                !pan.matches(
-                        "^[A-Z]{5}[0-9]{4}[A-Z]$"
-                )
-        ) {
+        if (!pan.matches(
+                "^[A-Z]{5}[0-9]{4}[A-Z]$"
+        )) {
 
             throw new IllegalArgumentException(
                     "Invalid Deductor PAN. "
@@ -592,11 +549,9 @@ public class Form16EmployerMasterServiceImpl
         // TAN REQUIRED
         // =====================================================
 
-        if (
-                request.getDeductorTan() == null
-                        ||
-                        request.getDeductorTan().isBlank()
-        ) {
+        if (request.getDeductorTan() == null
+                ||
+                request.getDeductorTan().isBlank()) {
 
             throw new IllegalArgumentException(
                     "Deductor TAN is required"
@@ -614,11 +569,9 @@ public class Form16EmployerMasterServiceImpl
         // TAN FORMAT
         // =====================================================
 
-        if (
-                !tan.matches(
-                        "^[A-Z]{4}[0-9]{5}[A-Z]$"
-                )
-        ) {
+        if (!tan.matches(
+                "^[A-Z]{4}[0-9]{5}[A-Z]$"
+        )) {
 
             throw new IllegalArgumentException(
                     "Invalid Deductor TAN. "
@@ -631,11 +584,9 @@ public class Form16EmployerMasterServiceImpl
         // CIT TDS ADDRESS
         // =====================================================
 
-        if (
-                request.getCitTdsAddress() == null
-                        ||
-                        request.getCitTdsAddress().isBlank()
-        ) {
+        if (request.getCitTdsAddress() == null
+                ||
+                request.getCitTdsAddress().isBlank()) {
 
             throw new IllegalArgumentException(
                     "CIT TDS address is required"
@@ -648,9 +599,7 @@ public class Form16EmployerMasterServiceImpl
     // PAN NORMALIZATION
     // =========================================================
 
-    private String normalizePan(
-            String pan
-    ) {
+    private String normalizePan(String pan) {
 
         if (pan == null) {
             return null;
@@ -666,9 +615,7 @@ public class Form16EmployerMasterServiceImpl
     // TAN NORMALIZATION
     // =========================================================
 
-    private String normalizeTan(
-            String tan
-    ) {
+    private String normalizeTan(String tan) {
 
         if (tan == null) {
             return null;
@@ -684,9 +631,7 @@ public class Form16EmployerMasterServiceImpl
     // GENERAL STRING NORMALIZATION
     // =========================================================
 
-    private String normalize(
-            String value
-    ) {
+    private String normalize(String value) {
 
         if (value == null) {
             return null;
@@ -705,9 +650,7 @@ public class Form16EmployerMasterServiceImpl
     // ID VALIDATION
     // =========================================================
 
-    private void validateId(
-            Long id
-    ) {
+    private void validateId(Long id) {
 
         if (id == null || id <= 0) {
 
@@ -724,8 +667,7 @@ public class Form16EmployerMasterServiceImpl
 
     private Form16EmployerMasterResponse
     mapToResponse(
-            Form16EmployerMaster entity
-    ) {
+            Form16EmployerMaster entity) {
 
         return Form16EmployerMasterResponse
                 .builder()
