@@ -3,7 +3,7 @@ name: Deploy backend to AWS EC2
 on:
   push:
     branches:
-      - main
+      - deployment
   workflow_dispatch:
 
 permissions:
@@ -19,7 +19,7 @@ env:
   COMPOSE_DIR: /opt/myhourly
   COMPOSE_SERVICE: backend
   CONTAINER_NAME: myhourly-backend
-  PRODUCTION_BRANCH: main
+  PRODUCTION_BRANCH: deployment
 
 jobs:
 

@@ -36,7 +36,7 @@ HRMS/
 
 ### Environment / secrets ###
 # Real secrets live only in the untracked per-environment files (.env.do on the
-# Droplet, .env.aws on the AWS host) and must never be committed. The committed
+# Droplet, .env on the AWS host) and must never be committed. The committed
 # .env.*.example files are placeholders-only templates.
 .env
 .env.*

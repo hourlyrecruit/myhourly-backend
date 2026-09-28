@@ -5,8 +5,6 @@ name: Deploy backend to DigitalOcean
 #
 # workflow_dispatch allows a manual redeploy of the current main without a new commit.
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 # The workflow only reads the repository; no token scopes are needed to deploy

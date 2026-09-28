@@ -12,7 +12,7 @@
 # Pairs with .github/workflows/deploy.yml, which SSHes to the Droplet and runs the
 # same `up -d --build backend`.
 #
-# The AWS twin of this file is docker-compose.aws.yml. Keep the two in step.
+# The AWS twin of this file is docker-compose.yml. Keep the two in step.
 # =============================================================================
 
 name: myhourly-do
@@ -20,8 +20,8 @@ name: myhourly-do
 services:
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: ../Dockerfile
 
     image: myhourly-backend:do
     # Fixed name: the deploy pipeline tails the logs of this exact container, so
