@@ -1,13 +1,20 @@
-package com.my_hourly.form_16.serviceImpl;
+
+        package com.my_hourly.form_16.service.impl;
+
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
 
 import com.my_hourly.form_16.dto.Form16ChapterVIARequest;
 import com.my_hourly.form_16.dto.Form16ChapterVIAResponse;
+
 import com.my_hourly.form_16.entity.Form16;
 import com.my_hourly.form_16.entity.Form16ChapterVIA;
 import com.my_hourly.form_16.entity.Form16Section16Deduction;
+
 import com.my_hourly.form_16.repository.Form16ChapterVIARepository;
 import com.my_hourly.form_16.repository.Form16Repository;
 import com.my_hourly.form_16.repository.Form16Section16DeductionRepository;
+
 import com.my_hourly.form_16.service.Form16ChapterVIAService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,7 +35,8 @@ public class Form16ChapterVIAServiceImpl
 
     private final Form16ChapterVIARepository chapterVIARepository;
 
-    private final Form16Section16DeductionRepository section16DeductionRepository;
+    private final Form16Section16DeductionRepository
+            section16DeductionRepository;
 
 
     // =========================================================
@@ -40,34 +48,67 @@ public class Form16ChapterVIAServiceImpl
             Long form16Id,
             Form16ChapterVIARequest request) {
 
+        // -----------------------------------------------------
+        // FIND FORM 16
+        // -----------------------------------------------------
 
         Form16 form16 =
                 form16Repository.findById(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 not found with id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
+        // -----------------------------------------------------
+        // CHECK DUPLICATE
+        // -----------------------------------------------------
+
         if (chapterVIARepository.existsByForm16Id(form16Id)) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Chapter VI-A already exists for Form16 id: "
                             + form16Id
             );
         }
 
 
+        // -----------------------------------------------------
+        // CREATE ENTITY
+        // -----------------------------------------------------
+
         Form16ChapterVIA entity =
                 new Form16ChapterVIA();
 
         entity.setForm16(form16);
 
-        updateInputFields(entity, request);
 
-        calculate(entity, form16Id);
+        // -----------------------------------------------------
+        // SET USER INPUT
+        // -----------------------------------------------------
+
+        updateInputFields(
+                entity,
+                request
+        );
+
+
+        // -----------------------------------------------------
+        // CALCULATE
+        // -----------------------------------------------------
+
+        calculate(
+                entity,
+                form16Id
+        );
+
+
+        // -----------------------------------------------------
+        // SAVE
+        // -----------------------------------------------------
 
         Form16ChapterVIA saved =
                 chapterVIARepository.save(entity);
@@ -86,14 +127,14 @@ public class Form16ChapterVIAServiceImpl
     public Form16ChapterVIAResponse getChapterVIAByForm16Id(
             Long form16Id) {
 
-
         Form16ChapterVIA entity =
                 chapterVIARepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Chapter VI-A not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -111,22 +152,41 @@ public class Form16ChapterVIAServiceImpl
             Long form16Id,
             Form16ChapterVIARequest request) {
 
-
         Form16ChapterVIA entity =
                 chapterVIARepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Chapter VI-A not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
-        updateInputFields(entity, request);
+        // -----------------------------------------------------
+        // UPDATE INPUT FIELDS
+        // -----------------------------------------------------
 
-        calculate(entity, form16Id);
+        updateInputFields(
+                entity,
+                request
+        );
 
+
+        // -----------------------------------------------------
+        // RECALCULATE
+        // -----------------------------------------------------
+
+        calculate(
+                entity,
+                form16Id
+        );
+
+
+        // -----------------------------------------------------
+        // SAVE
+        // -----------------------------------------------------
 
         Form16ChapterVIA updated =
                 chapterVIARepository.save(entity);
@@ -138,8 +198,6 @@ public class Form16ChapterVIAServiceImpl
 
     // =========================================================
     // AUTO SAVE
-    //
-    // React can call PATCH while user is typing.
     // =========================================================
 
     @Override
@@ -147,22 +205,41 @@ public class Form16ChapterVIAServiceImpl
             Long form16Id,
             Form16ChapterVIARequest request) {
 
-
         Form16ChapterVIA entity =
                 chapterVIARepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Chapter VI-A not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
-        updateInputFields(entity, request);
+        // -----------------------------------------------------
+        // UPDATE INPUT
+        // -----------------------------------------------------
 
-        calculate(entity, form16Id);
+        updateInputFields(
+                entity,
+                request
+        );
 
+
+        // -----------------------------------------------------
+        // RECALCULATE
+        // -----------------------------------------------------
+
+        calculate(
+                entity,
+                form16Id
+        );
+
+
+        // -----------------------------------------------------
+        // SAVE
+        // -----------------------------------------------------
 
         Form16ChapterVIA saved =
                 chapterVIARepository.save(entity);
@@ -180,42 +257,58 @@ public class Form16ChapterVIAServiceImpl
             Form16ChapterVIA entity,
             Form16ChapterVIARequest request) {
 
+        if (request == null) {
+
+            throw new IllegalArgumentException(
+                    "Chapter VI-A request cannot be null."
+            );
+        }
+
 
         entity.setSection80C(
                 safe(request.getSection80C())
         );
 
+
         entity.setSection80CCC(
                 safe(request.getSection80CCC())
         );
+
 
         entity.setSection80CCD1(
                 safe(request.getSection80CCD1())
         );
 
+
         entity.setSection80CCD1B(
                 safe(request.getSection80CCD1B())
         );
+
 
         entity.setSection80CCD2(
                 safe(request.getSection80CCD2())
         );
 
+
         entity.setSection80D(
                 safe(request.getSection80D())
         );
+
 
         entity.setSection80CCH(
                 safe(request.getSection80CCH())
         );
 
+
         entity.setSection80CCH2(
                 safe(request.getSection80CCH2())
         );
 
+
         entity.setSection80E(
                 safe(request.getSection80E())
         );
+
 
         entity.setAmountDeductibleUnderAnyOtherProvisionChapterVIA(
                 safe(
@@ -224,25 +317,31 @@ public class Form16ChapterVIAServiceImpl
                 )
         );
 
+
         entity.setSection80EEA(
                 safe(request.getSection80EEA())
         );
+
 
         entity.setSection80G(
                 safe(request.getSection80G())
         );
 
+
         entity.setSection80GG(
                 safe(request.getSection80GG())
         );
+
 
         entity.setSection80TTA(
                 safe(request.getSection80TTA())
         );
 
+
         entity.setSection80TTB(
                 safe(request.getSection80TTB())
         );
+
 
         entity.setOtherChapterVIA(
                 safe(request.getOtherChapterVIA())
@@ -261,13 +360,18 @@ public class Form16ChapterVIAServiceImpl
 
         // =====================================================
         // 10(d)
+        //
         // 80C + 80CCC + 80CCD(1)
         // =====================================================
 
         BigDecimal total80CGroup =
                 safe(entity.getSection80C())
-                        .add(safe(entity.getSection80CCC()))
-                        .add(safe(entity.getSection80CCD1()));
+                        .add(
+                                safe(entity.getSection80CCC())
+                        )
+                        .add(
+                                safe(entity.getSection80CCD1())
+                        );
 
 
         entity.setTotalDeduction80C80CCC80CCD1(
@@ -282,17 +386,41 @@ public class Form16ChapterVIAServiceImpl
         BigDecimal totalChapterVIA =
                 total80CGroup
 
-                        .add(safe(entity.getSection80CCD1B()))
+                        .add(
+                                safe(
+                                        entity.getSection80CCD1B()
+                                )
+                        )
 
-                        .add(safe(entity.getSection80CCD2()))
+                        .add(
+                                safe(
+                                        entity.getSection80CCD2()
+                                )
+                        )
 
-                        .add(safe(entity.getSection80D()))
+                        .add(
+                                safe(
+                                        entity.getSection80D()
+                                )
+                        )
 
-                        .add(safe(entity.getSection80CCH()))
+                        .add(
+                                safe(
+                                        entity.getSection80CCH()
+                                )
+                        )
 
-                        .add(safe(entity.getSection80CCH2()))
+                        .add(
+                                safe(
+                                        entity.getSection80CCH2()
+                                )
+                        )
 
-                        .add(safe(entity.getSection80E()))
+                        .add(
+                                safe(
+                                        entity.getSection80E()
+                                )
+                        )
 
                         .add(
                                 safe(
@@ -301,17 +429,41 @@ public class Form16ChapterVIAServiceImpl
                                 )
                         )
 
-                        .add(safe(entity.getSection80EEA()))
+                        .add(
+                                safe(
+                                        entity.getSection80EEA()
+                                )
+                        )
 
-                        .add(safe(entity.getSection80G()))
+                        .add(
+                                safe(
+                                        entity.getSection80G()
+                                )
+                        )
 
-                        .add(safe(entity.getSection80GG()))
+                        .add(
+                                safe(
+                                        entity.getSection80GG()
+                                )
+                        )
 
-                        .add(safe(entity.getSection80TTA()))
+                        .add(
+                                safe(
+                                        entity.getSection80TTA()
+                                )
+                        )
 
-                        .add(safe(entity.getSection80TTB()))
+                        .add(
+                                safe(
+                                        entity.getSection80TTB()
+                                )
+                        )
 
-                        .add(safe(entity.getOtherChapterVIA()));
+                        .add(
+                                safe(
+                                        entity.getOtherChapterVIA()
+                                )
+                        );
 
 
         entity.setTotalChapterVIA(
@@ -320,31 +472,32 @@ public class Form16ChapterVIAServiceImpl
 
 
         // =====================================================
-        // GROSS TOTAL INCOME
-        //
-        // From Section 16
+        // GET SECTION 16 DEDUCTION
         // =====================================================
 
         Form16Section16Deduction section16 =
                 section16DeductionRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Section 16 deduction not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
+        // =====================================================
+        // GROSS TOTAL INCOME
+        // =====================================================
+
         BigDecimal grossTotalIncome =
                 safe(
-                        section16
-                                .getGrossTotalIncome()
+                        section16.getGrossTotalIncome()
                 );
 
 
         // =====================================================
-        // 12.
         // TOTAL TAXABLE INCOME
         //
         // Gross Total Income - Total Chapter VI-A
@@ -355,9 +508,12 @@ public class Form16ChapterVIAServiceImpl
                         .subtract(totalChapterVIA);
 
 
-        // Prevent negative taxable income
+        // -----------------------------------------------------
+        // PREVENT NEGATIVE TAXABLE INCOME
+        // -----------------------------------------------------
 
-        if (totalTaxableIncome.compareTo(BigDecimal.ZERO) < 0) {
+        if (totalTaxableIncome.compareTo(
+                BigDecimal.ZERO) < 0) {
 
             totalTaxableIncome =
                     BigDecimal.ZERO;
@@ -371,21 +527,21 @@ public class Form16ChapterVIAServiceImpl
 
 
     // =========================================================
-    // RESPONSE
+    // ENTITY -> RESPONSE
     // =========================================================
 
     private Form16ChapterVIAResponse mapToResponse(
             Form16ChapterVIA entity) {
 
-
         return Form16ChapterVIAResponse.builder()
 
-                .id(entity.getId())
+                .id(
+                        entity.getId()
+                )
 
                 .form16Id(
                         entity.getForm16().getId()
                 )
-
 
                 .section80C(
                         safe(entity.getSection80C())
@@ -399,15 +555,12 @@ public class Form16ChapterVIAServiceImpl
                         safe(entity.getSection80CCD1())
                 )
 
-
-                // AUTOMATIC
                 .totalDeduction80C80CCC80CCD1(
                         safe(
                                 entity
                                         .getTotalDeduction80C80CCC80CCD1()
                         )
                 )
-
 
                 .section80CCD1B(
                         safe(entity.getSection80CCD1B())
@@ -464,14 +617,10 @@ public class Form16ChapterVIAServiceImpl
                         safe(entity.getOtherChapterVIA())
                 )
 
-
-                // AUTOMATIC
                 .totalChapterVIA(
                         safe(entity.getTotalChapterVIA())
                 )
 
-
-                // AUTOMATIC
                 .totalTaxableIncome(
                         safe(entity.getTotalTaxableIncome())
                 )
@@ -484,7 +633,8 @@ public class Form16ChapterVIAServiceImpl
     // NULL -> ZERO
     // =========================================================
 
-    private BigDecimal safe(BigDecimal value) {
+    private BigDecimal safe(
+            BigDecimal value) {
 
         return value == null
                 ? BigDecimal.ZERO
@@ -500,12 +650,12 @@ public class Form16ChapterVIAServiceImpl
     public void deleteChapterVIA(
             Long form16Id) {
 
-
         if (!chapterVIARepository.existsByForm16Id(form16Id)) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "Chapter VI-A not found for Form16 id: "
-                            + form16Id
+                            + form16Id,
+                    ErrorCode.RESOURCE_NOT_FOUND
             );
         }
 
