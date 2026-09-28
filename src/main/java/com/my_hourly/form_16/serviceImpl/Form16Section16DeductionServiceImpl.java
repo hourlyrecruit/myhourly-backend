@@ -1,5 +1,7 @@
-package com.my_hourly.form_16.serviceImpl;
+package com.my_hourly.form_16.service.impl;
 
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.form_16.dto.Form16Section16DeductionRequest;
 import com.my_hourly.form_16.dto.Form16Section16DeductionResponse;
 import com.my_hourly.form_16.entity.Form16;
@@ -23,7 +25,6 @@ import java.math.BigDecimal;
 public class Form16Section16DeductionServiceImpl
         implements Form16Section16DeductionService {
 
-
     private final Form16Repository form16Repository;
 
     private final Form16ExemptionRepository form16ExemptionRepository;
@@ -40,42 +41,51 @@ public class Form16Section16DeductionServiceImpl
             Long form16Id,
             Form16Section16DeductionRequest request) {
 
+        // -----------------------------------------------------
+        // Find Form16
+        // -----------------------------------------------------
+
         Form16 form16 =
                 form16Repository.findById(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 not found with id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
+        // -----------------------------------------------------
         // Check duplicate
+        // -----------------------------------------------------
 
         if (deductionRepository.existsByForm16Id(form16Id)) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Section 16 deduction already exists for Form16 id: "
                             + form16Id
             );
         }
 
 
+        // -----------------------------------------------------
         // Get Form16 Exemption
+        // -----------------------------------------------------
 
         Form16Exemption exemption =
                 form16ExemptionRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 Exemption not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
         // =====================================================
-        // 3.
         // Salary from current employer
         // AUTOMATIC
         // =====================================================
@@ -111,7 +121,6 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 5.
         // Total deductions under Section 16
         //
         // 4(a) + 4(b) + 4(c)
@@ -124,7 +133,6 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 6.
         // Income chargeable under Salaries
         //
         // 3 + 1(e) - 5
@@ -137,7 +145,6 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 8.
         // Total other income
         //
         // 7(a) + 7(b)
@@ -149,7 +156,6 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 9.
         // Gross Total Income
         //
         // 6 + 8
@@ -216,6 +222,10 @@ public class Form16Section16DeductionServiceImpl
                         .build();
 
 
+        // =====================================================
+        // SAVE
+        // =====================================================
+
         Form16Section16Deduction saved =
                 deductionRepository.save(deduction);
 
@@ -225,7 +235,7 @@ public class Form16Section16DeductionServiceImpl
 
 
     // =========================================================
-    // GET
+    // GET BY FORM16 ID
     // =========================================================
 
     @Override
@@ -237,9 +247,10 @@ public class Form16Section16DeductionServiceImpl
                 deductionRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Section 16 deduction not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -257,34 +268,40 @@ public class Form16Section16DeductionServiceImpl
             Long form16Id,
             Form16Section16DeductionRequest request) {
 
+        // -----------------------------------------------------
+        // Find existing deduction
+        // -----------------------------------------------------
 
         Form16Section16Deduction deduction =
                 deductionRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Section 16 deduction not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
+        // -----------------------------------------------------
         // Get latest Form16 Exemption
+        // -----------------------------------------------------
 
         Form16Exemption exemption =
                 form16ExemptionRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 Exemption not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
         // =====================================================
-        // 3.
-        // Automatically get current salary again
+        // Automatically get current salary
         // =====================================================
 
         BigDecimal salaryReceivedFromCurrentEmployer =
@@ -318,7 +335,7 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 5.
+        // TOTAL DEDUCTIONS
         // =====================================================
 
         BigDecimal totalDeductions =
@@ -328,7 +345,7 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 6.
+        // INCOME CHARGEABLE UNDER SALARIES
         // =====================================================
 
         BigDecimal incomeChargeableUnderSalaries =
@@ -338,7 +355,7 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 8.
+        // TOTAL OTHER INCOME
         // =====================================================
 
         BigDecimal totalOtherIncome =
@@ -347,7 +364,7 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 9.
+        // GROSS TOTAL INCOME
         // =====================================================
 
         BigDecimal grossTotalIncome =
@@ -404,6 +421,10 @@ public class Form16Section16DeductionServiceImpl
         );
 
 
+        // =====================================================
+        // SAVE UPDATED RECORD
+        // =====================================================
+
         Form16Section16Deduction updated =
                 deductionRepository.save(deduction);
 
@@ -414,10 +435,6 @@ public class Form16Section16DeductionServiceImpl
 
     // =========================================================
     // AUTO SAVE
-    //
-    // React calls this automatically.
-    //
-    // User does NOT click Save.
     // =========================================================
 
     @Override
@@ -425,14 +442,18 @@ public class Form16Section16DeductionServiceImpl
             Long form16Id,
             Form16Section16DeductionRequest request) {
 
+        // -----------------------------------------------------
+        // Find existing deduction
+        // -----------------------------------------------------
 
         Form16Section16Deduction deduction =
                 deductionRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Section 16 deduction not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -445,15 +466,15 @@ public class Form16Section16DeductionServiceImpl
                 form16ExemptionRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 Exemption not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
 
         // =====================================================
-        // 3.
         // AUTOMATIC SALARY
         // =====================================================
 
@@ -488,10 +509,7 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 5.
-        // Total deductions
-        //
-        // 4(a) + 4(b) + 4(c)
+        // TOTAL DEDUCTIONS
         // =====================================================
 
         BigDecimal totalDeductions =
@@ -501,10 +519,7 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 6.
-        // Income chargeable under Salaries
-        //
-        // 3 + 1(e) - 5
+        // INCOME CHARGEABLE UNDER SALARIES
         // =====================================================
 
         BigDecimal incomeChargeableUnderSalaries =
@@ -514,10 +529,7 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 8.
-        // Total other income
-        //
-        // 7(a) + 7(b)
+        // TOTAL OTHER INCOME
         // =====================================================
 
         BigDecimal totalOtherIncome =
@@ -526,10 +538,7 @@ public class Form16Section16DeductionServiceImpl
 
 
         // =====================================================
-        // 9.
-        // Gross Total Income
-        //
-        // 6 + 8
+        // GROSS TOTAL INCOME
         // =====================================================
 
         BigDecimal grossTotalIncome =
@@ -608,9 +617,10 @@ public class Form16Section16DeductionServiceImpl
 
         if (!deductionRepository.existsByForm16Id(form16Id)) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "Section 16 deduction not found for Form16 id: "
-                            + form16Id
+                            + form16Id,
+                    ErrorCode.RESOURCE_NOT_FOUND
             );
         }
 
@@ -636,7 +646,6 @@ public class Form16Section16DeductionServiceImpl
                         deduction.getForm16().getId()
                 )
 
-                // 3
                 .salaryReceivedFromCurrentEmployer(
                         safe(
                                 deduction
@@ -644,7 +653,6 @@ public class Form16Section16DeductionServiceImpl
                         )
                 )
 
-                // 1(e)
                 .salaryReceivedFromOtherEmployers(
                         safe(
                                 deduction
@@ -652,7 +660,6 @@ public class Form16Section16DeductionServiceImpl
                         )
                 )
 
-                // 4(a)
                 .standardDeductionSection16I(
                         safe(
                                 deduction
@@ -660,7 +667,6 @@ public class Form16Section16DeductionServiceImpl
                         )
                 )
 
-                // 4(b)
                 .entertainmentAllowanceSection16II(
                         safe(
                                 deduction
@@ -668,7 +674,6 @@ public class Form16Section16DeductionServiceImpl
                         )
                 )
 
-                // 4(c)
                 .taxOnEmploymentSection16III(
                         safe(
                                 deduction
@@ -676,7 +681,6 @@ public class Form16Section16DeductionServiceImpl
                         )
                 )
 
-                // 5
                 .totalDeductionsSection16(
                         safe(
                                 deduction
@@ -684,7 +688,6 @@ public class Form16Section16DeductionServiceImpl
                         )
                 )
 
-                // 6
                 .incomeChargeableUnderSalaries(
                         safe(
                                 deduction
@@ -692,7 +695,6 @@ public class Form16Section16DeductionServiceImpl
                         )
                 )
 
-                // 7(a)
                 .incomeLossHouseProperty(
                         safe(
                                 deduction
@@ -700,7 +702,6 @@ public class Form16Section16DeductionServiceImpl
                         )
                 )
 
-                // 7(b)
                 .incomeUnderOtherSources(
                         safe(
                                 deduction
@@ -708,7 +709,6 @@ public class Form16Section16DeductionServiceImpl
                         )
                 )
 
-                // 8
                 .totalOtherIncome(
                         safe(
                                 deduction
@@ -716,7 +716,6 @@ public class Form16Section16DeductionServiceImpl
                         )
                 )
 
-                // 9
                 .grossTotalIncome(
                         safe(
                                 deduction
@@ -732,7 +731,8 @@ public class Form16Section16DeductionServiceImpl
     // NULL HANDLER
     // =========================================================
 
-    private BigDecimal safe(BigDecimal value) {
+    private BigDecimal safe(
+            BigDecimal value) {
 
         return value == null
                 ? BigDecimal.ZERO
