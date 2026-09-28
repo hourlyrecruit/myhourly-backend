@@ -1,4 +1,8 @@
-package com.my_hourly.form_16.serviceImpl;
+
+        package com.my_hourly.form_16.service.impl;
+
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
 
 import com.my_hourly.form_16.dto.Form16LastFieldsRequest;
 import com.my_hourly.form_16.dto.Form16LastFieldsResponse;
@@ -22,7 +26,6 @@ import java.math.RoundingMode;
 public class Form16LastFieldsServiceImpl
         implements Form16LastFieldsService {
 
-
     private final Form16LastFieldsRepository lastFieldsRepository;
 
     private final Form16Repository form16Repository;
@@ -39,7 +42,6 @@ public class Form16LastFieldsServiceImpl
 
         validateRequest(request);
 
-
         // -----------------------------------------------------
         // Find Form16
         // -----------------------------------------------------
@@ -48,9 +50,10 @@ public class Form16LastFieldsServiceImpl
                 form16Repository
                         .findById(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 not found with id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -61,7 +64,7 @@ public class Form16LastFieldsServiceImpl
 
         if (lastFieldsRepository.existsByForm16Id(form16Id)) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Form16 last fields already exist for Form16 id: "
                             + form16Id
             );
@@ -124,9 +127,10 @@ public class Form16LastFieldsServiceImpl
                 lastFieldsRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 last fields not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -154,9 +158,10 @@ public class Form16LastFieldsServiceImpl
                 lastFieldsRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 last fields not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -214,9 +219,10 @@ public class Form16LastFieldsServiceImpl
                 lastFieldsRepository
                         .findByForm16Id(form16Id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Form16 last fields not found for Form16 id: "
-                                                + form16Id
+                                                + form16Id,
+                                        ErrorCode.RESOURCE_NOT_FOUND
                                 )
                         );
 
@@ -260,9 +266,10 @@ public class Form16LastFieldsServiceImpl
 
         if (!lastFieldsRepository.existsByForm16Id(form16Id)) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "Form16 last fields not found for Form16 id: "
-                            + form16Id
+                            + form16Id,
+                    ErrorCode.RESOURCE_NOT_FOUND
             );
         }
 
@@ -280,7 +287,6 @@ public class Form16LastFieldsServiceImpl
     private void setInputValues(
             Form16LastFields entity,
             Form16LastFieldsRequest request) {
-
 
         entity.setTaxOnTotalIncome(
                 zeroIfNull(
@@ -336,9 +342,20 @@ public class Form16LastFieldsServiceImpl
     // AUTOMATIC CALCULATION
     // =========================================================
     //
-    // 17 = 13 + 15 + 16 - 14
+    // Tax Payable =
     //
-    // 21 = 17 - 18 - 19 - 20
+    // Tax on Total Income
+    // + Surcharge
+    // + Health & Education Cess
+    // - Rebate u/s 87A
+    //
+    // Net Tax Payable =
+    //
+    // Tax Payable
+    // - Relief u/s 89
+    // - TDS u/s 12BAA
+    // - TCS u/s 12BAA
+    //
     // =========================================================
 
     private void calculateTaxValues(
@@ -346,7 +363,7 @@ public class Form16LastFieldsServiceImpl
 
 
         // -----------------------------------------------------
-        // 17. TAX PAYABLE
+        // TAX PAYABLE
         // -----------------------------------------------------
 
         BigDecimal taxPayable =
@@ -366,7 +383,7 @@ public class Form16LastFieldsServiceImpl
 
 
         // -----------------------------------------------------
-        // 21. NET TAX PAYABLE
+        // NET TAX PAYABLE
         // -----------------------------------------------------
 
         BigDecimal netTaxPayable =
@@ -408,7 +425,7 @@ public class Form16LastFieldsServiceImpl
                 )
 
                 // -------------------------------------------------
-                // 13
+                // Tax on Total Income
                 // -------------------------------------------------
 
                 .taxOnTotalIncome(
@@ -416,7 +433,7 @@ public class Form16LastFieldsServiceImpl
                 )
 
                 // -------------------------------------------------
-                // 14
+                // Rebate u/s 87A
                 // -------------------------------------------------
 
                 .rebateUnderSection87A(
@@ -424,7 +441,7 @@ public class Form16LastFieldsServiceImpl
                 )
 
                 // -------------------------------------------------
-                // 15
+                // Surcharge
                 // -------------------------------------------------
 
                 .surcharge(
@@ -432,7 +449,7 @@ public class Form16LastFieldsServiceImpl
                 )
 
                 // -------------------------------------------------
-                // 16
+                // Health & Education Cess
                 // -------------------------------------------------
 
                 .healthAndEducationCess(
@@ -440,7 +457,7 @@ public class Form16LastFieldsServiceImpl
                 )
 
                 // -------------------------------------------------
-                // 17 - CALCULATED
+                // Tax Payable - Calculated
                 // -------------------------------------------------
 
                 .taxPayable(
@@ -448,7 +465,7 @@ public class Form16LastFieldsServiceImpl
                 )
 
                 // -------------------------------------------------
-                // 18
+                // Relief u/s 89
                 // -------------------------------------------------
 
                 .reliefUnderSection89(
@@ -456,7 +473,7 @@ public class Form16LastFieldsServiceImpl
                 )
 
                 // -------------------------------------------------
-                // 19
+                // TDS u/s 12BAA
                 // -------------------------------------------------
 
                 .taxDeductedAtSourceForm12BAA(
@@ -467,7 +484,7 @@ public class Form16LastFieldsServiceImpl
                 )
 
                 // -------------------------------------------------
-                // 20
+                // TCS u/s 12BAA
                 // -------------------------------------------------
 
                 .taxCollectedAtSourceForm12BAA(
@@ -478,7 +495,7 @@ public class Form16LastFieldsServiceImpl
                 )
 
                 // -------------------------------------------------
-                // 21 - CALCULATED
+                // Net Tax Payable - Calculated
                 // -------------------------------------------------
 
                 .netTaxPayable(
@@ -513,6 +530,7 @@ public class Form16LastFieldsServiceImpl
             BigDecimal value) {
 
         if (value == null) {
+
             return BigDecimal.ZERO.setScale(
                     2,
                     RoundingMode.HALF_UP
@@ -531,6 +549,7 @@ public class Form16LastFieldsServiceImpl
             BigDecimal value) {
 
         if (value == null) {
+
             return BigDecimal.ZERO.setScale(
                     2,
                     RoundingMode.HALF_UP
