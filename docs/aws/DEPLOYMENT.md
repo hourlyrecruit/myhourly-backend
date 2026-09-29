@@ -333,7 +333,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: ../../Dockerfile
     image: myhourly-backend:local
     container_name: myhourly-backend
     env_file:
