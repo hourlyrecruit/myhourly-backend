@@ -34,7 +34,7 @@ public class Form16ChallanController {
     // =========================================================
 
     @PostMapping("/{form16Id}/challan")
-    @PreAuthorize("hasAnyRole('HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
     public ResponseEntity<Form16ChallanResponse> createChallan(
             @PathVariable Long form16Id,
             @Valid @RequestBody Form16ChallanRequest request) {
@@ -57,7 +57,7 @@ public class Form16ChallanController {
     // =========================================================
 
     @GetMapping("/{form16Id}/challan")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'HR', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'HR_ADMIN', 'MANAGER')")
     public ResponseEntity<Form16ChallanListResponse> getAllChallans(
             @PathVariable Long form16Id) {
 
