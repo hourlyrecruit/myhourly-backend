@@ -46,6 +46,3 @@ HRMS/
 ### Docker / deployment scratch ###
 *.log
 
-### Docs
-docs/
-digitalOcean/
