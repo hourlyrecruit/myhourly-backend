@@ -47,5 +47,5 @@ HRMS/
 *.log
 
 ### Docs
-docs
-digitalOcean
+docs/
+digitalOcean/
