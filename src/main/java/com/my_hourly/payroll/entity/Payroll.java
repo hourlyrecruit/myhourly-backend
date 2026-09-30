@@ -146,6 +146,10 @@ public class Payroll extends BaseEntity {
     @Column(name = "payable_days", nullable = false)
     private Integer payableDays;
 
+    @Column(name = "half_days", nullable = false)
+    @Builder.Default
+    private Integer halfDays = 0;
+
     /* =====================================================
        Earnings Snapshot
        ===================================================== */
@@ -181,6 +185,10 @@ public class Payroll extends BaseEntity {
     @Column(nullable = false, precision = 12, scale = 2)
     @Builder.Default
     private BigDecimal lopAmount = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 12, scale = 2)
+    @Builder.Default
+    private BigDecimal halfDaysAmount = BigDecimal.ZERO;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal pf;

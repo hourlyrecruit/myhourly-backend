@@ -581,6 +581,7 @@ public class PayrollServiceImpl implements PayrollService {
         int totalWorkingDays = attendance.totalWorkingDays();
         int workedDays = attendance.workedDays();
         int lopDays = attendance.lopDays();
+        int halfDays = attendance.halfDays();
 
         // Step 1: Gross Salary
         BigDecimal grossSalary = calculateGross(
@@ -600,13 +601,20 @@ public class PayrollServiceImpl implements PayrollService {
                 lopDays
         );
 
+        BigDecimal halfDayAmount = calculateHalfDay(
+                grossSalary,
+                totalWorkingDays,
+                halfDays
+        );
+
         // Step 3: Total Deduction
         BigDecimal totalDeduction = safe(salaryStructure.getPf())
                 .add(safe(salaryStructure.getEsi()))
                 .add(safe(salaryStructure.getProfessionalTax()))
                 .add(safe(salaryStructure.getIncomeTax()))
                 .add(safe(salaryStructure.getOtherDeduction()))
-                .add(lopAmount);
+                .add(lopAmount)
+                .add(halfDayAmount);
 
         // Step 4: Net Payable
         BigDecimal netPayable = grossSalary.subtract(totalDeduction);
@@ -663,6 +671,7 @@ public class PayrollServiceImpl implements PayrollService {
                 .totalWorkingDays(totalWorkingDays)
                 .workedDays(workedDays)
                 .lopDays(lopDays)
+                .halfDays(halfDays)
                 .payableDays(workedDays)
 
                 // Earnings
@@ -677,6 +686,7 @@ public class PayrollServiceImpl implements PayrollService {
 
                 // Deductions
                 .lopAmount(lopAmount)
+                .halfDaysAmount(halfDayAmount)
                 .pf(salaryStructure.getPf())
                 .esi(salaryStructure.getEsi())
                 .professionalTax(salaryStructure.getProfessionalTax())
@@ -714,6 +724,13 @@ public class PayrollServiceImpl implements PayrollService {
                         endDate,
                         AttendanceStatus.ABSENT
                 );
+        long halfDays = attendanceRepository
+                .countByEmployeeAndAttendanceDateBetweenAndAttendanceStatus(
+                        employee,
+                        startDate,
+                        endDate,
+                        AttendanceStatus.HALF_DAY
+                );
 
         long leaveDays = attendanceRepository
                 .countByEmployeeAndAttendanceDateBetweenAndAttendanceStatus(
@@ -742,7 +759,8 @@ public class PayrollServiceImpl implements PayrollService {
         return new AttendanceSummary(
                 totalDays,
                 workedDays,
-                (int) lopDays
+                (int) lopDays,
+                (int) halfDays
         );
     }
 
@@ -775,6 +793,24 @@ public class PayrollServiceImpl implements PayrollService {
                         RoundingMode.HALF_UP
                 )
                 .multiply(BigDecimal.valueOf(lopDays));
+    }
+    private BigDecimal calculateHalfDay(
+            BigDecimal grossSalary,
+            int totalWorkingDays,
+            int halfDays){
+        if (totalWorkingDays <= 0 || halfDays <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return grossSalary
+                .divide(
+                        BigDecimal.valueOf(totalWorkingDays),
+                        2,
+                        RoundingMode.HALF_UP
+                )
+                .multiply(BigDecimal.valueOf(halfDays))
+                .divide(BigDecimal.valueOf(2),2,RoundingMode.HALF_UP);
+
     }
 
     /**

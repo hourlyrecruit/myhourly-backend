@@ -530,17 +530,19 @@ public class PayslipGenerator {
         titleCell.addElement(new Paragraph("Attendance Summary", boldBodyFont(11)));
         outer.addCell(titleCell);
 
-        PdfPTable table = new PdfPTable(4);
+        PdfPTable table = new PdfPTable(5);
         table.setWidthPercentage(100);
-        table.setWidths(new float[]{1f, 1f, 1f, 1f});
+        table.setWidths(new float[]{1f, 1f, 1f, 1f, 1f});
 
         tableHeaderCell(table, "TOTAL DAYS");
         tableHeaderCell(table, "WORKED DAYS");
+        tableHeaderCell(table, "HALF DAYS");
         tableHeaderCell(table, "PAYABLE DAYS");
         tableHeaderCell(table, "LOP DAYS");
 
         tableBodyCell(table, valueOrZero(payroll.getTotalWorkingDays()), HEADER_BG);
         tableBodyCell(table, valueOrZero(payroll.getWorkedDays()),       HEADER_BG);
+        tableBodyCell(table, valueOrZero(payroll.getHalfDays()),         HEADER_BG);
         tableBodyCell(table, valueOrZero(payroll.getPayableDays()),      HEADER_BG);
         tableBodyCell(table, valueOrZero(payroll.getLopDays()),          HEADER_BG);
 
@@ -590,6 +592,8 @@ public class PayslipGenerator {
                 "Professional Tax",   formatAmount(payroll.getProfessionalTax()));
         edDataRow(table, false, "Medical Allowance",  formatAmount(payroll.getMedicalAllowance()),
                 "LOP Deduction",      formatAmount(payroll.getLopAmount()));
+        edDataRow(table, true, "Half Day Amount", formatAmount(payroll.getHalfDaysAmount()),
+                "", "");
         edDataRow(table, true,  "Bonus",              formatAmount(payroll.getBonus(), true),
                 "Others",             formatAmount(payroll.getOtherDeduction()));
         edDataRow(table, false, "Other Allowance",    formatAmount(payroll.getOtherAllowance()),

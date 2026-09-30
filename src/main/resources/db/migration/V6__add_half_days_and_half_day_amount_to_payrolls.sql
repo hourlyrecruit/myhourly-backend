@@ -1,0 +1,3 @@
+ALTER TABLE payrolls
+    ADD COLUMN half_days INT NOT NULL DEFAULT 0,
+    ADD COLUMN half_days_amount DECIMAL(12,2) NOT NULL DEFAULT 0.00;
