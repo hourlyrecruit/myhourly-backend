@@ -31,6 +31,12 @@ public class RegeneratePayrollRequest {
     @Min(value = 0, message = "LOP days cannot be negative.")
     private Integer lopDays;
 
+
+    @Schema(description = "Half days", example = "2")
+    @Min(value = 0, message = "Half days cannot be negative.")
+    private Integer halfDays;
+
+
     /* ==========================
        Earnings
        ========================== */

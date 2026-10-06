@@ -205,11 +205,13 @@ public class PayrollServiceImpl implements PayrollService {
                 ? request.getWorkedDays() : payroll.getWorkedDays();
         int lopDays = request.getLopDays() != null
                 ? request.getLopDays() : payroll.getLopDays();
+        int halfDays = request.getHalfDays() != null
+                ? request.getHalfDays() : payroll.getHalfDays();
 
         // Validate attendance constraint: workedDays + lopDays <= totalWorkingDays
-        if (workedDays + lopDays > totalWorkingDays) {
+        if (workedDays + lopDays + halfDays > totalWorkingDays) {
             throw new BadRequestException(
-                    "Worked days + LOP days cannot exceed total working days.", ErrorCode.BAD_REQUEST);
+                    "Worked days + LOP + Half days cannot exceed total working days.", ErrorCode.BAD_REQUEST);
         }
 
         // Update earnings
@@ -242,11 +244,14 @@ public class PayrollServiceImpl implements PayrollService {
 
         // Recalculate LOP
         BigDecimal lopAmount = calculateLop(grossSalary, totalWorkingDays, lopDays);
+        BigDecimal halfDayAmount = calculateHalfDay(grossSalary, totalWorkingDays, halfDays);
 
         payroll.setLopAmount(lopAmount);
+        payroll.setHalfDaysAmount(halfDayAmount);
         payroll.setTotalWorkingDays(totalWorkingDays);
         payroll.setWorkedDays(workedDays);
         payroll.setLopDays(lopDays);
+        payroll.setHalfDays(halfDays);
         payroll.setPayableDays(workedDays);
 
         // Recalculate deduction & net payable
@@ -368,10 +373,12 @@ public class PayrollServiceImpl implements PayrollService {
                 updates.getWorkedDays(), oldPayroll.getWorkedDays());
         int lopDays = merge(
                 updates.getLopDays(), oldPayroll.getLopDays());
+        int halfDays = merge(
+                updates.getHalfDays(), oldPayroll.getHalfDays());
 
-        if (workedDays + lopDays > totalWorkingDays) {
+        if (workedDays + lopDays + halfDays > totalWorkingDays) {
             throw new BadRequestException(
-                    "Worked days + LOP days cannot exceed total working days.", ErrorCode.BAD_REQUEST);
+                    "Worked days + LOP + half days cannot exceed total working days.", ErrorCode.BAD_REQUEST);
         }
 
         BigDecimal basicSalary = merge(updates.getBasicSalary(), oldPayroll.getBasicSalary());
@@ -406,6 +413,9 @@ public class PayrollServiceImpl implements PayrollService {
 
         BigDecimal lopAmount = calculateLop(
                 grossSalary, totalWorkingDays, lopDays);
+
+        BigDecimal halfDayAmount = calculateHalfDay(
+                grossSalary, totalWorkingDays, halfDays);
 
         // ---------------------------------------------------------
         // Step 3: Build the new version (snapshots copied from the old
@@ -453,6 +463,7 @@ public class PayrollServiceImpl implements PayrollService {
 
                 // Deductions (merged, LOP recalculated)
                 .lopAmount(lopAmount)
+                .halfDaysAmount(halfDayAmount)
                 .pf(pf)
                 .esi(esi)
                 .professionalTax(professionalTax)
@@ -823,7 +834,9 @@ public class PayrollServiceImpl implements PayrollService {
                 .add(safe(payroll.getProfessionalTax()))
                 .add(safe(payroll.getIncomeTax()))
                 .add(safe(payroll.getOtherDeduction()))
-                .add(safe(payroll.getLopAmount()));
+                .add(safe(payroll.getHalfDaysAmount()))
+                .add(safe(payroll.getLopAmount()))
+                .add(safe(payroll.getHalfDaysAmount()));
     }
 
     /**

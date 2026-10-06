@@ -592,12 +592,10 @@ public class PayslipGenerator {
                 "Professional Tax",   formatAmount(payroll.getProfessionalTax()));
         edDataRow(table, false, "Medical Allowance",  formatAmount(payroll.getMedicalAllowance()),
                 "LOP Deduction",      formatAmount(payroll.getLopAmount()));
-        edDataRow(table, true, "Half Day Amount", formatAmount(payroll.getHalfDaysAmount()),
-                "", "");
-        edDataRow(table, true,  "Bonus",              formatAmount(payroll.getBonus(), true),
-                "Others",             formatAmount(payroll.getOtherDeduction()));
+        edDataRow(table, true,  "Bonus",              formatAmount(payroll.getBonus()),
+                "Half Day",   formatAmount(payroll.getHalfDaysAmount()));
         edDataRow(table, false, "Other Allowance",    formatAmount(payroll.getOtherAllowance()),
-                "",                   "");
+        "Others", formatAmount(payroll.getOtherDeduction()));
 
         grossRow(table,
                 "GROSS SALARY",       formatAmount(payroll.getGrossSalary()),
