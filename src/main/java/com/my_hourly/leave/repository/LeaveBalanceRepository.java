@@ -4,6 +4,9 @@ import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.leave.entity.LeaveBalance;
 import com.my_hourly.leave.entity.LeaveType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +28,14 @@ public interface LeaveBalanceRepository extends JpaRepository<LeaveBalance, Long
             Employee employee,
             LeaveType leaveType,
             Integer year);
+
+    /**
+     * Bulk-deletes every leave balance held against the given leave type.
+     * Used only when cascading the deletion of a leave type.
+     */
+    @Modifying
+    @Query("delete from LeaveBalance lb where lb.leaveType.id = :leaveTypeId")
+    int deleteByLeaveTypeId(@Param("leaveTypeId") Long leaveTypeId);
 
     List<LeaveBalance> findByEmployee(Employee employee);
 

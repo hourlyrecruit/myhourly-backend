@@ -25,4 +25,6 @@ public interface LeaveTypeService {
 
     LeaveTypeResponse deactivateLeaveType(Long leaveTypeId);
 
+    void deleteLeaveType(Long leaveTypeId);
+
 }

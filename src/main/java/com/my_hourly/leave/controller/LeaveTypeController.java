@@ -148,4 +148,20 @@ public class LeaveTypeController {
         );
     }
 
+    @Operation(summary = "Delete Leave Type. Access: HR_ADMIN, MANAGER")
+    @DeleteMapping("/{leaveTypeId}")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<Void>> deleteLeaveType(
+            @PathVariable Long leaveTypeId) {
+
+        leaveTypeService.deleteLeaveType(leaveTypeId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Leave type deleted successfully.")
+                        .build()
+        );
+    }
+
 }

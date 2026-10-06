@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -36,6 +37,14 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 
 
     List<LeaveRequest> findByLeaveType(LeaveType leaveType);
+
+    /**
+     * Bulk-deletes every leave request raised against the given leave type.
+     * Used only when cascading the deletion of a leave type.
+     */
+    @Modifying
+    @Query("delete from LeaveRequest lr where lr.leaveType.id = :leaveTypeId")
+    int deleteByLeaveTypeId(@Param("leaveTypeId") Long leaveTypeId);
 
     List<LeaveRequest> findByEmployeeAndStartDateBetween(
             Employee employee,
