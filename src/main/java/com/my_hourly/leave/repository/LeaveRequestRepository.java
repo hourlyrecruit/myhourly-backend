@@ -66,6 +66,13 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
      * <p>Used by the month-end scheduler to determine the unused portion of the
      * monthly guideline when carry-forward is disabled.</p>
      *
+     * <p>Only {@link LeaveStatus#APPROVED} requests count. Approval is a single
+     * stage in this system (see the commented-out HR pass in
+     * {@code LeaveRequestServiceImpl}), so there is no MANAGER_APPROVED /
+     * HR_APPROVED state to match - the {@code LeaveStatus} enum and the
+     * {@code leave_requests.status} check constraint both allow exactly
+     * PENDING / APPROVED / REJECTED / CANCELLED.</p>
+     *
      * @param employee   the employee
      * @param leaveType  the leave type
      * @param monthStart first day of the month (inclusive)
@@ -75,7 +82,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("SELECT COALESCE(SUM(lr.totalDays), 0) FROM LeaveRequest lr " +
             "WHERE lr.employee = :employee " +
             "AND lr.leaveType = :leaveType " +
-            "AND lr.status = 'HR_APPROVED' " +
+            "AND lr.status = 'APPROVED' " +
             "AND lr.startDate >= :monthStart " +
             "AND lr.startDate <= :monthEnd")
     Integer sumApprovedLeaveDaysInMonth(
@@ -102,7 +109,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
                    lr.leaveType.id AS leaveTypeId,
                    COALESCE(SUM(lr.totalDays), 0) AS totalDays
             FROM LeaveRequest lr
-            WHERE lr.status = 'HR_APPROVED'
+            WHERE lr.status = 'APPROVED'
               AND lr.startDate >= :monthStart
               AND lr.startDate <= :monthEnd
             GROUP BY lr.employee.id, lr.leaveType.id

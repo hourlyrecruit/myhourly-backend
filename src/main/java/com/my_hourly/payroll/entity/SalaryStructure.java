@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Table(
         name = "salary_structures",
         indexes = {
-                @Index(name = "idx_salary_structure_employee", columnList = "employee_id"),
+                @Index(name = "idx_salary_structures_employee_status", columnList = "employee_id, status"),
                 @Index(name = "idx_salary_structure_status", columnList = "status"),
                 @Index(name = "idx_salary_structure_effective_from", columnList = "effective_from")
         }
