@@ -43,12 +43,16 @@ public class LeaveScheduler {
      *
      * <p>Algorithm:
      * <pre>
-     *   usedThisMonth    = sum of HR_APPROVED leave days in the month
+     *   usedThisMonth    = sum of APPROVED leave days in the month
      *   unusedGuideline  = max(0, monthlyGuideline - usedThisMonth)
      *   if unusedGuideline > 0 and carryForwardAllowed = false:
      *     expiredLeaves  += unusedGuideline
      *     remainingLeaves -= unusedGuideline
      * </pre></p>
+     *
+     * <p>The full plan is logged before any balance is modified. Set
+     * {@code leave.expiry.dry-run=true} to run it in audit mode, where the plan
+     * is logged at INFO and no balance is touched.</p>
      */
     @Scheduled(cron = "0 30 23 L * *")
     public void monthEndLeaveExpiry() {

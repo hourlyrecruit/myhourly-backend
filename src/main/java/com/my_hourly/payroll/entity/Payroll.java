@@ -19,7 +19,7 @@ import java.time.LocalDate;
                 )
         },
         indexes = {
-                @Index(name = "idx_payroll_employee", columnList = "employee_id"),
+                @Index(name = "idx_payrolls_employee_month", columnList = "employee_id, payroll_month"),
                 @Index(name = "idx_payroll_month", columnList = "payroll_month"),
                 @Index(name = "idx_payroll_status", columnList = "status"),
                 @Index(name = "idx_payroll_active", columnList = "active")
