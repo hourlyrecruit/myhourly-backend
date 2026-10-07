@@ -60,6 +60,11 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/myhourly_test
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
+
+          AWS_S3_REGION: ap-south-1
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+
         run: ./mvnw -B -ntp verify
 
   deploy:
