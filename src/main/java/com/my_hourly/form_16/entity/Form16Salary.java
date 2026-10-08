@@ -129,3 +129,4 @@ public class Form16Salary {
     private BigDecimal salaryReceivedFromOtherEmployers =
             BigDecimal.ZERO;
 }
+
