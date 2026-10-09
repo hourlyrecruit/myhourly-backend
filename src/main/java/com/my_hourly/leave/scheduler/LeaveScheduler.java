@@ -38,30 +38,26 @@ public class LeaveScheduler {
     /**
      * Runs at 11:30 PM on the last day of every month.
      *
-     * <p>For each active employee and each leave type where carry-forward is disabled,
-     * calculates unused guideline days and deducts them from the annual balance.</p>
+     * <p>Reports how much of each employee's monthly paid-leave guideline went
+     * unused in the month that is ending (when carry-forward is disabled).
+     * The unused allowance simply lapses with the calendar month - the next
+     * month recomputes it from LeaveSettings - so NO annual balance is ever
+     * modified and repeated runs are harmless.</p>
      *
-     * <p>Algorithm:
+     * <p>Reported usage:
      * <pre>
-     *   usedThisMonth    = sum of APPROVED leave days in the month
-     *   unusedGuideline  = max(0, monthlyGuideline - usedThisMonth)
-     *   if unusedGuideline > 0 and carryForwardAllowed = false:
-     *     expiredLeaves  += unusedGuideline
-     *     remainingLeaves -= unusedGuideline
+     *   paidThisMonth   = APPROVED PAID days attributed to the month by date
+     *   unusedGuideline = max(0, monthlyGuideline - paidThisMonth)
      * </pre></p>
-     *
-     * <p>The full plan is logged before any balance is modified. Set
-     * {@code leave.expiry.dry-run=true} to run it in audit mode, where the plan
-     * is logged at INFO and no balance is touched.</p>
      */
     @Scheduled(cron = "0 30 23 L * *")
     public void monthEndLeaveExpiry() {
 
-        log.info("Month-End Leave Expiry Started");
+        log.info("Month-End Leave Allowance Review Started");
 
         leaveExpiryService.expireMonthlyUnused();
 
-        log.info("Month-End Leave Expiry Completed");
+        log.info("Month-End Leave Allowance Review Completed");
     }
 
 }

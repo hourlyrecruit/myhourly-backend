@@ -49,6 +49,8 @@ public class AttendanceSettingsMapper {
         entity.setHalfDayWorkingMinutes(request.getHalfDayWorkingMinutes());
         entity.setCheckoutCutoffMinutes(request.getCheckoutCutoffMinutes());
         entity.setOvertimeEnabled(request.getOvertimeEnabled());
+        entity.setWeekendAttendanceAllowed(request.getWeekendAttendanceAllowed());
+        entity.setHolidayAttendanceAllowed(request.getHolidayAttendanceAllowed());
         // DISABLED: entity fields unused (no business-logic reader).
 //        entity.setAttendanceRegularizationEnabled(request.getAttendanceRegularizationEnabled());
 //        entity.setMultipleBreaksAllowed(request.getMultipleBreaksAllowed());

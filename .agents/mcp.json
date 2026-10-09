@@ -1,0 +1,15 @@
+
+{
+  "mcpServers": {
+    "graphify": {
+      "command": "C:\\Users\\User\\AppData\\Local\\Microsoft\\WinGet\\Packages\\astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe\\uvx.exe",
+      "args": [
+        "--from",
+        "graphifyy[mcp]",
+        "graphify-mcp",
+        "--graph",
+        "C:\\Users\\User\\Desktop\\Office Projects\\my_hourly\\graphify-out\\graph.json"
+      ]
+    }
+  }
+}

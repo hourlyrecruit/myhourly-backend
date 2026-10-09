@@ -11,3 +11,4 @@ Dockerfile text eol=lf
 # compose file makes YAML parse errors unnecessarily hard to read.
 docker-compose*.yml text eol=lf
 .env* text eol=lf
+graphify-out/graph.json merge=graphify

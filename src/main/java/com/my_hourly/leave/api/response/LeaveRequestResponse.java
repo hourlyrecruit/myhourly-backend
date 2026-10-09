@@ -34,6 +34,27 @@ public class LeaveRequestResponse {
 
     private LeaveStatus status;
 
+    /**
+     * Days approved as PAID and deducted from the annual balance. Null while
+     * the request is pending or rejected.
+     */
+    private Integer paidDays;
+
+    /**
+     * Days approved as LOP (Loss of Pay) and NOT deducted from the annual
+     * balance. Null while the request is pending or rejected.
+     */
+    private Integer lopDays;
+
+    /**
+     * The authenticated approver, populated only once the request is approved.
+     */
+    private Long approvedById;
+
+    private String approvedByName;
+
+    private String approvedByCode;
+
 //    private String rejectionReason;
 
 }

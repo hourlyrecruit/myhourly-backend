@@ -59,6 +59,30 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
     }
 
     @Override
+    @Transactional
+    public LeaveBalance getLeaveBalanceEntityForUpdate(
+            Employee employee,
+            LeaveType leaveType,
+            LocalDate date) {
+
+        Integer year = date.getYear();
+
+        return leaveBalanceRepository
+                .findByEmployeeAndLeaveTypeAndYearForUpdate(
+                        employee,
+                        leaveType,
+                        year)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Leave balance not allocated for employee "
+                                        + employee.getId()
+                                        + ", leaveType " + leaveType.getName()
+                                        + ", year " + year + ".",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public LeaveBalanceResponse getLeaveBalance(Long leaveBalanceId) {
 
@@ -119,11 +143,29 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
 
         int before = leaveBalance.getRemainingLeaves();
 
-        leaveBalance.setUsedLeaves(
-                leaveBalance.getUsedLeaves() + leaveRequest.getTotalDays());
+        // Submission no longer rejects requests that exceed the balance (the
+        // excess is classified as LOP at approval), so this legacy full-
+        // deduction path must clamp too: the annual balance can never go
+        // negative for any leave type.
+        int days = Math.min(leaveRequest.getTotalDays(), Math.max(0, before));
 
-        leaveBalance.setRemainingLeaves(
-                before - leaveRequest.getTotalDays());
+        if (days < leaveRequest.getTotalDays()) {
+            log.warn("Leave request {} would deduct {} day(s) but only {} remain(s) "
+                            + "for employee {} leaveType {}; clamping the deduction",
+                    leaveRequest.getId(), leaveRequest.getTotalDays(), days,
+                    leaveBalance.getEmployee().getId(),
+                    leaveBalance.getLeaveType().getId());
+        }
+
+        if (days <= 0) {
+            log.debug("Nothing to deduct for leave request {} (balance already {})",
+                    leaveRequest.getId(), before);
+            return;
+        }
+
+        leaveBalance.setUsedLeaves(leaveBalance.getUsedLeaves() + days);
+
+        leaveBalance.setRemainingLeaves(before - days);
 
         leaveBalanceRepository.save(leaveBalance);
 
@@ -131,10 +173,52 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
                 leaveBalance,
                 leaveRequest,
                 LeaveTransactionType.LEAVE_APPROVED,
-                leaveRequest.getTotalDays(),
+                days,
                 before,
                 leaveBalance.getRemainingLeaves(),
                 "Leave approved");
+    }
+
+    @Override
+    @Transactional
+    public void deductPaidLeaveDays(
+            LeaveBalance leaveBalance,
+            LeaveRequest leaveRequest,
+            int days) {
+
+        if (days <= 0) {
+            // Entirely LOP (or nothing to deduct) - the annual balance is
+            // deliberately untouched and no transaction is recorded.
+            log.debug("No PAID days to deduct for leave request {} ({} LOP)",
+                    leaveRequest.getId(), leaveRequest.getTotalDays());
+            return;
+        }
+
+        int before = leaveBalance.getRemainingLeaves();
+
+        // Only path-invariant guard: the allocator never asks for more than the
+        // balance holds, but a stale read must never produce a negative balance.
+        if (days > before) {
+            log.warn("PAID days ({}) exceed remaining balance ({}) for employee {} leaveType {}; "
+                            + "clamping the deduction to the available balance",
+                    days, before, leaveBalance.getEmployee().getId(),
+                    leaveBalance.getLeaveType().getId());
+            days = before;
+        }
+
+        leaveBalance.setUsedLeaves(leaveBalance.getUsedLeaves() + days);
+        leaveBalance.setRemainingLeaves(before - days);
+
+        leaveBalanceRepository.save(leaveBalance);
+
+        leaveTransactionService.createTransaction(
+                leaveBalance,
+                leaveRequest,
+                LeaveTransactionType.LEAVE_APPROVED,
+                days,
+                before,
+                leaveBalance.getRemainingLeaves(),
+                "Leave approved (" + days + " PAID day(s))");
     }
 
     @Override

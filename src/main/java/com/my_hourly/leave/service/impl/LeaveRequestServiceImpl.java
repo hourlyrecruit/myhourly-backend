@@ -12,13 +12,16 @@ import com.my_hourly.leave.api.request.LeaveActionRequest;
 import com.my_hourly.leave.api.request.LeaveRequestRequest;
 import com.my_hourly.leave.api.response.LeaveRequestResponse;
 import com.my_hourly.leave.context.LeaveApplicationContext;
+import com.my_hourly.leave.dto.PaidLopAllocation;
 import com.my_hourly.leave.email.LeaveEmailService;
 import com.my_hourly.leave.entity.LeaveBalance;
 import com.my_hourly.leave.entity.LeaveRequest;
+import com.my_hourly.leave.entity.LeaveRequestMonthAllocation;
 import com.my_hourly.leave.enums.ApprovalLevel;
 import com.my_hourly.leave.enums.LeaveAction;
 import com.my_hourly.leave.enums.LeaveStatus;
 import com.my_hourly.leave.mapper.LeaveRequestMapper;
+import com.my_hourly.leave.repository.LeaveRequestMonthAllocationRepository;
 import com.my_hourly.leave.repository.LeaveRequestRepository;
 import com.my_hourly.leave.service.*;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +30,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,15 +43,17 @@ public class LeaveRequestServiceImpl
         implements LeaveRequestService {
 
     private final LeaveRequestRepository leaveRequestRepository;
+    private final LeaveRequestMonthAllocationRepository leaveRequestMonthAllocationRepository;
     private final LeaveRequestMapper leaveRequestMapper;
     private final LeaveValidationService leaveValidationService;
-    //private final LeaveAuthorizationService leaveAuthorizationService;
+    private final LeaveAuthorizationService leaveAuthorizationService;
     private final EmployeeService employeeService;
     private final LeaveBalanceService leaveBalanceService;
     private final AttendanceService attendanceService;
     private final LeaveApprovalService leaveApprovalService;
     private final AttendanceRepository attendanceRepository;
     private final LeaveEmailService leaveEmailService;
+    private final LeavePaidLopService leavePaidLopService;
 
 
     @Override
@@ -269,8 +277,16 @@ public class LeaveRequestServiceImpl
         Employee manager =
                 employeeService.getCurrentEmployee();
 
+        // Load under a write lock: the PENDING check below and the balance
+        // deduction must be atomic with respect to a second, concurrent approval
+        // of the same request (double click / retry), otherwise the annual
+        // balance could be deducted twice.
         LeaveRequest leaveRequest =
-                getLeaveRequestEntity(leaveRequestId);
+                leaveRequestRepository.findByIdForUpdate(leaveRequestId)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Leave Request id: " + leaveRequestId,
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
 
         // Leave must be pending
         if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
@@ -287,6 +303,10 @@ public class LeaveRequestServiceImpl
                     ErrorCode.NOT_ALLOWED
             );
         }
+
+        // Only the employee's own reporting manager may decide on the request
+        // (any authenticated MANAGER role is not enough).
+        leaveAuthorizationService.validateManagerApproval(manager, leaveRequest);
 
         // Check attendance for each leave date
         LocalDate date = leaveRequest.getStartDate();
@@ -319,18 +339,112 @@ public class LeaveRequestServiceImpl
 
             case APPROVE -> {
 
+                // Lock the balance before reading how much of the month's
+                // allowance is already spent, so two approvals for the same
+                // employee / leave type / year cannot both spend the same days.
                 LeaveBalance leaveBalance =
-                        leaveBalanceService.getLeaveBalanceEntity(
+                        leaveBalanceService.getLeaveBalanceEntityForUpdate(
                                 leaveRequest.getEmployee(),
                                 leaveRequest.getLeaveType(),
                                 leaveRequest.getStartDate()
                         );
 
-                // Deduct leave balance
-                leaveBalanceService.deductLeaveBalance(
-                        leaveBalance,
-                        leaveRequest
-                );
+                int paidDays;
+                int lopDays;
+
+                if (Boolean.TRUE.equals(leaveRequest.getLeaveType().getPaid())) {
+
+                    // Paid leave: the monthly guideline decides how many days are
+                    // PAID. Only those are deducted from the annual balance; the
+                    // rest are LOP and leave the balance alone.
+                    PaidLopAllocation allocation =
+                            leavePaidLopService.classify(
+                                    leaveRequest.getEmployee(),
+                                    leaveRequest.getLeaveType(),
+                                    leaveRequest.getStartDate(),
+                                    leaveRequest.getEndDate()
+                            );
+
+                    paidDays = allocation.paidDays();
+                    lopDays = allocation.lopDays();
+
+                    // Deduct each year's PAID days from that year's own balance:
+                    // a request crossing a year boundary must not charge days
+                    // taken in January to December's balance. Classification
+                    // already locked every involved year in ascending order.
+                    Map<Integer, Integer> paidByYear = allocation.months().stream()
+                            .filter(month -> month.paidDays() > 0)
+                            .collect(Collectors.groupingBy(
+                                    month -> month.month().getYear(),
+                                    Collectors.summingInt(PaidLopAllocation.MonthAllocation::paidDays)
+                            ));
+
+                    for (Map.Entry<Integer, Integer> year : paidByYear.entrySet()
+                            .stream()
+                            .sorted(Map.Entry.comparingByKey())
+                            .toList()) {
+
+                        LeaveBalance yearBalance = year.getKey().equals(leaveBalance.getYear())
+                                ? leaveBalance
+                                : leaveBalanceService.getLeaveBalanceEntityForUpdate(
+                                        leaveRequest.getEmployee(),
+                                        leaveRequest.getLeaveType(),
+                                        YearMonth.of(year.getKey(), 1).atDay(1)
+                                );
+
+                        leaveBalanceService.deductPaidLeaveDays(
+                                yearBalance,
+                                leaveRequest,
+                                year.getValue()
+                        );
+                    }
+
+                    // Store the per-calendar-month breakdown so later
+                    // approvals and the month-end report count each PAID day
+                    // in the month it actually falls in (a request spanning
+                    // months must not charge all its days to the start month).
+                    leaveRequestMonthAllocationRepository.saveAll(
+                            allocation.months().stream()
+                                    .map(month -> LeaveRequestMonthAllocation.builder()
+                                            .leaveRequest(leaveRequest)
+                                            .allocationMonth(month.month().atDay(1))
+                                            .paidDays(month.paidDays())
+                                            .workingDays(month.workingDays())
+                                            .build())
+                                    .toList()
+                    );
+
+                    log.info("Leave request {} approved: {} PAID / {} LOP day(s) "
+                                    + "(guideline from LeaveSettings), deducted from annual "
+                                    + "balance year(s) {}",
+                            leaveRequest.getId(), paidDays, lopDays, paidByYear.keySet());
+
+                } else {
+
+                    // Unpaid leave types keep their legacy behaviour: every
+                    // approved day consumes the annual balance. Submission no
+                    // longer rejects over-balance requests, so the deduction is
+                    // clamped - the balance can never go negative, and the
+                    // stored split still adds up: days the balance cannot cover
+                    // are recorded as LOP.
+                    int before = leaveBalance.getRemainingLeaves();
+                    int covered = Math.min(leaveRequest.getTotalDays(), Math.max(0, before));
+
+                    paidDays = covered;
+                    lopDays = leaveRequest.getTotalDays() - covered;
+
+                    leaveBalanceService.deductLeaveBalance(
+                            leaveBalance,
+                            leaveRequest
+                    );
+                }
+
+                // Persist the split and the authenticated approver on the
+                // request itself. The approver is taken from the security
+                // context, never from the request body.
+                leaveRequest.setPaidDays(paidDays);
+                leaveRequest.setLopDays(lopDays);
+                leaveRequest.setApprovedBy(manager);
 
                 // Mark attendance as leave
                 attendanceService.markLeaveAttendance(

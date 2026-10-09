@@ -3,7 +3,9 @@ package com.my_hourly.leave.repository;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.leave.entity.LeaveBalance;
 import com.my_hourly.leave.entity.LeaveType;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,6 +22,24 @@ public interface LeaveBalanceRepository extends JpaRepository<LeaveBalance, Long
             Employee employee,
             LeaveType leaveType,
             Integer year);
+
+    /**
+     * Same lookup as {@link #findByEmployeeAndLeaveTypeAndYear} but under a
+     * {@code SELECT ... FOR UPDATE} row lock.
+     *
+     * <p>Leave approval takes this lock before it reads the balance and the
+     * month's already-approved PAID days, so two approvals for the same
+     * employee / leave type / year cannot both see the same remaining balance
+     * (or the same leftover monthly allowance) and over-allocate. The lock is
+     * also what keeps the annual balance from going negative.</p>
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select lb from LeaveBalance lb " +
+            "where lb.employee = :employee and lb.leaveType = :leaveType and lb.year = :year")
+    Optional<LeaveBalance> findByEmployeeAndLeaveTypeAndYearForUpdate(
+            @Param("employee") Employee employee,
+            @Param("leaveType") LeaveType leaveType,
+            @Param("year") Integer year);
 
     /**
      * Check whether an annual leave balance record already exists.

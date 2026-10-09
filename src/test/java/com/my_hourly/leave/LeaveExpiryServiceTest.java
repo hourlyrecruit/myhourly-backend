@@ -4,11 +4,8 @@ import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.employee.repository.EmployeeRepository;
 import com.my_hourly.leave.dto.LeaveExpiryPlan;
 import com.my_hourly.leave.entity.LeaveBalance;
-import com.my_hourly.leave.entity.LeaveType;
 import com.my_hourly.leave.repository.LeaveBalanceRepository;
 import com.my_hourly.leave.repository.LeaveRequestRepository;
-import com.my_hourly.leave.repository.LeaveTypeRepository;
-import com.my_hourly.leave.service.LeaveTransactionService;
 import com.my_hourly.leave.service.impl.LeaveExpiryServiceImpl;
 import com.my_hourly.settings.leave.entity.LeaveSettings;
 import com.my_hourly.settings.leave.service.LeaveSettingsService;
@@ -20,7 +17,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -35,41 +31,39 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
- * Pins the month-end expiry rule from {@code LeaveExpiryServiceImpl}:
+ * Pins the month-end monthly-allowance review from {@code LeaveExpiryServiceImpl}:
  *
  * <pre>
- *   unusedGuideline = max(0, monthlyGuideline - approvedLeaveDaysInMonth)
+ *   paidThisMonth   = APPROVED PAID days attributed to the month by their dates
+ *   unusedGuideline = max(0, monthlyGuideline - paidThisMonth)
  * </pre>
  *
- * <p>Guards the regression where the usage query filtered on a status the
- * schema does not allow and therefore always returned "no leave taken",
- * causing guideline days to be expired for employees who had already used
- * (and had deducted) their approved leave.</p>
+ * <p>The review is REPORT-ONLY: unused guideline days lapse with the calendar
+ * month and are never deducted from the annual balance, never added to
+ * expiredLeaves and never written to the ledger. Running it repeatedly changes
+ * nothing - which is exactly what "expiry processing does not duplicate
+ * balance adjustments" requires.</p>
  *
- * <p>Note: these tests mock {@link LeaveRequestRepository}, so they pin the
- * expiry <em>algorithm</em>. The status value the query actually filters on is
- * pinned separately by
- * {@link com.my_hourly.leave.repository.LeaveRequestQueryStatusTest}, which
- * needs no database.</p>
+ * <p>These tests mock {@link LeaveRequestRepository} and
+ * {@link LeaveBalanceRepository}, so they pin the review <em>behaviour</em>.
+ * The date attribution of the underlying queries is pinned separately by the
+ * integration test against a real PostgreSQL database.</p>
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Month-end leave expiry")
+@DisplayName("Month-end leave allowance review")
 class LeaveExpiryServiceTest {
 
     private static final int MONTHLY_GUIDELINE = 2;
     private static final long EMPLOYEE_ID = 1L;
-    private static final long LEAVE_TYPE_ID = 10L;
+    private static final long OTHER_EMPLOYEE_ID = 2L;
 
     @Mock
     private EmployeeRepository employeeRepository;
-
-    @Mock
-    private LeaveTypeRepository leaveTypeRepository;
 
     @Mock
     private LeaveBalanceRepository leaveBalanceRepository;
@@ -78,16 +72,13 @@ class LeaveExpiryServiceTest {
     private LeaveRequestRepository leaveRequestRepository;
 
     @Mock
-    private LeaveTransactionService leaveTransactionService;
-
-    @Mock
     private LeaveSettingsService leaveSettingsService;
 
     @InjectMocks
     private LeaveExpiryServiceImpl leaveExpiryService;
 
     private Employee employee;
-    private LeaveType leaveType;
+    private Employee otherEmployee;
     private LeaveBalance balance;
 
     @BeforeEach
@@ -99,18 +90,14 @@ class LeaveExpiryServiceTest {
                 .build();
         employee.setId(EMPLOYEE_ID);
 
-        leaveType = LeaveType.builder()
-                .name("Annual Leave")
-                .paid(true)
-                .allocatedDays(24)
-                .carryForwardAllowed(false)
-                .active(true)
+        otherEmployee = Employee.builder()
+                .firstName("Jane")
+                .lastName("Doe")
                 .build();
-        leaveType.setId(LEAVE_TYPE_ID);
+        otherEmployee.setId(OTHER_EMPLOYEE_ID);
 
         balance = LeaveBalance.builder()
                 .employee(employee)
-                .leaveType(leaveType)
                 .year(LocalDate.now().getYear())
                 .allocatedLeaves(24)
                 .usedLeaves(0)
@@ -119,86 +106,100 @@ class LeaveExpiryServiceTest {
                 .build();
     }
 
-    /**
-     * Stubs one active employee, one paid leave type and one balance, i.e. a
-     * single eligible balance on which expiry can apply.
-     */
-    private void givenOneActiveEmployeeWithOnePaidBalance() {
+    private void givenSettings(int guideline, boolean carryForwardAllowed) {
 
         LeaveSettings settings = LeaveSettings.builder()
-                .carryForwardAllowed(false)
-                .monthlyGuideline(MONTHLY_GUIDELINE)
+                .carryForwardAllowed(carryForwardAllowed)
+                .monthlyGuideline(guideline)
                 .annualPaidLeave(24)
                 .build();
 
         when(leaveSettingsService.getSettings()).thenReturn(settings);
+    }
+
+    /** One active employee with one balance, carry-forward disabled. */
+    private void givenOneEmployeeWithABalance() {
+
+        givenSettings(MONTHLY_GUIDELINE, false);
         when(employeeRepository.findByActiveTrue()).thenReturn(List.of(employee));
-        when(leaveTypeRepository.findByActiveTrue()).thenReturn(List.of(leaveType));
         when(leaveBalanceRepository.findByYear(anyInt())).thenReturn(List.of(balance));
     }
 
-    /**
-     * Stubs the approved-days-in-month aggregate with the given usage.
-     */
-    private void givenApprovedLeaveDaysInMonth(long totalDays) {
+    /** Stubs the PAID-days-in-month aggregate for the given employee. */
+    private void givenPaidLeaveDaysInMonth(long employeeId, int paidDays) {
 
-        LeaveRequestRepository.UsedDaysProjection used =
-                mock(LeaveRequestRepository.UsedDaysProjection.class);
-
-        when(used.getEmployeeId()).thenReturn(EMPLOYEE_ID);
-        when(used.getLeaveTypeId()).thenReturn(LEAVE_TYPE_ID);
-        when(used.getTotalDays()).thenReturn(totalDays);
+        List<LeaveRequestRepository.PaidDaysProjection> rows =
+                List.of(paidRow(employeeId, paidDays));
 
         when(leaveRequestRepository
-                .sumApprovedLeaveDaysInMonthGrouped(any(LocalDate.class), any(LocalDate.class)))
-                .thenReturn(List.of(used));
+                .sumPaidLeaveDaysInMonthGrouped(any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(rows);
     }
 
-    /**
-     * Stubs the approved-days-in-month aggregate with no rows at all - the
-     * exact shape the stale-status bug produced.
-     */
-    private void givenNoApprovedLeaveDaysInMonth() {
+    /** Stubs the aggregate with no rows at all - nobody took PAID leave. */
+    private void givenNoPaidLeaveDaysInMonth() {
 
         when(leaveRequestRepository
-                .sumApprovedLeaveDaysInMonthGrouped(any(LocalDate.class), any(LocalDate.class)))
+                .sumPaidLeaveDaysInMonthGrouped(any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(List.of());
     }
 
-    private void givenDryRunEnabled() {
+    private static LeaveRequestRepository.PaidDaysProjection paidRow(long employeeId, int paidDays) {
 
-        ReflectionTestUtils.setField(leaveExpiryService, "dryRun", true);
+        LeaveRequestRepository.PaidDaysProjection paid =
+                mock(LeaveRequestRepository.PaidDaysProjection.class);
+
+        when(paid.getEmployeeId()).thenReturn(employeeId);
+        when(paid.getPaidDays()).thenReturn(paidDays);
+
+        return paid;
     }
 
     // -----------------------------------------------------------------------
-    // Expiry
+    // Report-only: no balance is ever modified
     // -----------------------------------------------------------------------
 
     @Test
-    @DisplayName("Approved leave up to the monthly guideline expires nothing")
-    void approvedLeaveMatchingGuidelineDoesNotExpire() {
+    @DisplayName("Unused guideline is reported but never deducted from the balance")
+    void unusedGuidelineIsNeverDeductedFromTheBalance() {
 
-        givenOneActiveEmployeeWithOnePaidBalance();
-        // Employee used (and had deducted) 2 days of approved leave this month.
-        givenApprovedLeaveDaysInMonth(MONTHLY_GUIDELINE);
+        givenOneEmployeeWithABalance();
+        givenNoPaidLeaveDaysInMonth();
 
         leaveExpiryService.expireMonthlyUnused();
 
         assertEquals(10, balance.getRemainingLeaves(),
-                "No guideline days are unused, so the balance must be untouched");
+                "The annual balance must be untouched - unused monthly allowance lapses, "
+                        + "it is never deducted from the balance");
         assertEquals(0, balance.getExpiredLeaves(),
-                "Nothing may be marked expired when the guideline was fully used");
+                "No expiredLeaves counter may be incremented by the review");
 
         verify(leaveBalanceRepository, never()).save(any(LeaveBalance.class));
-        verifyNoInteractions(leaveTransactionService);
     }
 
     @Test
-    @DisplayName("Approved leave beyond the monthly guideline expires nothing")
-    void approvedLeaveExceedingGuidelineDoesNotExpire() {
+    @DisplayName("A repeated run still changes nothing (no duplicate adjustments)")
+    void repeatedRunsChangeNothing() {
 
-        givenOneActiveEmployeeWithOnePaidBalance();
-        givenApprovedLeaveDaysInMonth(MONTHLY_GUIDELINE + 3);
+        givenOneEmployeeWithABalance();
+        givenNoPaidLeaveDaysInMonth();
+
+        leaveExpiryService.expireMonthlyUnused();
+        leaveExpiryService.expireMonthlyUnused();
+
+        assertEquals(10, balance.getRemainingLeaves());
+        assertEquals(0, balance.getExpiredLeaves());
+
+        verify(leaveBalanceRepository, never()).save(any(LeaveBalance.class));
+        verify(leaveBalanceRepository, times(2)).findByYear(anyInt());
+    }
+
+    @Test
+    @DisplayName("PAID days beyond the guideline also leave the balance untouched")
+    void usedGuidelineLeavesTheBalanceUntouched() {
+
+        givenOneEmployeeWithABalance();
+        givenPaidLeaveDaysInMonth(EMPLOYEE_ID, MONTHLY_GUIDELINE + 3);
 
         leaveExpiryService.expireMonthlyUnused();
 
@@ -206,39 +207,25 @@ class LeaveExpiryServiceTest {
         assertEquals(0, balance.getExpiredLeaves());
 
         verify(leaveBalanceRepository, never()).save(any(LeaveBalance.class));
-        verifyNoInteractions(leaveTransactionService);
     }
 
-    @Test
-    @DisplayName("No approved leave at all expires the unused monthly guideline")
-    void noApprovedLeaveExpiresTheUnusedGuideline() {
-
-        givenOneActiveEmployeeWithOnePaidBalance();
-        givenNoApprovedLeaveDaysInMonth();
-
-        leaveExpiryService.expireMonthlyUnused();
-
-        assertEquals(10 - MONTHLY_GUIDELINE, balance.getRemainingLeaves(),
-                "The whole monthly guideline was unused and must be expired");
-        assertEquals(MONTHLY_GUIDELINE, balance.getExpiredLeaves());
-
-        verify(leaveBalanceRepository).save(balance);
-        verify(leaveTransactionService).createExpiryTransaction(balance, MONTHLY_GUIDELINE);
-    }
+    // -----------------------------------------------------------------------
+    // Attribution window
+    // -----------------------------------------------------------------------
 
     @Test
     @DisplayName("Usage is measured over the whole expiring month")
     void usageIsMeasuredOverTheExpiringMonth() {
 
-        givenOneActiveEmployeeWithOnePaidBalance();
-        givenApprovedLeaveDaysInMonth(MONTHLY_GUIDELINE);
+        givenOneEmployeeWithABalance();
+        givenNoPaidLeaveDaysInMonth();
 
         leaveExpiryService.expireMonthlyUnused();
 
         ArgumentCaptor<LocalDate> monthStart = ArgumentCaptor.forClass(LocalDate.class);
         ArgumentCaptor<LocalDate> monthEnd = ArgumentCaptor.forClass(LocalDate.class);
 
-        verify(leaveRequestRepository).sumApprovedLeaveDaysInMonthGrouped(
+        verify(leaveRequestRepository).sumPaidLeaveDaysInMonthGrouped(
                 monthStart.capture(),
                 monthEnd.capture()
         );
@@ -255,116 +242,132 @@ class LeaveExpiryServiceTest {
     }
 
     // -----------------------------------------------------------------------
-    // Dry run
+    // The plan itself
     // -----------------------------------------------------------------------
 
     @Test
-    @DisplayName("Dry run leaves every balance untouched")
-    void dryRunDoesNotTouchBalances() {
+    @DisplayName("The plan reports the unused allowance per employee")
+    void planReportsUnusedAllowancePerEmployee() {
 
-        givenOneActiveEmployeeWithOnePaidBalance();
-        givenNoApprovedLeaveDaysInMonth();
-        givenDryRunEnabled();
-
-        leaveExpiryService.expireMonthlyUnused();
-
-        assertEquals(10, balance.getRemainingLeaves(),
-                "A dry run must not deduct days, even when days would expire");
-        assertEquals(0, balance.getExpiredLeaves(),
-                "A dry run must not record expired days");
-
-        verify(leaveBalanceRepository, never()).save(any(LeaveBalance.class));
-        verifyNoInteractions(leaveTransactionService);
-    }
-
-    // -----------------------------------------------------------------------
-    // Preview
-    // -----------------------------------------------------------------------
-
-    @Test
-    @DisplayName("Preview reports the days that would expire without changing anything")
-    void previewReportsTheDaysThatWouldExpire() {
-
-        givenOneActiveEmployeeWithOnePaidBalance();
-        givenNoApprovedLeaveDaysInMonth();
+        givenOneEmployeeWithABalance();
+        givenPaidLeaveDaysInMonth(EMPLOYEE_ID, 1);
 
         LeaveExpiryPlan plan = leaveExpiryService.previewMonthlyUnused();
 
         assertFalse(plan.isSkipped());
-        assertEquals(1, plan.consideredBalances());
-        assertEquals(1, plan.affectedBalances());
-        assertEquals(MONTHLY_GUIDELINE, plan.totalDaysToExpire());
+        assertEquals(1, plan.consideredEmployees());
+        assertEquals(1, plan.affectedEmployees());
         assertEquals(MONTHLY_GUIDELINE, plan.monthlyGuideline());
-
-        // The window the plan was computed over is the whole expiring month.
-        ArgumentCaptor<LocalDate> monthStart = ArgumentCaptor.forClass(LocalDate.class);
-        verify(leaveRequestRepository).sumApprovedLeaveDaysInMonthGrouped(
-                monthStart.capture(), any(LocalDate.class));
-        assertEquals(YearMonth.from(monthStart.getValue()), plan.month());
 
         LeaveExpiryPlan.ExpiryEntry entry = plan.entries().get(0);
         assertEquals(EMPLOYEE_ID, entry.employeeId());
         assertEquals("John Test", entry.employeeName());
-        assertEquals(LEAVE_TYPE_ID, entry.leaveTypeId());
-        assertEquals("Annual Leave", entry.leaveTypeName());
-        assertEquals(0, entry.approvedLeaveDaysInMonth(),
-                "The preview must expose the approved-days figure that drives expiry - "
-                        + "0 here is the signature of the stale-status bug");
-        assertEquals(10, entry.remainingLeavesBefore());
-        assertEquals(MONTHLY_GUIDELINE, entry.daysToExpire());
-        assertEquals(8, entry.remainingLeavesAfter());
+        assertEquals(1, entry.paidLeaveDaysInMonth(),
+                "The entry must expose the PAID-days figure that drives the report");
+        assertEquals(MONTHLY_GUIDELINE - 1, entry.unusedGuidelineDays());
+        assertEquals(MONTHLY_GUIDELINE - 1, plan.totalUnusedDays());
 
-        // A preview is read-only.
+        // Preview is read-only.
         assertEquals(10, balance.getRemainingLeaves());
-        assertEquals(0, balance.getExpiredLeaves());
         verify(leaveBalanceRepository, never()).save(any(LeaveBalance.class));
-        verifyNoInteractions(leaveTransactionService);
     }
 
     @Test
-    @DisplayName("Preview reports nothing to expire when the guideline was used")
-    void previewReportsNothingWhenGuidelineWasUsed() {
+    @DisplayName("Employees without unused allowance are not reported")
+    void employeesWithFullUsageAreNotReported() {
 
-        givenOneActiveEmployeeWithOnePaidBalance();
-        givenApprovedLeaveDaysInMonth(MONTHLY_GUIDELINE);
+        givenOneEmployeeWithABalance();
+        givenPaidLeaveDaysInMonth(EMPLOYEE_ID, MONTHLY_GUIDELINE);
 
         LeaveExpiryPlan plan = leaveExpiryService.previewMonthlyUnused();
 
         assertFalse(plan.isSkipped());
-        assertEquals(1, plan.consideredBalances(),
-                "The balance is still considered, it simply needs no expiry");
-        assertEquals(0, plan.affectedBalances());
-        assertEquals(0, plan.totalDaysToExpire());
+        assertEquals(1, plan.consideredEmployees(), "The balance is still considered");
+        assertEquals(0, plan.affectedEmployees());
+        assertEquals(0, plan.totalUnusedDays());
         assertTrue(plan.entries().isEmpty());
-
-        verify(leaveBalanceRepository, never()).save(any(LeaveBalance.class));
-        verifyNoInteractions(leaveTransactionService);
     }
 
     @Test
-    @DisplayName("Preview explains why a run would be skipped")
-    void previewIsSkippedWhenCarryForwardIsEnabled() {
+    @DisplayName("The allowance is one per employee - usage is per employee, not per leave type")
+    void usageIsReportedPerEmployee() {
 
-        LeaveSettings carryForwardOn = LeaveSettings.builder()
-                .carryForwardAllowed(true)
-                .monthlyGuideline(MONTHLY_GUIDELINE)
+        LeaveBalance otherBalance = LeaveBalance.builder()
+                .employee(otherEmployee)
+                .year(LocalDate.now().getYear())
+                .allocatedLeaves(24)
+                .usedLeaves(0)
+                .expiredLeaves(0)
+                .remainingLeaves(8)
                 .build();
 
-        when(leaveSettingsService.getSettings()).thenReturn(carryForwardOn);
+        givenSettings(MONTHLY_GUIDELINE, false);
+        when(employeeRepository.findByActiveTrue()).thenReturn(List.of(employee, otherEmployee));
+        when(leaveBalanceRepository.findByYear(anyInt()))
+                .thenReturn(List.of(balance, otherBalance));
+        List<LeaveRequestRepository.PaidDaysProjection> rows = List.of(
+                paidRow(EMPLOYEE_ID, MONTHLY_GUIDELINE),
+                paidRow(OTHER_EMPLOYEE_ID, 0)
+        );
+        when(leaveRequestRepository
+                .sumPaidLeaveDaysInMonthGrouped(any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(rows);
+
+        LeaveExpiryPlan plan = leaveExpiryService.previewMonthlyUnused();
+
+        assertEquals(2, plan.consideredEmployees());
+        assertEquals(1, plan.affectedEmployees(),
+                "Only the employee who did not use the guideline has unused days");
+        assertEquals(OTHER_EMPLOYEE_ID, plan.entries().get(0).employeeId(),
+                "The employee with 0 PAID days is the one with unused allowance");
+        assertEquals(0, plan.entries().get(0).paidLeaveDaysInMonth());
+        assertEquals(MONTHLY_GUIDELINE, plan.entries().get(0).unusedGuidelineDays());
+    }
+
+    @Test
+    @DisplayName("Employees without a leave balance are not considered")
+    void employeesWithoutBalanceAreNotConsidered() {
+
+        givenSettings(MONTHLY_GUIDELINE, false);
+        when(employeeRepository.findByActiveTrue()).thenReturn(List.of(employee));
+        when(leaveBalanceRepository.findByYear(anyInt())).thenReturn(List.of());
+        givenNoPaidLeaveDaysInMonth();
+
+        LeaveExpiryPlan plan = leaveExpiryService.previewMonthlyUnused();
+
+        assertFalse(plan.isSkipped());
+        assertEquals(0, plan.consideredEmployees());
+        assertEquals(0, plan.affectedEmployees());
+    }
+
+    // -----------------------------------------------------------------------
+    // Skipped runs
+    // -----------------------------------------------------------------------
+
+    @Test
+    @DisplayName("Carry-forward enabled skips the run and retains the allowance")
+    void previewIsSkippedWhenCarryForwardIsEnabled() {
+
+        when(leaveSettingsService.getSettings()).thenReturn(
+                LeaveSettings.builder()
+                        .carryForwardAllowed(true)
+                        .monthlyGuideline(MONTHLY_GUIDELINE)
+                        .build()
+        );
 
         LeaveExpiryPlan plan = leaveExpiryService.previewMonthlyUnused();
 
         assertTrue(plan.isSkipped(),
-                "With global carry-forward enabled nothing expires, and the plan must say so");
+                "With global carry-forward enabled nothing lapses, and the plan must say so");
         assertNotNull(plan.skippedReason());
         assertTrue(plan.entries().isEmpty());
-        assertEquals(0, plan.totalDaysToExpire());
+        assertEquals(0, plan.totalUnusedDays());
 
-        verifyNoInteractions(leaveBalanceRepository, leaveTransactionService);
+        verify(leaveBalanceRepository, never()).save(any(LeaveBalance.class));
     }
 
     @Test
-    @DisplayName("Preview explains a settings failure instead of throwing")
+    @DisplayName("A settings failure is reported instead of thrown")
     void previewIsSkippedWhenSettingsCannotBeLoaded() {
 
         when(leaveSettingsService.getSettings())
@@ -374,7 +377,5 @@ class LeaveExpiryServiceTest {
 
         assertTrue(plan.isSkipped());
         assertNotNull(plan.skippedReason());
-
-        verifyNoInteractions(leaveBalanceRepository, leaveTransactionService);
     }
 }

@@ -56,10 +56,9 @@ public class LeaveValidationServiceImpl
                         request.getEndDate());
 
         LeaveBalance leaveBalance =
-                validateLeaveBalance(
+                resolveLeaveBalance(
                         employee,
-                        leaveType,
-                        totalDays);
+                        leaveType);
 
         return new LeaveApplicationContext(
                 employee,
@@ -114,16 +113,15 @@ public class LeaveValidationServiceImpl
                         .existsByEmployeeAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                                 employee,
                                 List.of(
-                                        LeaveStatus.PENDING
-//                                        LeaveStatus.MANAGER_APPROVED,
-//                                        LeaveStatus.HR_APPROVED
+                                        LeaveStatus.PENDING,
+                                        LeaveStatus.APPROVED
                                 ),
                                 endDate,
                                 startDate);
 
         if (exists) {
             throw new BadRequestException(
-                    "Leave request already exists for the selected dates.", ErrorCode.LEAVE_ALREADY_EXIST);
+                    "Another pending or approved leave request overlaps the selected dates.", ErrorCode.LEAVE_ALREADY_EXIST);
         }
     }
 
@@ -175,23 +173,24 @@ public class LeaveValidationServiceImpl
                 || date.getDayOfWeek() == DayOfWeek.SUNDAY;
     }
 
-    private LeaveBalance validateLeaveBalance(
+    /**
+     * Resolves the annual balance a request will be applied against.
+     *
+     * <p>Submission intentionally does NOT require the balance to cover the
+     * whole request any more. A request may exceed the monthly paid allowance
+     * and/or the remaining annual balance; those days are classified as LOP at
+     * approval instead of being rejected here. The balance must still exist,
+     * because a missing allocation is a configuration problem, not a business
+     * decision.</p>
+     */
+    private LeaveBalance resolveLeaveBalance(
             Employee employee,
-            LeaveType leaveType,
-            Integer totalDays) {
+            LeaveType leaveType) {
 
-        LeaveBalance leaveBalance =
-                leaveBalanceService.getLeaveBalanceEntity(
-                        employee,
-                        leaveType,
-                        LocalDate.now());
-
-        if (leaveBalance.getRemainingLeaves() < totalDays) {
-            throw new BadRequestException(
-                    "Insufficient leave balance.", ErrorCode.INSUFFICIENT);
-        }
-
-        return leaveBalance;
+        return leaveBalanceService.getLeaveBalanceEntity(
+                employee,
+                leaveType,
+                LocalDate.now());
     }
 
 }

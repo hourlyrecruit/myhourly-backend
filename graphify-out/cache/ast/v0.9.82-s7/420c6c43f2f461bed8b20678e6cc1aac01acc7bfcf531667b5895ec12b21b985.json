@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_src_main_java_com_my_hourly_common_configstorage_s3storageconfig_java", "label": "S3StorageConfig.java", "file_type": "code", "source_file": "src/main/java/com/my_hourly/common/configStorage/S3StorageConfig.java", "source_location": "L1"}], "edges": [], "raw_calls": []}

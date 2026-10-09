@@ -4,59 +4,57 @@ import java.time.YearMonth;
 import java.util.List;
 
 /**
- * Read-only description of what the month-end leave expiry run would do.
+ * Read-only report of the month-end leave allowance review.
  *
  * <p>Produced by {@code LeaveExpiryService#previewMonthlyUnused()} and logged
- * by the scheduled run <em>before</em> any balance is modified, so a run can be
- * audited (or a regression spotted) without any leave being deducted.</p>
+ * by the scheduled run. Unused monthly-guideline days simply expire when the
+ * calendar month turns - the next month's allowance is recomputed from
+ * LeaveSettings - so this plan NEVER modifies an annual leave balance. It
+ * exists purely as an audit trail: what went unused, and how much PAID leave
+ * was attributed to the month by actual date.</p>
  *
  * <p>All values are primitives/copies detached from the persistence context, so
  * a plan can be safely logged, returned or asserted on after the transaction
  * that produced it has ended.</p>
  *
- * @param month             the year-month being expired
- * @param monthlyGuideline  guideline days per month used for the calculation
- * @param consideredBalances employee x paid-leave-type combinations actually evaluated
- * @param entries           one entry per balance that would have days expired
- * @param skippedReason     non-null when the run was skipped (e.g. global carry-forward enabled)
+ * @param month               the year-month being reported
+ * @param monthlyGuideline    guideline days per employee per month used for the calculation
+ * @param consideredEmployees employees evaluated (active, with a leave balance this year)
+ * @param entries             one entry per employee with unused guideline days
+ * @param skippedReason       non-null when the run was skipped (e.g. global carry-forward enabled)
  */
 public record LeaveExpiryPlan(
         YearMonth month,
         int monthlyGuideline,
-        int consideredBalances,
+        int consideredEmployees,
         List<ExpiryEntry> entries,
         String skippedReason
 ) {
 
     /**
-     * A single balance that would have unused guideline days expired.
+     * One employee's unused monthly allowance for the month.
      *
-     * @param approvedLeaveDaysInMonth days of APPROVED leave counted for this employee,
-     *                                 leave type and month - the value that decides expiry
-     * @param daysToExpire             guideline days that would be deducted
+     * @param paidLeaveDaysInMonth  APPROVED PAID days attributed to this month
+     *                              by their actual dates, across all paid leave types
+     * @param unusedGuidelineDays   {@code max(0, guideline - paidLeaveDaysInMonth)} -
+     *                              days of the allowance that went unused and
+     *                              will NOT carry into the next month
      */
     public record ExpiryEntry(
             Long employeeId,
             String employeeCode,
             String employeeName,
-            Long leaveTypeId,
-            String leaveTypeName,
-            int approvedLeaveDaysInMonth,
-            int remainingLeavesBefore,
-            int daysToExpire
+            int paidLeaveDaysInMonth,
+            int unusedGuidelineDays
     ) {
-
-        public int remainingLeavesAfter() {
-            return remainingLeavesBefore - daysToExpire;
-        }
     }
 
     /**
-     * A run that was abandoned before any calculation (missing settings, global
-     * carry-forward, ...). Carries the reason so the log explains itself.
+     * A run that was abandoned before any calculation (missing settings,
+     * global carry-forward, ...). Carries the reason so the log explains
+     * itself.
      */
     public static LeaveExpiryPlan skipped(YearMonth month, int monthlyGuideline, String reason) {
-
         return new LeaveExpiryPlan(month, monthlyGuideline, 0, List.of(), reason);
     }
 
@@ -64,11 +62,11 @@ public record LeaveExpiryPlan(
         return skippedReason != null;
     }
 
-    public int affectedBalances() {
+    public int affectedEmployees() {
         return entries.size();
     }
 
-    public int totalDaysToExpire() {
-        return entries.stream().mapToInt(ExpiryEntry::daysToExpire).sum();
+    public int totalUnusedDays() {
+        return entries.stream().mapToInt(ExpiryEntry::unusedGuidelineDays).sum();
     }
 }
