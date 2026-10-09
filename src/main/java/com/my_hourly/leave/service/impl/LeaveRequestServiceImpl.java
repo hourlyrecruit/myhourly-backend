@@ -79,6 +79,9 @@ public class LeaveRequestServiceImpl
                         .status(LeaveStatus.PENDING)
                         .build();
 
+        // Set forced working days for sandwich leave
+        leaveRequest.setForcedWorkingDays(context.forcedWorkingDays());
+
         LeaveRequest saved =
                 leaveRequestRepository.save(leaveRequest);
 
@@ -325,6 +328,28 @@ public class LeaveRequestServiceImpl
             }
 
             date = date.plusDays(1);
+        }
+
+        // Also check forced working days (sandwich weekends)
+        Set<LocalDate> forcedWorkingDays = leaveRequest.getForcedWorkingDays();
+        if (forcedWorkingDays != null && !forcedWorkingDays.isEmpty()) {
+            for (LocalDate forcedDate : forcedWorkingDays) {
+                // Skip if already checked in the main loop above
+                if (!forcedDate.isBefore(leaveRequest.getStartDate()) 
+                    && !forcedDate.isAfter(leaveRequest.getEndDate())) {
+                    continue;
+                }
+                
+                if (attendanceRepository.existsByEmployeeAndAttendanceDate(
+                        leaveRequest.getEmployee(),
+                        forcedDate)) {
+                    throw new ValidationException(
+                            "Attendance already exists on " + forcedDate +
+                                    " (sandwich leave weekend). Leave cannot be approved.",
+                            ErrorCode.VALIDATION_FAILED
+                    );
+                }
+            }
         }
 
         // Leave cannot be approved after its start date

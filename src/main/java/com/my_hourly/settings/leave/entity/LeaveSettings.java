@@ -87,4 +87,29 @@ public class LeaveSettings extends BaseSettings {
 //    @Column(nullable = false)
 //    @Builder.Default
 //    private Boolean active = true;
+
+    /**
+     * When enabled, taking leave on Monday counts the preceding Saturday and Sunday,
+     * totaling 3 chargeable days.
+     */
+    @Column(name = "sandwich_leave_monday_enabled", nullable = false)
+    @Builder.Default
+    private Boolean sandwichLeaveMondayEnabled = false;
+
+    /**
+     * When enabled, taking leave on Friday counts the following Saturday and Sunday,
+     * totaling 3 chargeable days.
+     */
+    @Column(name = "sandwich_leave_friday_enabled", nullable = false)
+    @Builder.Default
+    private Boolean sandwichLeaveFridayEnabled = false;
+
+    /**
+     * When enabled, taking leave on both Friday and Monday counts the intervening
+     * Saturday and Sunday, totaling 4 chargeable days. This rule takes precedence
+     * over the individual Friday and Monday rules.
+     */
+    @Column(name = "sandwich_leave_friday_monday_enabled", nullable = false)
+    @Builder.Default
+    private Boolean sandwichLeaveFridayMondayEnabled = false;
 }

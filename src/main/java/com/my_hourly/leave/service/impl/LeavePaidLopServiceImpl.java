@@ -80,10 +80,43 @@ public class LeavePaidLopServiceImpl implements LeavePaidLopService {
             LeaveType leaveType,
             LocalDate startDate,
             LocalDate endDate) {
+<<<<<<< HEAD
 
         int monthlyGuideline = resolveMonthlyGuideline(leaveType);
 
         Set<LocalDate> holidays = holidayDates(startDate, endDate);
+=======
+        // Delegate to the 5-parameter version with empty forcedWorkingDays
+        return classify(employee, leaveType, startDate, endDate, Set.of());
+    }
+
+    @Override
+    public PaidLopAllocation classify(
+            Employee employee,
+            LeaveType leaveType,
+            LocalDate startDate,
+            LocalDate endDate,
+            Set<LocalDate> forcedWorkingDays) {
+
+        int monthlyGuideline = resolveMonthlyGuideline(leaveType);
+
+        // Determine effective date range including forced working days
+        LocalDate effectiveStart = startDate;
+        LocalDate effectiveEnd = endDate;
+        
+        if (forcedWorkingDays != null && !forcedWorkingDays.isEmpty()) {
+            LocalDate minForced = forcedWorkingDays.stream()
+                .min(LocalDate::compareTo)
+                .orElse(effectiveStart);
+            LocalDate maxForced = forcedWorkingDays.stream()
+                .max(LocalDate::compareTo)
+                .orElse(effectiveEnd);
+            effectiveStart = effectiveStart.isBefore(minForced) ? effectiveStart : minForced;
+            effectiveEnd = effectiveEnd.isAfter(maxForced) ? effectiveEnd : maxForced;
+        }
+
+        Set<LocalDate> holidays = holidayDates(effectiveStart, effectiveEnd);
+>>>>>>> feature/sandwich-leave
 
         // Balance is resolved per year (a request may cross a year boundary) and
         // cached so the annual allowance is shared across the months of one year.
@@ -95,13 +128,19 @@ public class LeavePaidLopServiceImpl implements LeavePaidLopService {
         int paidDays = 0;
         int lopDays = 0;
 
+<<<<<<< HEAD
         YearMonth firstMonth = YearMonth.from(startDate);
         YearMonth lastMonth = YearMonth.from(endDate);
+=======
+        YearMonth firstMonth = YearMonth.from(effectiveStart);
+        YearMonth lastMonth = YearMonth.from(effectiveEnd);
+>>>>>>> feature/sandwich-leave
 
         for (YearMonth month = firstMonth;
              !month.isAfter(lastMonth);
              month = month.plusMonths(1)) {
 
+<<<<<<< HEAD
             LocalDate monthFrom = startDate.isAfter(month.atDay(1))
                     ? startDate
                     : month.atDay(1);
@@ -111,6 +150,17 @@ public class LeavePaidLopServiceImpl implements LeavePaidLopService {
                     : month.atEndOfMonth();
 
             List<LocalDate> workingDays = workingDays(monthFrom, monthTo, holidays);
+=======
+            LocalDate monthFrom = effectiveStart.isAfter(month.atDay(1))
+                    ? effectiveStart
+                    : month.atDay(1);
+
+            LocalDate monthTo = effectiveEnd.isBefore(month.atEndOfMonth())
+                    ? effectiveEnd
+                    : month.atEndOfMonth();
+
+            List<LocalDate> workingDays = workingDays(monthFrom, monthTo, holidays, forcedWorkingDays != null ? forcedWorkingDays : Set.of());
+>>>>>>> feature/sandwich-leave
             if (workingDays.isEmpty()) {
                 continue;
             }
@@ -197,11 +247,25 @@ public class LeavePaidLopServiceImpl implements LeavePaidLopService {
                 .collect(Collectors.toSet());
     }
 
+<<<<<<< HEAD
     private List<LocalDate> workingDays(LocalDate from, LocalDate to, Set<LocalDate> holidays) {
+=======
+    private List<LocalDate> workingDays(LocalDate from, LocalDate to, Set<LocalDate> holidays, Set<LocalDate> forcedWorkingDays) {
+>>>>>>> feature/sandwich-leave
 
         List<LocalDate> days = new ArrayList<>();
 
         for (LocalDate day = from; !day.isAfter(to); day = day.plusDays(1)) {
+<<<<<<< HEAD
+=======
+            // Forced working days (sandwich leave weekends) are always counted,
+            // regardless of weekend or public holiday status
+            if (forcedWorkingDays.contains(day)) {
+                days.add(day);
+                continue;
+            }
+            
+>>>>>>> feature/sandwich-leave
             if (isWeekend(day) || holidays.contains(day)) {
                 continue;
             }

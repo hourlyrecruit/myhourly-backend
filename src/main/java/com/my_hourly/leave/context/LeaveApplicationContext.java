@@ -4,6 +4,9 @@ import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.leave.entity.LeaveBalance;
 import com.my_hourly.leave.entity.LeaveType;
 
+import java.time.LocalDate;
+import java.util.Set;
+
 public record LeaveApplicationContext(
 
         Employee employee,
@@ -12,7 +15,9 @@ public record LeaveApplicationContext(
 
         LeaveBalance leaveBalance,
 
-        Integer totalDays
+        Integer totalDays,
+
+        Set<LocalDate> forcedWorkingDays
 
 ) {
 }

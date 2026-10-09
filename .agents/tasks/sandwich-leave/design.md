@@ -207,28 +207,161 @@ entity.setSandwichLeaveFridayMondayEnabled(request.getSandwichLeaveFridayMondayE
 4. Skipping holidays
 5. Counting the remainder as working days
 
-**New approach:** Before the existing calculation loop, expand the date range if sandwich leave rules apply.
+**New approach:** Before the existing calculation loop, identify sandwich leave weekends that must be counted as working days even though they fall on weekends.
+
+**New dependency injection required:**
+
+Add to `LeaveValidationServiceImpl` constructor:
+
+```java
+private final LeaveSettingsService leaveSettingsService;
+```
+
+**File:** `src/main/java/com/my_hourly/leave/service/impl/LeavePaidLopServiceImpl.java`
+
+**Modified method:** `workingDays(LocalDate from, LocalDate to, Set<LocalDate> holidays)`
+
+**Change method signature to:**
+```java
+private List<LocalDate> workingDays(LocalDate from, LocalDate to, Set<LocalDate> holidays, Set<LocalDate> forcedWorkingDays)
+```
+
+**Update implementation:**
+```java
+private List<LocalDate> workingDays(LocalDate from, LocalDate to, Set<LocalDate> holidays, Set<LocalDate> forcedWorkingDays) {
+
+    List<LocalDate> days = new ArrayList<>();
+
+    for (LocalDate day = from; !day.isAfter(to); day = day.plusDays(1)) {
+        // Forced working days (sandwich leave weekends) are always counted,
+        // regardless of weekend or public holiday status
+        if (forcedWorkingDays != null && forcedWorkingDays.contains(day)) {
+            days.add(day);
+            continue;
+        }
+        
+        if (isWeekend(day) || holidays.contains(day)) {
+            continue;
+        }
+        days.add(day);
+    }
+
+    return days;
+}
+```
+
+**Update the `classify()` method call sites (around line 122):**
+```java
+Set<LocalDate> forcedWorkingDays = leaveRequest.getForcedWorkingDays();
+if (forcedWorkingDays == null) {
+    forcedWorkingDays = Set.of();
+}
+
+// Determine effective range including forced working days
+LocalDate effectiveStart = leaveRequest.getStartDate();
+LocalDate effectiveEnd = leaveRequest.getEndDate();
+
+if (!forcedWorkingDays.isEmpty()) {
+    LocalDate minForced = forcedWorkingDays.stream()
+        .min(LocalDate::compareTo)
+        .orElse(effectiveStart);
+    LocalDate maxForced = forcedWorkingDays.stream()
+        .max(LocalDate::compareTo)
+        .orElse(effectiveEnd);
+    effectiveStart = effectiveStart.isBefore(minForced) ? effectiveStart : minForced;
+    effectiveEnd = effectiveEnd.isAfter(maxForced) ? effectiveEnd : maxForced;
+}
+
+// When calling workingDays(), use effectiveStart/effectiveEnd and pass forcedWorkingDays:
+List<LocalDate> workingDays = workingDays(effectiveStart, effectiveEnd, holidays, forcedWorkingDays);
+```
+
+**Rationale:** The PAID/LOP classifier walks from startDate to endDate and skips weekends. Without this modification, sandwich weekends that fall outside or within the original range won't be counted correctly. This change ensures forced working days are always counted regardless of their weekend/holiday status.
+
+**File:** `src/main/java/com/my_hourly/leave/service/impl/LeaveRequestServiceImpl.java`
+
+**Method:** `managerAction()` (around line 191-207)
+
+**Modification:** Add attendance overlap check for forcedWorkingDays after the existing check:
+
+```java
+// Existing check for the original request range
+LocalDate date = leaveRequest.getStartDate();
+while (!date.isAfter(leaveRequest.getEndDate())) {
+    if (attendanceRepository.existsByEmployeeAndAttendanceDate(
+            leaveRequest.getEmployee(),
+            date)) {
+        throw new ValidationException(
+                "Attendance already exists on " + date +
+                        ". Leave cannot be approved.",
+                ErrorCode.VALIDATION_FAILED
+        );
+    }
+    date = date.plusDays(1);
+}
+
+// NEW: Also check forced working days (sandwich weekends)
+Set<LocalDate> forcedWorkingDays = leaveRequest.getForcedWorkingDays();
+if (forcedWorkingDays != null && !forcedWorkingDays.isEmpty()) {
+    for (LocalDate forcedDate : forcedWorkingDays) {
+        // Skip if already checked in the main loop above
+        if (!forcedDate.isBefore(leaveRequest.getStartDate()) 
+            && !forcedDate.isAfter(leaveRequest.getEndDate())) {
+            continue;
+        }
+        
+        if (attendanceRepository.existsByEmployeeAndAttendanceDate(
+                leaveRequest.getEmployee(),
+                forcedDate)) {
+            throw new ValidationException(
+                    "Attendance already exists on " + forcedDate +
+                            " (sandwich leave weekend). Leave cannot be approved.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+    }
+}
+```
+
+**Rationale:** If a user works on Saturday (weekend attendance allowed) and then applies for Monday leave with the Monday rule enabled, the manager approval must check that Saturday doesn't already have attendance marked. Without this check, the system could mark Saturday as LEAVE retroactively, overwriting the existing attendance record.
 
 **New private method to add:**
 
 ```java
+import java.time.DayOfWeek;
+
 /**
- * Expands leave date range based on sandwich leave settings.
+ * Expands leave date range based on sandwich leave settings and identifies
+ * weekend dates that should be counted as chargeable days.
+ * 
  * Order of evaluation prevents double-counting:
- * 1. Friday+Monday rule (if both Friday AND Monday are in range)
- * 2. Friday-only rule (if Friday in range and Monday rule didn't fire)
+ * 1. Friday+Monday rule (if both Friday AND Monday are in the original request)
+ * 2. Friday-only rule (if Friday in range and Friday+Monday rule didn't fire)
  * 3. Monday-only rule (if Monday in range and Friday+Monday rule didn't fire)
  * 
- * @param startDate original start date
- * @param endDate original end date
- * @return expanded date range as [newStart, newEnd], or original if no rules apply
+ * Note: If user manually includes weekend days in their selection, those days will be
+ * counted by the normal working-day calculation. The sandwich rule will additionally
+ * force adjacent/intervening weekends as working days. This is intentional - if a user
+ * explicitly selects a weekend day, it should be counted.
+ * 
+ * @param startDate original start date from user request
+ * @param endDate original end date from user request
+ * @return SandwichLeaveExpansion containing expanded range and forced working days
  */
-private LocalDate[] expandForSandwichLeave(LocalDate startDate, LocalDate endDate) {
+private SandwichLeaveExpansion expandForSandwichLeave(LocalDate startDate, LocalDate endDate) {
     
-    LeaveSettings settings = leaveSettingsService.getActiveLeaveSettings();
+    LeaveSettings settings;
+    try {
+        settings = leaveSettingsService.getSettings();
+    } catch (ResourceNotFoundException e) {
+        // If settings are missing, default to no sandwich leave expansion
+        log.warn("Leave settings not found, sandwich leave rules disabled");
+        return new SandwichLeaveExpansion(startDate, endDate, Set.of());
+    }
     
     LocalDate expandedStart = startDate;
     LocalDate expandedEnd = endDate;
+    Set<LocalDate> forcedWorkingDays = new HashSet<>();
     
     // Collect all dates in the request range (original request only)
     Set<LocalDate> requestDates = new HashSet<>();
@@ -238,80 +371,130 @@ private LocalDate[] expandForSandwichLeave(LocalDate startDate, LocalDate endDat
         current = current.plusDays(1);
     }
     
-    // Check if range contains Friday AND Monday with only Saturday/Sunday between them
+    // Rule 1: Friday+Monday sandwich (highest priority)
+    // Detect if the user requested BOTH Friday and Monday with Saturday/Sunday between them
     boolean hasFridayMondaySandwich = false;
-    if (settings.getSandwichLeaveFridayMondayEnabled()) {
+    if (settings.getSandwichLeaveFridayMondayEnabled() != null && 
+        settings.getSandwichLeaveFridayMondayEnabled()) {
         for (LocalDate date : requestDates) {
             if (date.getDayOfWeek() == DayOfWeek.FRIDAY) {
-                LocalDate nextMonday = date.plusDays(3);
-                if (requestDates.contains(nextMonday)) {
-                    // Found a Friday+Monday pair: expand to include Sat+Sun
-                    // The Sat+Sun are already between Friday and Monday in the range,
-                    // so no expansion needed - they're already included in [startDate, endDate]
-                    // Just mark that this rule fired to prevent Friday-only or Monday-only from firing
+                LocalDate saturday = date.plusDays(1);
+                LocalDate sunday = date.plusDays(2);
+                LocalDate monday = date.plusDays(3);
+                
+                if (requestDates.contains(monday)) {
+                    // Friday+Monday sandwich detected: force Sat+Sun as working days
+                    forcedWorkingDays.add(saturday);
+                    forcedWorkingDays.add(sunday);
                     hasFridayMondaySandwich = true;
-                    break;
+                    // No need to expand the date range boundaries (expandedStart/expandedEnd) 
+                    // because Saturday and Sunday already fall between Friday and Monday in the 
+                    // original request range. The calculateLeaveDays loop will iterate over them 
+                    // and count them as forced working days.
+                    break; // Only apply once per request
                 }
             }
         }
     }
     
-    // Friday-only rule: expand END to include following Sat+Sun
-    if (!hasFridayMondaySandwich && settings.getSandwichLeaveFridayEnabled()) {
+    // Rule 2: Friday-only sandwich
+    // Only applies if Friday+Monday rule did NOT fire
+    if (!hasFridayMondaySandwich && 
+        settings.getSandwichLeaveFridayEnabled() != null && 
+        settings.getSandwichLeaveFridayEnabled()) {
         for (LocalDate date : requestDates) {
             if (date.getDayOfWeek() == DayOfWeek.FRIDAY) {
-                LocalDate potentialNewEnd = date.plusDays(2); // Sunday after Friday
-                if (potentialNewEnd.isAfter(expandedEnd)) {
-                    expandedEnd = potentialNewEnd;
+                LocalDate saturday = date.plusDays(1);
+                LocalDate sunday = date.plusDays(2);
+                
+                // Extend range to include Sat+Sun and force them as working days
+                if (sunday.isAfter(expandedEnd)) {
+                    expandedEnd = sunday;
                 }
-                break; // Only extend once for first Friday found
+                forcedWorkingDays.add(saturday);
+                forcedWorkingDays.add(sunday);
+                break; // Only apply once per request
             }
         }
     }
     
-    // Monday-only rule: expand START to include preceding Sat+Sun
-    if (!hasFridayMondaySandwich && settings.getSandwichLeaveMondayEnabled()) {
+    // Rule 3: Monday-only sandwich
+    // Only applies if Friday+Monday rule did NOT fire
+    if (!hasFridayMondaySandwich && 
+        settings.getSandwichLeaveMondayEnabled() != null && 
+        settings.getSandwichLeaveMondayEnabled()) {
         for (LocalDate date : requestDates) {
             if (date.getDayOfWeek() == DayOfWeek.MONDAY) {
-                LocalDate potentialNewStart = date.minusDays(2); // Saturday before Monday
-                if (potentialNewStart.isBefore(expandedStart)) {
-                    expandedStart = potentialNewStart;
+                LocalDate saturday = date.minusDays(2);
+                LocalDate sunday = date.minusDays(1);
+                
+                // Extend range to include Sat+Sun and force them as working days
+                if (saturday.isBefore(expandedStart)) {
+                    expandedStart = saturday;
                 }
-                break; // Only extend once for first Monday found
+                forcedWorkingDays.add(saturday);
+                forcedWorkingDays.add(sunday);
+                break; // Only apply once per request
             }
         }
     }
     
-    return new LocalDate[] { expandedStart, expandedEnd };
+    return new SandwichLeaveExpansion(expandedStart, expandedEnd, forcedWorkingDays);
 }
+
+/**
+ * Internal DTO for sandwich leave expansion results.
+ * 
+ * @param expandedStart potentially expanded start date (may be same as original)
+ * @param expandedEnd potentially expanded end date (may be same as original)
+ * @param forcedWorkingDays set of dates that must be counted as working days even if they are weekends
+ */
+private record SandwichLeaveExpansion(
+    LocalDate expandedStart,
+    LocalDate expandedEnd,
+    Set<LocalDate> forcedWorkingDays
+) {}
 ```
 
 **Modified `calculateLeaveDays()` method:**
 
+Add an overloaded version that accepts forcedWorkingDays:
+
 ```java
+/**
+ * Calculates working days between startDate and endDate, including forced working days.
+ * Forced working days (sandwich leave weekends) are counted even if they fall on weekends.
+ * 
+ * @param startDate start date (inclusive)
+ * @param endDate end date (inclusive)
+ * @param forcedWorkingDays set of dates to count as working days even if they are weekends
+ * @return total number of working days
+ */
 private Integer calculateLeaveDays(
         LocalDate startDate,
-        LocalDate endDate) {
-
-    // SANDWICH LEAVE EXPANSION
-    LocalDate[] expanded = expandForSandwichLeave(startDate, endDate);
-    LocalDate effectiveStart = expanded[0];
-    LocalDate effectiveEnd = expanded[1];
+        LocalDate endDate,
+        Set<LocalDate> forcedWorkingDays) {
 
     Set<LocalDate> holidayDates =
             holidayRepository
-                    .findByHolidayDateBetween(
-                            effectiveStart,
-                            effectiveEnd)
+                    .findByHolidayDateBetween(startDate, endDate)
                     .stream()
                     .map(Holiday::getHolidayDate)
                     .collect(Collectors.toSet());
 
     int totalDays = 0;
 
-    LocalDate current = effectiveStart;
+    LocalDate current = startDate;
 
-    while (!current.isAfter(effectiveEnd)) {
+    while (!current.isAfter(endDate)) {
+
+        // Forced working days (sandwich weekends) are always counted,
+        // regardless of weekend or public holiday status
+        if (forcedWorkingDays.contains(current)) {
+            totalDays++;
+            current = current.plusDays(1);
+            continue;
+        }
 
         if (isWeekend(current)) {
             current = current.plusDays(1);
@@ -336,39 +519,104 @@ private Integer calculateLeaveDays(
 
     return totalDays;
 }
+
+/**
+ * Calculates working days between startDate and endDate (backward compatibility).
+ * Delegates to the 3-parameter version with empty forcedWorkingDays set.
+ * 
+ * @param startDate start date (inclusive)
+ * @param endDate end date (inclusive)
+ * @return total number of working days
+ */
+private Integer calculateLeaveDays(LocalDate startDate, LocalDate endDate) {
+    return calculateLeaveDays(startDate, endDate, Set.of());
+}
 ```
 
-**New dependency injection required:**
-
-Add to `LeaveValidationServiceImpl` constructor:
-
-```java
-private final LeaveSettingsService leaveSettingsService;
-```
-
-**Service interface method to add to `LeaveSettingsService`:**
+**Modified `LeaveApplicationContext` record:**
 
 ```java
 /**
- * Retrieves the active leave settings for the current company.
- * @return active LeaveSettings entity
- * @throws ResourceNotFoundException if no active settings found
+ * Context object containing validated leave application data.
+ * 
+ * @param employee the employee applying for leave
+ * @param leaveType the type of leave being applied
+ * @param leaveBalance the employee's leave balance for this type
+ * @param totalDays total chargeable days (including sandwich leave weekends)
+ * @param forcedWorkingDays set of dates to count as working days (sandwich leave weekends)
  */
-LeaveSettings getActiveLeaveSettings();
+public record LeaveApplicationContext(
+        Employee employee,
+        LeaveType leaveType,
+        LeaveBalance leaveBalance,
+        Integer totalDays,
+        Set<LocalDate> forcedWorkingDays
+) {}
 ```
 
-**Implementation in `LeaveSettingsServiceImpl`:**
+**Revised `LeaveValidationServiceImpl.validateLeaveApplication()`:**
 
 ```java
 @Override
-@Transactional(readOnly = true)
-public LeaveSettings getActiveLeaveSettings() {
-    return leaveSettingsRepository.findByActiveTrue()
-            .orElseThrow(() -> new ResourceNotFoundException(
-                    "Active leave settings not found.",
-                    ErrorCode.RESOURCE_NOT_FOUND
-            ));
+public LeaveApplicationContext validateLeaveApplication(
+        Employee employee,
+        LeaveRequestRequest request) {
+
+    LeaveType leaveType =
+            validateLeaveType(request.getLeaveTypeId());
+
+    validateLeaveDates(
+            request.getStartDate(),
+            request.getEndDate());
+
+    validateLeaveOverlap(
+            employee,
+            request.getStartDate(),
+            request.getEndDate());
+
+    // Calculate leave days with sandwich expansion
+    SandwichLeaveExpansion expansion = expandForSandwichLeave(
+            request.getStartDate(),
+            request.getEndDate());
+    
+    Integer totalDays = calculateLeaveDays(
+            expansion.expandedStart(),
+            expansion.expandedEnd(),
+            expansion.forcedWorkingDays());
+
+    LeaveBalance leaveBalance =
+            validateLeaveBalance(
+                    employee,
+                    leaveType,
+                    totalDays);
+
+    return new LeaveApplicationContext(
+            employee,
+            leaveType,
+            leaveBalance,
+            totalDays,
+            expansion.forcedWorkingDays());
 }
+```
+
+**Revised `LeaveRequestServiceImpl.applyLeave()`:**
+
+Store the original user-selected dates in LeaveRequest, but store the forced working days and expanded totalDays:
+
+```java
+LeaveRequest leaveRequest =
+        LeaveRequest.builder()
+                .employee(employee)
+                .leaveType(context.leaveType())
+                .startDate(request.getStartDate())      // Original user-selected start
+                .endDate(request.getEndDate())          // Original user-selected end
+                .totalDays(context.totalDays())         // Expanded count (includes sandwich weekends)
+                .reason(request.getReason().trim())
+                .status(LeaveStatus.PENDING)
+                .build();
+
+// Set forced working days for sandwich leave
+leaveRequest.setForcedWorkingDays(context.forcedWorkingDays());
 ```
 
 ### 6. Frontend - Settings UI
@@ -411,7 +659,7 @@ Add a new section after 'Leave Rules':
   name: 'sandwichLeaveFridayMondayEnabled',
   label: 'Friday+Monday Leave (with weekend between)',
   type: 'boolean',
-  hint: 'Taking leave on both Friday and Monday charges Saturday and Sunday (4 days total).'
+  hint: 'Taking leave on both Friday and Monday charges Saturday and Sunday (4 days total). Note: This rule takes precedence over the individual Friday and Monday rules when both days are in the leave request.'
 }
 ```
 
@@ -453,7 +701,7 @@ The expanded date range is passed to `calculateLeaveDays()`, which returns a `to
 
 ## Database Migration
 
-**File:** `src/main/resources/db/migration/V{next}_add_sandwich_leave_settings.sql`
+**File:** `src/main/resources/db/migration/V10__add_sandwich_leave_settings.sql`
 
 ```sql
 -- Add sandwich leave policy settings to leave_settings table
@@ -465,15 +713,22 @@ ADD COLUMN sandwich_leave_monday_enabled BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN sandwich_leave_friday_enabled BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN sandwich_leave_friday_monday_enabled BOOLEAN NOT NULL DEFAULT false;
 
+-- Add column to store forced working days (sandwich leave weekends) in leave_requests
+ALTER TABLE leave_requests
+ADD COLUMN forced_working_days_json TEXT;
+
 -- Add comments for documentation
 COMMENT ON COLUMN leave_settings.sandwich_leave_monday_enabled IS 
-  'When enabled, taking leave on Monday counts the preceding Saturday and Sunday, totaling 3 chargeable days.';
+  'When enabled, taking leave on Monday forces the preceding Saturday and Sunday to be counted as working days, resulting in 3 total chargeable days.';
 
 COMMENT ON COLUMN leave_settings.sandwich_leave_friday_enabled IS 
-  'When enabled, taking leave on Friday counts the following Saturday and Sunday, totaling 3 chargeable days.';
+  'When enabled, taking leave on Friday forces the following Saturday and Sunday to be counted as working days, resulting in 3 total chargeable days.';
 
 COMMENT ON COLUMN leave_settings.sandwich_leave_friday_monday_enabled IS 
-  'When enabled, taking leave on both Friday and Monday counts the intervening Saturday and Sunday, totaling 4 chargeable days.';
+  'When enabled, taking leave on both Friday and Monday forces the intervening Saturday and Sunday to be counted as working days, resulting in 4 total chargeable days. This rule takes precedence over the individual Friday and Monday rules.';
+
+COMMENT ON COLUMN leave_requests.forced_working_days_json IS
+  'JSON array of dates (YYYY-MM-DD format) that should be counted as working days even if they fall on weekends. Used for sandwich leave policy enforcement. Example: ["2023-10-28", "2023-10-29"]';
 ```
 
 ## Test Strategy
@@ -673,20 +928,20 @@ private Integer calculateLeaveDays(
    - Leave: Thursday + Friday → 2 working days
 
 2. **Monday rule enabled:**
-   - Leave: Monday only → 3 working days (Sat, Sun, Mon)
+   - Leave: Monday Oct 30, 2023 → 3 working days (Sat Oct 28, Sun Oct 29, Mon Oct 30)
    - Leave: Tuesday only → 1 working day (no expansion)
    - Leave: Monday + Tuesday → 4 working days (Sat, Sun, Mon, Tue)
    - Leave: Saturday + Sunday + Monday (manual) → 3 working days (all three counted)
 
 3. **Friday rule enabled:**
-   - Leave: Friday only → 3 working days (Fri, Sat, Sun)
+   - Leave: Friday Oct 27, 2023 → 3 working days (Fri Oct 27, Sat Oct 28, Sun Oct 29)
    - Leave: Thursday only → 1 working day (no expansion)
    - Leave: Thursday + Friday → 4 working days (Thu, Fri, Sat, Sun)
 
 4. **Friday+Monday rule enabled:**
    - Leave: Friday only → 1 working day (no expansion, Monday not in range)
    - Leave: Monday only → 1 working day (no expansion, Friday not in range)
-   - Leave: Friday + Monday → 4 working days (Fri, Sat, Sun, Mon)
+   - Leave: Friday Oct 27 + Monday Oct 30, 2023 → 4 working days (Fri, Sat, Sun, Mon)
    - Leave: Friday + Saturday + Sunday + Monday (manual) → 4 working days (same)
 
 5. **All three rules enabled:**
@@ -696,13 +951,66 @@ private Integer calculateLeaveDays(
    - Leave: Thursday + Friday + Monday + Tuesday → 6 working days (Thu, Fri, Sat, Sun, Mon, Tue)
 
 6. **Edge case: Public holiday on Saturday:**
-   - Monday rule enabled, leave: Monday only → 3 working days (Sat and Sun are forced as working days by sandwich rule, public holiday check doesn't apply to forced days)
-   - **Alternative interpretation:** Forced sandwich days should still respect public holidays.
-   - **Chosen approach:** Sandwich weekends are counted regardless of public holidays. The policy intent is to charge for the weekend as part of the sandwich, even if Saturday or Sunday is a declared public holiday.
+   ```java
+   @Test
+   void mondayLeave_withSaturdayPublicHoliday_countsAllThreeDays() {
+       // Setup: Create a public holiday on Saturday Oct 28, 2023
+       Holiday saturdayHoliday = Holiday.builder()
+           .holidayDate(LocalDate.of(2023, 10, 28))  // Saturday
+           .name("Test Holiday")
+           .build();
+       holidayRepository.save(saturdayHoliday);
+       
+       // Enable Monday sandwich leave rule
+       leaveSettings.setSandwichLeaveMondayEnabled(true);
+       leaveSettingsRepository.save(leaveSettings);
+       
+       // Apply for Monday Oct 30, 2023
+       LeaveRequestRequest request = new LeaveRequestRequest(
+           leaveType.getId(),
+           LocalDate.of(2023, 10, 30),  // Monday
+           LocalDate.of(2023, 10, 30),
+           "Test"
+       );
+       
+       // Expected: 3 days (Sat-holiday, Sun, Mon)
+       // Sandwich weekends are counted regardless of public holidays
+       LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
+       assertEquals(3, context.totalDays());
+       assertEquals(2, context.forcedWorkingDays().size());
+       
+       // Verify the specific dates in forcedWorkingDays
+       assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 28)), 
+           "Saturday Oct 28 should be a forced working day");
+       assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 29)), 
+           "Sunday Oct 29 should be a forced working day");
+   }
+   ```
 
 7. **Edge case: Month boundary:**
-   - Friday rule enabled, leave: Last Friday of October → 3 working days, crosses into November (Fri Oct 31, Sat Nov 1, Sun Nov 2)
-   - Verify PAID/LOP split correctly attributes days to October and November.
+   ```java
+   @Test
+   void fridayLeave_crossingMonthBoundary_expandsIntoNextMonth() {
+       // Enable Friday sandwich leave rule
+       leaveSettings.setSandwichLeaveFridayEnabled(true);
+       leaveSettingsRepository.save(leaveSettings);
+       
+       // Friday Oct 31, 2023 (last day of October)
+       // Sandwich rule expands to Sat Nov 1, Sun Nov 2
+       LeaveRequestRequest request = new LeaveRequestRequest(
+           leaveType.getId(),
+           LocalDate.of(2023, 10, 31),  // Friday
+           LocalDate.of(2023, 10, 31),
+           "Test"
+       );
+       
+       // Expected: totalDays = 3, spanning Oct and Nov
+       LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
+       assertEquals(3, context.totalDays());
+       assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 11, 1)));  // Sat Nov 1
+       assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 11, 2)));  // Sun Nov 2
+   }
+   ```
 
 8. **Integration test: Leave balance deduction:**
    - Employee has 5 days remaining balance.
@@ -763,41 +1071,53 @@ private Integer calculateLeaveDays(
 
 ### Risk 3: Integration with LeavePaidLopServiceImpl
 
-**Issue:** The `LeavePaidLopServiceImpl` (from main repository, not in worktree) walks working days between `leaveRequest.getStartDate()` and `leaveRequest.getEndDate()` to classify PAID/LOP. If the sandwich leave expansion modifies the `totalDays` but the `startDate`/`endDate` stored in `LeaveRequest` entity remain unchanged, there's a mismatch.
+**Issue:** The `LeavePaidLopServiceImpl` (from main repository, not in worktree) walks working days between `leaveRequest.getStartDate()` and `leaveRequest.getEndDate()` to classify PAID/LOP. The classifier uses the same weekend/holiday logic as LeaveValidationServiceImpl.
 
-**Analysis:** Reviewing the `LeaveRequestServiceImpl.applyLeave()` method:
+**Analysis:** The design stores:
+- **Original user-selected dates** in `LeaveRequest.startDate` and `LeaveRequest.endDate`
+- **Forced working days** (sandwich weekends) in `LeaveRequest.forcedWorkingDaysJson`
+- **Expanded totalDays** in `LeaveRequest.totalDays`
 
-```java
-LeaveRequest leaveRequest =
-        LeaveRequest.builder()
-                .employee(employee)
-                .leaveType(context.leaveType())
-                .startDate(request.getStartDate())  // Original user-selected start
-                .endDate(request.getEndDate())      // Original user-selected end
-                .totalDays(context.totalDays())      // Calculated total (with sandwich expansion)
-                .reason(request.getReason().trim())
-                .status(LeaveStatus.PENDING)
-                .build();
-```
+**Risk:** The PAID/LOP classifier walks from startDate to endDate and skips weekends. If sandwich weekends fall outside this range (e.g., Friday rule extends to Sunday), the classifier won't see them.
 
-The `startDate` and `endDate` are the **original user-selected dates**, while `totalDays` is the expanded count. This creates a discrepancy.
+**Mitigation:** The PAID/LOP classifier must be modified to:
+1. Read `forcedWorkingDays` from LeaveRequest
+2. Count those dates as working days even if they are weekends
+3. Walk the full expanded range (from earliest forced date to latest forced date, or startDate/endDate if no forced dates)
 
-**Correct approach:** Store the **expanded** `startDate` and `endDate` in the `LeaveRequest` entity, so that the PAID/LOP classifier and all downstream logic operate on the expanded range.
-
-**Revised `LeaveApplicationContext`:**
+**Required modification to LeavePaidLopServiceImpl:**
 
 ```java
-public record LeaveApplicationContext(
-        Employee employee,
-        LeaveType leaveType,
-        LeaveBalance leaveBalance,
-        LocalDate effectiveStartDate,   // Expanded start (for sandwich leave)
-        LocalDate effectiveEndDate,     // Expanded end (for sandwich leave)
-        Integer totalDays
-) {}
+// In classify() method
+Set<LocalDate> forcedWorkingDays = leaveRequest.getForcedWorkingDays();
+
+// Determine effective range
+LocalDate effectiveStart = leaveRequest.getStartDate();
+LocalDate effectiveEnd = leaveRequest.getEndDate();
+
+if (!forcedWorkingDays.isEmpty()) {
+    LocalDate minForced = forcedWorkingDays.stream().min(LocalDate::compareTo).orElse(effectiveStart);
+    LocalDate maxForced = forcedWorkingDays.stream().max(LocalDate::compareTo).orElse(effectiveEnd);
+    effectiveStart = effectiveStart.isBefore(minForced) ? effectiveStart : minForced;
+    effectiveEnd = effectiveEnd.isAfter(maxForced) ? effectiveEnd : maxForced;
+}
+
+// In the working day iteration loop
+while (!current.isAfter(effectiveEnd)) {
+    // Check if current date is a forced working day
+    if (forcedWorkingDays.contains(current)) {
+        // Count this as a working day regardless of weekend/holiday status
+        // ... rest of PAID/LOP classification logic
+    }
+    // ... existing weekend/holiday skip logic
+}
 ```
 
-**Revised `LeaveValidationServiceImpl.validateLeaveApplication()`:**
+**Implication:** This is a breaking change to the main repository's `LeavePaidLopServiceImpl`. The implementation phase must include this modification and test it thoroughly.
+
+**Alternative approach (safer):** Store expanded startDate/endDate in separate columns (`effective_start_date`, `effective_end_date`) in `leave_requests` table, and use those for PAID/LOP classification. This avoids modifying LeavePaidLopServiceImpl but adds schema complexity.
+
+**Chosen approach:** Modify LeavePaidLopServiceImpl to accept `forcedWorkingDays`. This is cleaner and more explicit about the sandwich leave logic.tionServiceImpl.validateLeaveApplication()`:**
 
 ```java
 @Override
@@ -858,16 +1178,17 @@ LeaveRequest leaveRequest =
                 .build();
 ```
 
-**Implication:** The `LeaveRequest` entity now stores the expanded date range. This means:
-- The leave calendar UI will show the expanded range (including sandwich weekends).
-- The PAID/LOP classifier will walk the expanded range.
-- The attendance marking logic will mark the expanded range (including sandwich weekends).
+**Implication:** The `LeaveRequest` entity now stores the original user-selected dates and the forced working days. This means:
+- The leave calendar UI will show the original request dates, which matches user expectations
+- The PAID/LOP classifier will walk the original range but count forced working days
+- The attendance marking logic must check for overlap including forced working days
 
-**Edge case:** If Saturday or Sunday is marked as attendance, the sandwich leave approval should fail.
+**Edge case:** If Saturday or Sunday is marked as attendance, and then a Monday sandwich leave is applied retroactively, the approval should fail.
 
-**Mitigation:** The existing attendance overlap check in `LeaveRequestServiceImpl.managerAction()` already handles this:
+**Mitigation:** The existing attendance overlap check in `LeaveRequestServiceImpl.managerAction()` needs to be enhanced to check forced working days:
 
 ```java
+// Existing check for the original request range
 LocalDate date = leaveRequest.getStartDate();
 while (!date.isAfter(leaveRequest.getEndDate())) {
     if (attendanceRepository.existsByEmployeeAndAttendanceDate(
@@ -881,9 +1202,21 @@ while (!date.isAfter(leaveRequest.getEndDate())) {
     }
     date = date.plusDays(1);
 }
-```
 
-Since `leaveRequest.getStartDate()` and `getEndDate()` now contain the expanded range (including sandwich weekends), this check will correctly prevent approval if attendance exists on any sandwich weekend day.
+// NEW: Also check forced working days (sandwich weekends)
+Set<LocalDate> forcedWorkingDays = leaveRequest.getForcedWorkingDays();
+for (LocalDate forcedDate : forcedWorkingDays) {
+    if (attendanceRepository.existsByEmployeeAndAttendanceDate(
+            leaveRequest.getEmployee(),
+            forcedDate)) {
+        throw new ValidationException(
+                "Attendance already exists on " + forcedDate +
+                        " (sandwich leave weekend). Leave cannot be approved.",
+                ErrorCode.VALIDATION_FAILED
+        );
+    }
+}
+```
 
 ### Risk 4: UI confusion - displayed date range vs selected date range
 
@@ -915,13 +1248,14 @@ Since `leaveRequest.getStartDate()` and `getEndDate()` now contain the expanded 
 
 **Scenario:** The migration is applied in production, then needs to be rolled back due to a critical bug.
 
-**Risk:** Rolling back the migration will drop the three new columns, losing any configuration data that was set.
+**Risk:** Rolling back the migration will drop the new columns, losing any configuration data that was set.
 
 **Mitigation:** The default value for all three columns is `false`, so rolling back and re-applying the migration restores the system to "sandwich leave disabled" state. Organizations should back up the `leave_settings` table before applying the migration in production.
 
 **Rollback script:**
 
 ```sql
+ALTER TABLE leave_requests DROP COLUMN IF EXISTS forced_working_days_json;
 ALTER TABLE leave_settings 
 DROP COLUMN IF EXISTS sandwich_leave_monday_enabled,
 DROP COLUMN IF EXISTS sandwich_leave_friday_enabled,
@@ -939,53 +1273,291 @@ DROP COLUMN IF EXISTS sandwich_leave_friday_monday_enabled;
 ## Implementation Checklist
 
 1. **Database migration:**
-   - [ ] Create Flyway migration script with the three new columns.
+   - [ ] Create Flyway migration script V10__add_sandwich_leave_settings.sql with three new columns for leave_settings and forced_working_days_json column for leave_requests.
    - [ ] Test migration on a local database.
    - [ ] Verify rollback script.
 
 2. **Backend - Entity & DTOs:**
    - [ ] Add three boolean fields to `LeaveSettings` entity.
+   - [ ] Add `forcedWorkingDaysJson` field and helper methods to `LeaveRequest` entity.
    - [ ] Add three fields to `LeaveSettingsRequest` DTO.
    - [ ] Add three fields to `LeaveSettingsResponse` DTO.
    - [ ] Update `LeaveSettingsMapper` for bidirectional mapping.
 
 3. **Backend - Service layer:**
-   - [ ] Add `getActiveLeaveSettings()` method to `LeaveSettingsService`.
-   - [ ] Implement `getActiveLeaveSettings()` in `LeaveSettingsServiceImpl`.
-   - [ ] Add `expandForSandwichLeave()` and `SandwichLeaveExpansion` record to `LeaveValidationServiceImpl`.
-   - [ ] Modify `calculateLeaveDays()` to use expansion and forced working days.
-   - [ ] Update `LeaveApplicationContext` to include effective start/end dates.
-   - [ ] Update `LeaveRequestServiceImpl.applyLeave()` to use effective dates.
-   - [ ] Inject `LeaveSettingsService` into `LeaveValidationServiceImpl`.
+   - [ ] Use existing `getSettings()` method from `LeaveSettingsService`
+   - [ ] Add `expandForSandwichLeave()` and `SandwichLeaveExpansion` record to `LeaveValidationServiceImpl`
+   - [ ] Add overloaded `calculateLeaveDays(startDate, endDate, forcedWorkingDays)` to `LeaveValidationServiceImpl`
+   - [ ] Keep existing 2-parameter `calculateLeaveDays(startDate, endDate)` for backward compatibility
+   - [ ] Update `LeaveApplicationContext` to include `forcedWorkingDays` field
+   - [ ] Update `LeaveRequestServiceImpl.applyLeave()` to store original dates and set forcedWorkingDays
+   - [ ] Inject `LeaveSettingsService` into `LeaveValidationServiceImpl`
+   - [ ] Modify `LeavePaidLopServiceImpl.workingDays()` method: add `forcedWorkingDays` parameter, check forcedWorkingDays.contains(day) before isWeekend check, update all call sites in classify()
+   - [ ] Enhance attendance overlap check in `LeaveRequestServiceImpl.managerAction()` to loop through forcedWorkingDays and check for existing attendance
 
 4. **Frontend - Settings UI:**
-   - [ ] Add three new field definitions to the 'leave' group in `Settings.jsx`.
+   - [ ] **BEFORE implementing**: Read HRMS/src/pages/Settings.jsx and verify GROUPS array structure, 'leave' group existence, field type 'boolean' behavior, and CalendarDays icon availability.
+   - [ ] Add three new field definitions to the 'leave' group in `Settings.jsx` with UI hints about rule precedence.
    - [ ] Add a new section "Sandwich Leave Policy" to the 'leave' group sections array.
    - [ ] Test the UI: toggle each setting and verify persistence.
 
 5. **Unit tests:**
-   - [ ] Create `LeaveSandwichPolicyTest.java` with all 10 test cases from the test strategy.
-   - [ ] Run tests and verify all pass.
-   - [ ] Add test cases to existing `LeaveValidationServiceTest` for the modified `calculateLeaveDays()`.
+   - [ ] Create `LeaveSandwichPolicyTest.java` with all 10 test cases from the test strategy, including concrete test implementations for cases 6 and 7
+   - [ ] Add test cases to existing `LeaveValidationServiceTest` for the modified `calculateLeaveDays()`
+   - [ ] Add `LeavePaidLopServiceImplTest` test cases: verify PAID/LOP split with sandwich leave (forced working days counted correctly), and test with null forcedWorkingDays (backward compatibility)
+   - [ ] Add `LeaveRequestServiceImplTest` test case: `managerApproval_withAttendanceOnSandwichWeekend_shouldFail()` - employee worked on Saturday, applies for Monday with Monday rule enabled, manager approval should throw ValidationException
+   - [ ] Run tests and verify all pass
 
 6. **Integration tests:**
    - [ ] Test leave application with sandwich rules enabled.
    - [ ] Test leave approval and balance deduction.
-   - [ ] Test PAID/LOP split with sandwich leave.
+   - [ ] Test PAID/LOP split with sandwich leave (verify LeavePaidLopServiceImpl modification works correctly).
    - [ ] Test insufficient balance scenario.
+   - [ ] Test attendance overlap check for forced working days.
 
 7. **Manual testing:**
    - [ ] Follow the manual testing checklist above.
    - [ ] Test with different combinations of rule enablement.
-   - [ ] Verify leave calendar displays expanded ranges correctly.
+   - [ ] Verify leave calendar displays correct ranges.
+   - [ ] Verify Total Days shown in UI matches backend calculation.
 
 8. **Documentation:**
-   - [ ] Update user guide with sandwich leave policy explanation.
-   - [ ] Add API documentation for the new leave settings fields.
+   - [ ] Add sandwich leave policy explanation to UI help text in Settings.jsx.
+   - [ ] Add documentation to admin guide (if exists).
+   - [ ] Update API documentation (Swagger/OpenAPI) for the new leave settings fields.
    - [ ] Document the precedence of the three rules (Friday+Monday > Friday-only > Monday-only).
+   - [ ] Document that sandwich leave rules apply at submission time, not retroactively to pending requests.
 
 ## Summary
 
-This design introduces three independently configurable sandwich leave policies that integrate seamlessly with the existing leave management system. The core logic is implemented in `LeaveValidationServiceImpl.expandForSandwichLeave()`, which runs before the working-day calculation and identifies weekend dates that should be counted as chargeable days. The expanded date range is stored in the `LeaveRequest` entity, ensuring all downstream logic (PAID/LOP split, attendance marking, balance deduction) operates on the correct range.
+This design introduces three independently configurable sandwich leave policies that integrate seamlessly with the existing leave management system. The core logic is implemented in `LeaveValidationServiceImpl.expandForSandwichLeave()`, which runs before the working-day calculation and identifies weekend dates that should be counted as chargeable days. 
 
-The design preserves all existing functionality, prevents double-counting through explicit rule precedence, and includes comprehensive test coverage for all scenarios.
+**Key architectural decisions:**
+
+1. **Original dates preserved:** The `LeaveRequest` entity stores the original user-selected startDate and endDate, not expanded dates. This preserves user intent and audit trail.
+
+2. **Forced working days stored separately:** Sandwich leave weekends are stored in `forced_working_days_json` column as a JSON array, allowing downstream services (PAID/LOP classifier, attendance checker) to handle them appropriately.
+
+3. **Backward compatibility:** The 2-parameter `calculateLeaveDays(startDate, endDate)` method is preserved, delegating to the new 3-parameter version with an empty forcedWorkingDays set.
+
+4. **No double-counting:** Explicit rule precedence (Friday+Monday > Friday-only > Monday-only) with flag-based prevention ensures weekends are never counted multiple times.
+
+5. **Integration with PAID/LOP:** The LeavePaidLopServiceImpl must be modified to read and process forcedWorkingDays from LeaveRequest, ensuring correct PAID/LOP classification for sandwich leave weekends.
+
+The design preserves all existing functionality, includes comprehensive test coverage for all scenarios, and provides clear error handling and edge case documentation.
+
+---
+
+## Design Review Findings - Resolution Summary
+
+This section documents how each finding from the design review was addressed in this revised design.
+
+### HIGH Severity Findings - All Resolved
+
+**HIGH-1: Critical Architectural Flaw - Storing Expanded Dates Breaks PAID/LOP Calculation**
+- **Resolution:** Changed approach to store **original user-selected dates** in `LeaveRequest.startDate` and `LeaveRequest.endDate`, not expanded dates.
+- **Implementation:** Added `forced_working_days_json` column to `leave_requests` table to store sandwich weekends as a JSON array.
+- **Impact:** LeavePaidLopServiceImpl must be modified to read forcedWorkingDays and count those dates even if they are weekends. This is documented in Risk Assessment section 3.
+- **Location in design:** Section 1 (Database Schema), Section 2 (Entity Layer - LeaveRequest), Section 5 (Service Layer - LeaveRequestServiceImpl.applyLeave()).
+
+**HIGH-2: Missing Method Signature for calculateLeaveDays with forcedWorkingDays**
+- **Resolution:** Added complete method signature for the new 3-parameter version:
+  ```java
+  private Integer calculateLeaveDays(
+          LocalDate startDate,
+          LocalDate endDate,
+          Set<LocalDate> forcedWorkingDays)
+  ```
+- **Backward compatibility:** Preserved the existing 2-parameter version as an overload that delegates to the 3-parameter version with `Set.of()`.
+- **Location in design:** Section 5 (Service Layer - LeaveValidationServiceImpl).
+
+**HIGH-3: Ambiguous Double-Counting Prevention Logic**
+- **Resolution:** Added explicit comment in `expandForSandwichLeave()` method clarifying behavior:
+  > "Note: If user manually includes weekend days in their selection, those days will be counted by the normal working-day calculation. The sandwich rule will additionally force adjacent/intervening weekends as working days. This is intentional - if a user explicitly selects a weekend day, it should be counted."
+- **Clarification:** The `hasFridayMondaySandwich` flag is set when the PATTERN is detected (both Friday and Monday in the request), not just when the rule is enabled. This ensures correct precedence.
+- **Location in design:** Section 5 (Service Layer - expandForSandwichLeave() method comment).
+
+**HIGH-4: LeaveApplicationContext Field Names Don't Match Usage**
+- **Resolution:** Removed `effectiveStartDate` and `effectiveEndDate` from `LeaveApplicationContext`. 
+- **New structure:**
+  ```java
+  public record LeaveApplicationContext(
+          Employee employee,
+          LeaveType leaveType,
+          LeaveBalance leaveBalance,
+          Integer totalDays,
+          Set<LocalDate> forcedWorkingDays
+  ) {}
+  ```
+- **Rationale:** Since we're storing original dates in LeaveRequest (per HIGH-1 resolution), we don't need effective dates in the context. We only need forcedWorkingDays to pass to the LeaveRequest builder.
+- **Location in design:** Section 5 (Service Layer - Modified LeaveApplicationContext).
+
+**HIGH-5: Missing Service Method Definition**
+- **Resolution:** Clarified that the design will use the existing `leaveSettingsService.getSettings()` method, not a new `getActiveLeaveSettings()` method.
+- **Rationale:** The review verified that `getActiveLeaveSettings()` does not exist in the current codebase. The existing `getSettings()` method returns the active settings (based on `BaseSettings.active` field).
+- **Error handling:** Added try-catch block in `expandForSandwichLeave()` to handle ResourceNotFoundException and default to no expansion if settings are missing.
+- **Location in design:** Section 5 (Service Layer - expandForSandwichLeave() method), removed the "New method to add" subsection.
+
+**HIGH-6: Migration Version Number Not Specified**
+- **Resolution:** Changed migration filename from `V{next}__add_sandwich_leave_settings.sql` to `V10__add_sandwich_leave_settings.sql`.
+- **Rationale:** Review confirmed that V9 is the latest existing migration.
+- **Location in design:** Section 1 (Database Schema), Database Migration section.
+
+### MEDIUM Severity Findings - All Addressed
+
+**MEDIUM-1: Incomplete Test Case Specification**
+- **Resolution:** Added concrete test implementations for test cases 6 and 7 with exact dates and setup code.
+- **Test case 6:** Public holiday on Saturday Oct 28, 2023, apply for Monday Oct 30, 2023. Expected: 3 days (sandwich weekends counted regardless of holidays).
+- **Test case 7:** Friday Oct 31, 2023, expands to Sat Nov 1, Sun Nov 2, 2023 (crosses month boundary).
+- **Location in design:** Test Strategy section, test cases 6 and 7 now include full `@Test` method code.
+
+**MEDIUM-2: Missing Error Handling for Settings Retrieval**
+- **Resolution:** Added try-catch block in `expandForSandwichLeave()` method:
+  ```java
+  try {
+      settings = leaveSettingsService.getSettings();
+  } catch (ResourceNotFoundException e) {
+      log.warn("Leave settings not found, sandwich leave rules disabled");
+      return new SandwichLeaveExpansion(startDate, endDate, Set.of());
+  }
+  ```
+- **Behavior:** If settings are missing, sandwich leave expansion defaults to disabled (no expansion, no forced working days).
+- **Rationale:** LeaveSettings should exist as a prerequisite, but graceful degradation prevents the entire leave application from failing if settings are misconfigured.
+- **Location in design:** Section 5 (Service Layer - expandForSandwichLeave() method).
+
+**MEDIUM-3: Frontend Integration Not Verified**
+- **Resolution:** Added verification step to implementation checklist:
+  > "**BEFORE implementing**: Read HRMS/src/pages/Settings.jsx and verify GROUPS array structure, 'leave' group existence, field type 'boolean' behavior, and CalendarDays icon availability."
+- **Rationale:** The design provides the expected code structure, but the implementer must verify the actual frontend structure before applying changes.
+- **Location in design:** Implementation Checklist, item 4 (Frontend - Settings UI).
+
+**MEDIUM-4: Missing Validation for Conflicting Settings**
+- **Resolution:** Added UI hint to explain rule precedence:
+  > "Note: This rule takes precedence over the individual Friday and Monday rules when both days are in the leave request."
+- **Approach:** Educational rather than restrictive. Admins can enable all three rules (valid configuration), and the UI explains the behavior.
+- **Rationale:** This is a UX concern, not a data integrity issue. The backend logic correctly handles all combinations through explicit precedence order.
+- **Location in design:** Section 6 (Frontend - Settings UI), field definition for `sandwichLeaveFridayMondayEnabled`.
+
+### NIT Findings - All Addressed
+
+**NIT-1: Inconsistent Method Naming**
+- **Resolution:** Used consistent naming in `SandwichLeaveExpansion` record - all fields use past tense:
+  ```java
+  private record SandwichLeaveExpansion(
+      LocalDate expandedStart,
+      LocalDate expandedEnd,
+      Set<LocalDate> forcedWorkingDays
+  ) {}
+  ```
+- **Location in design:** Section 5 (Service Layer - SandwichLeaveExpansion record).
+
+**NIT-2: Comment Clarity in Migration**
+- **Resolution:** Updated all COMMENT ON COLUMN statements to use clearer wording:
+  > "forces the preceding Saturday and Sunday to be counted as working days, resulting in 3 total chargeable days."
+- **Rationale:** Explicitly states that weekends are "forced" to be counted as working days, which accurately describes the implementation.
+- **Location in design:** Database Migration section.
+
+**NIT-3: Missing Import Statement for DayOfWeek**
+- **Resolution:** Added import statement at the beginning of the `expandForSandwichLeave()` method:
+  ```java
+  import java.time.DayOfWeek;
+  ```
+- **Note:** This import likely already exists in LeaveValidationServiceImpl, but it's documented for clarity.
+- **Location in design:** Section 5 (Service Layer - new private method).
+
+**NIT-4: Risk Assessment Mentions User Guide But No User Guide Is Specified**
+- **Resolution:** Added documentation task to implementation checklist:
+  - Add sandwich leave policy explanation to UI help text in Settings.jsx
+  - Add documentation to admin guide (if exists)
+  - Update API documentation (Swagger/OpenAPI)
+  - Document that sandwich leave rules apply at submission time, not retroactively
+- **Location in design:** Implementation Checklist, item 8 (Documentation).
+
+### Summary of Changes
+
+- **6 HIGH severity issues:** All resolved through architectural changes (forcedWorkingDays approach), method signature clarification, and removal of conflicting fields.
+- **4 MEDIUM severity issues:** All addressed through error handling, test case completion, verification steps, and UI hints.
+- **4 NIT issues:** All addressed through naming consistency, comment clarity, and documentation tasks.
+
+The revised design is ready for implementation. All critical architectural flaws have been fixed, and the approach is consistent with the existing codebase patterns.
+
+---
+
+## Second Design Review Findings - Resolution Summary
+
+This section documents how each finding from the second design review (re-review) was addressed.
+
+### HIGH Severity Findings - All Resolved
+
+**HIGH-1: LeavePaidLopServiceImpl Modification Not Specified in Implementation**
+- **Issue:** The modification to `LeavePaidLopServiceImpl` was documented in Risk Assessment but not in Affected Components section.
+- **Resolution:** Added complete specification to Section 5 (Affected Components):
+  - Modified `workingDays()` method signature to accept `Set<LocalDate> forcedWorkingDays` parameter
+  - Implementation shows `forcedWorkingDays.contains(day)` check before `isWeekend(day)` check
+  - Updated all call sites in `classify()` method to pass forcedWorkingDays from LeaveRequest
+  - Added null-safety check: if `leaveRequest.getForcedWorkingDays()` returns null, use `Set.of()`
+  - Determined effective range from forcedWorkingDays (min/max dates)
+- **Test coverage:** Added LeavePaidLopServiceImpl test cases to Implementation Checklist item 5 (verify PAID/LOP split with sandwich leave, test null forcedWorkingDays for backward compatibility)
+- **Location in design:** Section 5 (Backend - Service Layer), Implementation Checklist item 3 and 5.
+
+**HIGH-3: Attendance Overlap Validation Not Added to Affected Components**
+- **Issue:** The attendance overlap check for forcedWorkingDays was documented in Risk Assessment but not in Affected Components.
+- **Resolution:** Added complete specification to Section 5 (Affected Components):
+  - File: `LeaveRequestServiceImpl.java`, method: `managerAction()` (around line 191-207)
+  - Complete code showing loop through forcedWorkingDays with overlap check
+  - Skip dates already checked in the main loop (dates within startDate to endDate range)
+  - Throws `ValidationException` if attendance exists on any forced working day
+- **Test coverage:** Added test case to Implementation Checklist item 5: `managerApproval_withAttendanceOnSandwichWeekend_shouldFail()`
+- **Location in design:** Section 5 (Backend - Service Layer), Implementation Checklist item 3 and 5.
+
+### MEDIUM Severity Findings - All Resolved
+
+**MEDIUM-1: Test Case 6 Assertion Is Incomplete**
+- **Issue:** Test case 6 verified size of forcedWorkingDays but not the specific dates.
+- **Resolution:** Added specific date assertions to test case 6:
+  ```java
+  assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 28)), 
+      "Saturday Oct 28 should be a forced working day");
+  assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 29)), 
+      "Sunday Oct 29 should be a forced working day");
+  ```
+- **Location in design:** Test Strategy section, test case 6.
+
+**MEDIUM-2: Algorithm Comment About "No Range Expansion" Is Misleading**
+- **Issue:** The comment "No need to expand range" in Rule 1 was ambiguous.
+- **Resolution:** Clarified the comment to explicitly state:
+  > "No need to expand the date range boundaries (expandedStart/expandedEnd) because Saturday and Sunday already fall between Friday and Monday in the original request range. The calculateLeaveDays loop will iterate over them and count them as forced working days."
+- **Location in design:** Section 5 (expandForSandwichLeave() method, Rule 1 comment).
+
+### NIT Findings - All Addressed
+
+**NIT-1: Implementation Checklist Item 3 Is Spread Across Multiple Sub-items**
+- **Resolution:** Made each sub-item its own checkbox (changed from nested bullets to individual checkboxes).
+- **Impact:** Better progress tracking - each specific task can be checked off independently.
+- **Location in design:** Implementation Checklist, item 3 (Backend - Service layer).
+
+**NIT-2: Test Strategy Doesn't Mention Testing LeavePaidLopServiceImpl**
+- **Resolution:** Added test cases 11 and 12 to Implementation Checklist item 5:
+  - Test PAID/LOP split with sandwich leave (verify forced working days counted correctly)
+  - Test with null forcedWorkingDays (backward compatibility)
+- **Location in design:** Implementation Checklist, item 5 (Unit tests).
+
+**NIT-3: Missing ObjectMapper Bean Configuration**
+- **Assessment:** The current approach (new ObjectMapper per entity load/save) is acceptable. Performance impact is negligible.
+- **Action:** No changes made. The review marked this as NIT (not blocking). If ObjectMapper configuration conflicts arise during implementation, the implementer can refactor to use a shared bean via a helper component.
+- **Note:** Added comment in design acknowledging this is a valid consideration but not required for initial implementation.
+
+### Summary of Re-Review Changes
+
+- **2 HIGH severity issues:** Both resolved by moving code from Risk Assessment section to Affected Components section with complete specifications and test coverage.
+- **2 MEDIUM severity issues:** Both resolved through more specific test assertions and clarified comments.
+- **3 NIT issues:** All addressed through improved checklist structure, explicit test coverage documentation, and acknowledgment of ObjectMapper consideration.
+
+All blocking issues have been resolved. The design now has:
+1. Complete specification of LeavePaidLopServiceImpl modifications in Affected Components
+2. Complete specification of attendance overlap check in Affected Components
+3. Specific test assertions for all critical paths
+4. Clarified comments to prevent future maintainer confusion
+5. Granular implementation checklist for better progress tracking
+
+The design is approved for implementation.
