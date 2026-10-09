@@ -26,6 +26,15 @@ public class LeaveSettingsRequest {
     @Min(0)
     private Integer annualPaidLeave;
 
+    @NotNull
+    private Boolean sandwichLeaveMondayEnabled;
+
+    @NotNull
+    private Boolean sandwichLeaveFridayEnabled;
+
+    @NotNull
+    private Boolean sandwichLeaveFridayMondayEnabled;
+
     // DISABLED: entity fields unused (no business-logic reader).
 //    @NotNull
 //    @Min(0)

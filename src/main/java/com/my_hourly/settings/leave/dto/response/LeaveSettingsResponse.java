@@ -20,6 +20,12 @@ public class LeaveSettingsResponse {
 
     private Integer annualPaidLeave;
 
+    private Boolean sandwichLeaveMondayEnabled;
+
+    private Boolean sandwichLeaveFridayEnabled;
+
+    private Boolean sandwichLeaveFridayMondayEnabled;
+
     // DISABLED: entity fields unused (no business-logic reader).
 //    private Integer minimumAdvanceNoticeDays;
 //    private Integer maximumAdvanceNoticeDays;

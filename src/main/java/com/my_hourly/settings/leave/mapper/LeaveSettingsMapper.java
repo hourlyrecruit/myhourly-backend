@@ -21,6 +21,9 @@ public class LeaveSettingsMapper {
                 .carryForwardAllowed(entity.getCarryForwardAllowed())
                 .monthlyGuideline(entity.getMonthlyGuideline())
                 .annualPaidLeave(entity.getAnnualPaidLeave())
+                .sandwichLeaveMondayEnabled(entity.getSandwichLeaveMondayEnabled())
+                .sandwichLeaveFridayEnabled(entity.getSandwichLeaveFridayEnabled())
+                .sandwichLeaveFridayMondayEnabled(entity.getSandwichLeaveFridayMondayEnabled())
                 // DISABLED: entity fields unused (no business-logic reader).
 //                .minimumAdvanceNoticeDays(entity.getMinimumAdvanceNoticeDays())
 //                .maximumAdvanceNoticeDays(entity.getMaximumAdvanceNoticeDays())
@@ -45,6 +48,9 @@ public class LeaveSettingsMapper {
         entity.setCarryForwardAllowed(request.getCarryForwardAllowed());
         entity.setMonthlyGuideline(request.getMonthlyGuideline());
         entity.setAnnualPaidLeave(request.getAnnualPaidLeave());
+        entity.setSandwichLeaveMondayEnabled(request.getSandwichLeaveMondayEnabled());
+        entity.setSandwichLeaveFridayEnabled(request.getSandwichLeaveFridayEnabled());
+        entity.setSandwichLeaveFridayMondayEnabled(request.getSandwichLeaveFridayMondayEnabled());
         // DISABLED: entity fields unused (no business-logic reader).
 //        entity.setMinimumAdvanceNoticeDays(request.getMinimumAdvanceNoticeDays());
 //        entity.setMaximumAdvanceNoticeDays(request.getMaximumAdvanceNoticeDays());
