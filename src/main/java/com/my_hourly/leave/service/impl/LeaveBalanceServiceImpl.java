@@ -59,6 +59,30 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
     }
 
     @Override
+    @Transactional
+    public LeaveBalance getLeaveBalanceEntityForUpdate(
+            Employee employee,
+            LeaveType leaveType,
+            LocalDate date) {
+
+        Integer year = date.getYear();
+
+        return leaveBalanceRepository
+                .findByEmployeeAndLeaveTypeAndYearForUpdate(
+                        employee,
+                        leaveType,
+                        year)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Leave balance not allocated for employee "
+                                        + employee.getId()
+                                        + ", leaveType " + leaveType.getName()
+                                        + ", year " + year + ".",
+                                ErrorCode.RESOURCE_NOT_FOUND
+                        ));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public LeaveBalanceResponse getLeaveBalance(Long leaveBalanceId) {
 
@@ -135,6 +159,48 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
                 before,
                 leaveBalance.getRemainingLeaves(),
                 "Leave approved");
+    }
+
+    @Override
+    @Transactional
+    public void deductPaidLeaveDays(
+            LeaveBalance leaveBalance,
+            LeaveRequest leaveRequest,
+            int days) {
+
+        if (days <= 0) {
+            // Entirely LOP (or nothing to deduct) - the annual balance is
+            // deliberately untouched and no transaction is recorded.
+            log.debug("No PAID days to deduct for leave request {} ({} LOP)",
+                    leaveRequest.getId(), leaveRequest.getTotalDays());
+            return;
+        }
+
+        int before = leaveBalance.getRemainingLeaves();
+
+        // Only path-invariant guard: the allocator never asks for more than the
+        // balance holds, but a stale read must never produce a negative balance.
+        if (days > before) {
+            log.warn("PAID days ({}) exceed remaining balance ({}) for employee {} leaveType {}; "
+                            + "clamping the deduction to the available balance",
+                    days, before, leaveBalance.getEmployee().getId(),
+                    leaveBalance.getLeaveType().getId());
+            days = before;
+        }
+
+        leaveBalance.setUsedLeaves(leaveBalance.getUsedLeaves() + days);
+        leaveBalance.setRemainingLeaves(before - days);
+
+        leaveBalanceRepository.save(leaveBalance);
+
+        leaveTransactionService.createTransaction(
+                leaveBalance,
+                leaveRequest,
+                LeaveTransactionType.LEAVE_APPROVED,
+                days,
+                before,
+                leaveBalance.getRemainingLeaves(),
+                "Leave approved (" + days + " PAID day(s))");
     }
 
     @Override

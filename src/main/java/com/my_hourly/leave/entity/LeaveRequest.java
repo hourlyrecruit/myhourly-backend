@@ -41,6 +41,38 @@ public class LeaveRequest extends BaseEntity {
     @Column(nullable = false, length = 30)
     private LeaveStatus status;
 
+    /**
+     * Days of this request that were approved as PAID, i.e. deducted from the
+     * annual leave balance.
+     *
+     * <p>Null until the request is approved. The monthly paid-leave guideline
+     * from LeaveSettings decides how many of the request's days can be PAID;
+     * the rest — and any days the annual balance cannot cover — become
+     * {@link #lopDays}.</p>
+     */
+    @Column(name = "paid_days")
+    private Integer paidDays;
+
+    /**
+     * Days of this request that were approved as LOP (Loss of Pay). LOP days are
+     * never deducted from the annual leave balance.
+     *
+     * <p>Null until the request is approved. A request may be entirely PAID,
+     * entirely LOP, or a mix of both.</p>
+     */
+    @Column(name = "lop_days")
+    private Integer lopDays;
+
+    /**
+     * The authenticated user who approved this request; null while pending.
+     *
+     * <p>{@link LeaveApproval} remains the per-action audit trail — this is the
+     * denormalised pointer the leave list/detail API reads.</p>
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by")
+    private Employee approvedBy;
+
 //    @Column(length = 500)
 //    private String rejectionReason;
 

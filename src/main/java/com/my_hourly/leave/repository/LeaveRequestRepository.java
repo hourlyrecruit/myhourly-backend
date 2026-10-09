@@ -4,10 +4,12 @@ import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.leave.entity.LeaveRequest;
 import com.my_hourly.leave.entity.LeaveType;
 import com.my_hourly.leave.enums.LeaveStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long>, JpaSpecificationExecutor<LeaveRequest> {
@@ -118,6 +121,42 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             @Param("monthStart") LocalDate monthStart,
             @Param("monthEnd") LocalDate monthEnd);
 
+    /**
+     * Total PAID leave days already approved for an employee / leave type in a
+     * calendar month - the number the monthly paid-leave allowance is spent on.
+     *
+     * <p>Only {@link LeaveStatus#APPROVED} requests count, so pending and
+     * rejected requests never consume the allowance.</p>
+     *
+     * <p>{@code COALESCE(paidDays, totalDays)} keeps historical approvals
+     * correct: rows created before the PAID/LOP split existed have a null
+     * {@code paidDays}, and every one of their days was deducted from the
+     * annual balance, so they must count as fully PAID.</p>
+     *
+     * <p>Like {@link #sumApprovedLeaveDaysInMonth}, this attributes a request to
+     * the month its {@code startDate} falls in.</p>
+     */
+    @Query("SELECT COALESCE(SUM(COALESCE(lr.paidDays, lr.totalDays)), 0) FROM LeaveRequest lr " +
+            "WHERE lr.employee = :employee " +
+            "AND lr.leaveType = :leaveType " +
+            "AND lr.status = 'APPROVED' " +
+            "AND lr.startDate >= :monthStart " +
+            "AND lr.startDate <= :monthEnd")
+    Integer sumPaidLeaveDaysInMonth(
+            @Param("employee") Employee employee,
+            @Param("leaveType") LeaveType leaveType,
+            @Param("monthStart") LocalDate monthStart,
+            @Param("monthEnd") LocalDate monthEnd);
+
+    /**
+     * Loads a leave request under a write lock so two concurrent approvals of
+     * the same request serialise: the loser re-reads the already-APPROVED status
+     * and is rejected, and a double-click cannot deduct the balance twice.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select lr from LeaveRequest lr where lr.id = :id")
+    Optional<LeaveRequest> findByIdForUpdate(@Param("id") Long id);
+
 
     @Query("""
             SELECT lr
@@ -143,7 +182,8 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @EntityGraph(attributePaths = {
             "employee",
             "employee.department",
-            "leaveType"
+            "leaveType",
+            "approvedBy"
     })
     @Override
     List<LeaveRequest> findAll(Specification<LeaveRequest> specification);
