@@ -46,3 +46,4 @@ public class Form16SalaryRequest {
      */
     private BigDecimal salaryReceivedFromOtherEmployers;
 }
+

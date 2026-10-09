@@ -11,8 +11,6 @@ public interface Form16SalaryService {
             Form16SalaryRequest request
     );
 
-
-
     Form16Salary getSalaryByForm16Id(
             Long form16Id
     );
