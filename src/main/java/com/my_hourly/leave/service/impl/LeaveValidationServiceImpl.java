@@ -248,6 +248,8 @@ public class LeaveValidationServiceImpl
         if (Boolean.TRUE.equals(settings.getSandwichLeaveFridayMondayEnabled())) {
             for (LocalDate date : requestDates) {
                 if (date.getDayOfWeek() == DayOfWeek.FRIDAY) {
+                    // Because we check DayOfWeek.FRIDAY, date.plusDays(1) is guaranteed to be
+                    // Saturday, date.plusDays(2) is Sunday, and date.plusDays(3) is Monday
                     LocalDate saturday = date.plusDays(1);
                     LocalDate sunday = date.plusDays(2);
                     LocalDate monday = date.plusDays(3);
@@ -264,9 +266,12 @@ public class LeaveValidationServiceImpl
         }
         
         // Rule 2: Friday-only sandwich
+        // Only applies if Friday+Monday rule did NOT fire
         if (!hasFridayMondaySandwich && Boolean.TRUE.equals(settings.getSandwichLeaveFridayEnabled())) {
             for (LocalDate date : requestDates) {
                 if (date.getDayOfWeek() == DayOfWeek.FRIDAY) {
+                    // Because we check DayOfWeek.FRIDAY, date.plusDays(1) is guaranteed to be
+                    // Saturday and date.plusDays(2) is guaranteed to be Sunday (weekends)
                     LocalDate saturday = date.plusDays(1);
                     LocalDate sunday = date.plusDays(2);
                     
@@ -282,9 +287,12 @@ public class LeaveValidationServiceImpl
         }
         
         // Rule 3: Monday-only sandwich
+        // Only applies if Friday+Monday rule did NOT fire
         if (!hasFridayMondaySandwich && Boolean.TRUE.equals(settings.getSandwichLeaveMondayEnabled())) {
             for (LocalDate date : requestDates) {
                 if (date.getDayOfWeek() == DayOfWeek.MONDAY) {
+                    // Because we check DayOfWeek.MONDAY, date.minusDays(2) is guaranteed to be
+                    // Saturday and date.minusDays(1) is guaranteed to be Sunday (weekends)
                     LocalDate saturday = date.minusDays(2);
                     LocalDate sunday = date.minusDays(1);
                     
