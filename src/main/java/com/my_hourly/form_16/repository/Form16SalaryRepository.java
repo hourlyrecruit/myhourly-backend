@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+
 @Repository
 public interface Form16SalaryRepository
         extends JpaRepository<Form16Salary, Long> {
