@@ -4971,15 +4971,37 @@
       "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories; bridges separate communities; peripheral node `2. API surface` unexpectedly reaches hub `LeaveRequestResponse`"
     },
     {
-      "source": "6.6 Payroll \u2014 **cross-module inconsistency to be aware of**",
-      "target": "PayrollServiceImpl",
+      "source": "Verification Summary",
+      "target": "LeaveSandwichPolicyTest",
       "source_files": [
-        "docs/leave/LEAVE_PAID_LOP_FRONTEND_GUIDE.md",
-        "src/main/java/com/my_hourly/payroll/service/impl/PayrollServiceImpl.java"
+        ".agents/tasks/sandwich-leave/plan.md",
+        "src/test/java/com/my_hourly/leave/LeaveSandwichPolicyTest.java"
       ],
       "confidence": "INFERRED",
       "relation": "references",
-      "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories; bridges separate communities; peripheral node `6.6 Payroll \u2014 **cross-module inconsistency to be aware of**` unexpectedly reaches hub `PayrollServiceImpl`"
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories; bridges separate communities; peripheral node `Verification Summary` unexpectedly reaches hub `LeaveSandwichPolicyTest`"
+    },
+    {
+      "source": "1. Original Dates Preserved",
+      "target": "LeaveRequest",
+      "source_files": [
+        ".agents/tasks/sandwich-leave/verification.md",
+        "src/main/java/com/my_hourly/leave/entity/LeaveRequest.java"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories; bridges separate communities; peripheral node `1. Original Dates Preserved` unexpectedly reaches hub `LeaveRequest`"
+    },
+    {
+      "source": "PAID/LOP Split (Not in Worktree)",
+      "target": "LeaveRequest",
+      "source_files": [
+        ".agents/tasks/sandwich-leave/verification.md",
+        "src/main/java/com/my_hourly/leave/entity/LeaveRequest.java"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories; bridges separate communities; peripheral node `PAID/LOP Split (Not in Worktree)` unexpectedly reaches hub `LeaveRequest`"
     },
     {
       "source": "9. Error handling",
@@ -4991,28 +5013,6 @@
       "confidence": "INFERRED",
       "relation": "references",
       "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories; bridges separate communities; peripheral node `9. Error handling` unexpectedly reaches hub `ApiError`"
-    },
-    {
-      "source": "Verification Summary",
-      "target": "LeaveSandwichPolicyTest",
-      "source_files": [
-        ".agents/tasks/sandwich-leave/plan.md",
-        "src/test/java/com/my_hourly/leave/LeaveSandwichPolicyTest.java"
-      ],
-      "confidence": "INFERRED",
-      "relation": "references",
-      "why": "inferred connection - not explicitly stated in source; crosses file types (doc \u2194 code); connects across different repos/directories; bridges separate communities; peripheral node `Verification Summary` unexpectedly reaches hub `LeaveSandwichPolicyTest`"
-    },
-    {
-      "source": "HIGH Severity Findings - All Resolved",
-      "target": "workingDays()",
-      "source_files": [
-        ".agents/tasks/sandwich-leave/design.md",
-        "src/main/java/com/my_hourly/leave/service/impl/LeavePaidLopServiceImpl.java"
-      ],
-      "confidence": "INFERRED",
-      "relation": "references",
-      "why": "inferred connection - not explicitly stated in source; crosses file types (doc \u2194 code); connects across different repos/directories; bridges separate communities; peripheral node `HIGH Severity Findings - All Resolved` unexpectedly reaches hub `workingDays()`"
     }
   ],
   "tokens": {
