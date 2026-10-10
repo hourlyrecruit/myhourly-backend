@@ -1,578 +1,594 @@
 # Graph Report - my_hourly  (2026-10-10)
 
 ## Corpus Check
-- 547 files · ~200,435 words
+- 553 files · ~210,139 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 26 file(s) not represented in the graph (top: .csv 9, (none) 6, .properties 6)
 
 ## Summary
-- 4192 nodes · 13338 edges · 177 communities (89 shown, 88 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 854 edges (avg confidence: 0.86)
+- 4297 nodes · 13531 edges · 202 communities (88 shown, 114 thin omitted)
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 908 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `76a1bdaa`
+- Built from commit: `243e1606`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- lombok.Getter
-- ApiResponse
-- lombok.RequiredArgsConstructor
-- DataInitializer.java
-- NotificationType
-- PerformanceReview
-- org.springframework.transaction.annotation.Transactional
-- list
-- org.springframework.security.access.prepost.PreAuthorize
-- Employee
-- Form16ChallanResponse
-- ErrorCode
-- RoleName
-- AttendanceStatus
-- Form16QuarterResponse
-- org.junit.jupiter.api.DisplayName
-- LeaveRequestResponse
-- Form16ChapterVIAResponse
-- com.my_hourly.employee.entity.Employee
-- Form16Section16DeductionResponse
-- org.springframework.http.ResponseEntity
-- SalaryStructureResponse
-- Form16VerificationResponse
-- LeaveTransaction
-- LeavePaidLopServiceImpl.java
-- ValidationException
-- LeaveExpiryServiceTest
-- EmployeePaymentDetails
-- Form16LastFieldsResponse
-- PayslipGenerator
-- LeaveAllocationServiceImpl
-- LeaveTypeResponse
-- SalaryTemplateResponse
 - JobTitleResponse
-- CompanySettings
-- DepartmentResponse
-- BreakType
-- CalendarServiceImpl.java
-- PayslipGenerator.java
-- ReportController.java
-- PayrollHistoryAction
+- org.springframework.http.ResponseEntity
+- org.junit.jupiter.api.Test
+- io.swagger.v3.oas.annotations.Operation
+- LeaveRequest
+- lombok.extern.slf4j.Slf4j
+- ErrorCode
+- org.springframework.transaction.annotation.Transactional
+- NotificationType
+- org.springframework.context.annotation.Configuration
+- com.my_hourly.employee.entity.Employee
+- RoleName
+- Form16ChapterVIAResponse
+- Form16ChallanResponse
+- LeaveReportRequest
 - LeaveRequestManagerActionTest.java
-- lombok
-- EmployeeResponse
-- LeaveApprovalServiceImpl.java
-- CustomUserDetails
-- Payroll
-- AttendanceService
-- Form16ExemptionResponse
-- GlobalExceptionHandler.java
-- LookupResponse
-- DesignationResponse
-- SlipSample
-- Attendance
-- AttendanceSettings
-- User
-- Design Review: Configurable Sandwich Leave Policy
-- EmploymentType
-- AttendanceRegularization
 - Form16EmployerMasterResponse
-- JwtServiceImpl.java
-- LeaveSettings
-- SecurityConfig.java
-- RegularizationResponse
+- Form16QuarterResponse
+- Form16VerificationResponse
+- EmployeeResponse
+- EmployeePaymentDetailsResponse
+- org.springframework.stereotype.Component
+- Form16Section16DeductionResponse
+- Form16LastFieldsResponse
+- notnull
 - Form16SalaryRequest
-- PayrollServiceImpl
-- PerformanceServiceImpl.java
-- AttendanceServiceImpl
-- LeaveActionRequest
-- PayrollResponse
-- PayrollStatus
-- PerformanceController.java
-- AttendanceBreak
-- SalaryTemplate
-- LeaveMonthlyUsageIntegrationTest.java
-- LeaveBalance
-- RefreshToken
-- Form16ServiceImpl
-- Form16EmployerMasterServiceImpl
-- CalendarController.java
-- LeaveRequestQueryStatusTest.java
-- AuthenticationController
+- io.swagger.v3.oas.annotations.tags.Tag
+- PayslipGenerator
+- LeaveSettings
+- lombok.Getter
+- CalendarServiceImpl
+- Form16ExemptionResponse
+- DepartmentResponse
+- JobTitle
 - Leave PAID / LOP Split & Approver — Frontend Implementation Guide
+- Employee
+- Technical Design: Configurable Sandwich Leave Policy
+- LeaveRequestResponse
+- AttendanceReportServiceImpl.java
+- SalaryTemplateResponse
+- CompanySettings
+- ApiResponse
+- SalaryStructureResponse
+- LeaveExpiryServiceTest
+- UserProfileResponse
+- DesignationResponse
+- PayrollResponse
+- PayrollHistoryAction
+- LeaveApproval
+- PayslipGeneratorOld
+- AttendanceSettings
+- BaseEntity.java
+- Design Review: Configurable Sandwich Leave Policy (Re-review #2)
 - Form16Response
-- Holiday
+- LookupResponse
+- PayrollServiceImpl
+- GlobalExceptionHandler.java
+- org.springframework.data.jpa.repository.JpaRepository
+- BreakType
+- CalendarController.java
+- LeaveTypeResponse
+- SlipSample
+- LeavePdfExporter
+- JwtAccessDeniedHandler.java
+- LeaveMonthlyUsageIntegrationTest.java
+- PayslipGenerator.java
+- Sandwich Leave Policy - Implementation Verification
+- LeaveTransactionResponse
+- NotificationController
+- LeaveTransaction
+- PerformanceReview
+- AttendanceServiceImpl.java
+- .getCurrentEmployee
+- JwtServiceImpl.java
+- Attendance
+- AttendanceServiceImpl
+- DesignationController
+- list
+- .totalDays
+- Announcement
+- AttendanceStatus
+- LeaveType
+- CreatePayrollRequest
+- Payroll
 - SalaryStructure
-- UpdateDraftPayrollRequest
+- io.swagger.v3.oas.annotations.media.Schema
+- AttendanceMapper
+- SalaryStructureServiceImpl
 - LeaveTypeController.java
 - Graphify Setup and Usage Guide
-- MonthType
-- PayrollSummaryResponse
-- LeavePdfExporter
-- org.springframework.data.jpa.domain.Specification
-- LeaveBalanceResponse
-- AuthenticationServiceImpl.java
-- WebConfig.java
-- AttendanceRegularizationDetail
-- EmployeeServiceImpl.java
-- PasswordResetToken
-- Form16Salary
-- Form16SalaryServiceImpl
 - PerformanceReviewResponse
-- LeaveTypeServiceImpl
-- SecurityUtils
-- BaseEntity.java
-- org.springframework.context.annotation.Configuration
-- LeaveType
-- Form16ExemptionServiceImpl
-- DesignationServiceImpl
-- LeaveTransactionType
-- CreatePerformanceReviewRequest
-- Form16Section16Deduction
-- UpdateSalaryTemplateRequest
-- RegularizationDetailStatus
-- 6. Screen-by-screen implementation plan
-- CheckInResponse
-- Form16TaxCalculationService
-- PaymentMode
-- .calculateAttendance
-- JwtAuthenticationFilter.java
-- AttendancePdfExporter
-- Form16Exemption
-- LeaveRequest
-- PayrollAction
-- AGENTS.md
-- CreateSalaryRevisionRequest
-- FinancialYearUtil
-- MyHourlyApplication.java
-- AttendanceMonthlySummaryResponse
-- EmployeeStatus
-- LeaveRequestRequest
-- CreatePayrollRequest
-- apply-leave-approvals-edits.mjs
-- CheckOutResponse
+- LeaveSettingsRequest
+- EmployeePaymentDetails
+- Holiday
+- LeaveBalanceResponse
+- PerformanceRating
+- RefreshToken
+- AuthenticationServiceImpl
+- DepartmentController
+- PerformanceServiceImpl
+- ioexception
+- B2FileStorageServiceImpl.java
+- AttendanceRegularizationDetail
 - ChangePasswordRequest
+- MonthType
+- SalaryTemplate
+- LeaveSandwichPolicyTest
+- DataInitializer.java
+- org.springframework.data.jpa.domain.Specification
+- CustomUserDetails
+- AttendanceRegularizationServiceTest.java
+- AuthenticationController
+- HolidayResponse
+- HolidayServiceImpl
+- SecurityUtils
+- LeaveTypeServiceImpl
+- WebConfig.java
 - LoginRequest
-- MarkPayrollPaidRequest
+- PasswordResetToken
+- HolidayType
+- LeaveBalance
+- LeaveAllocationServiceImpl
+- AttendanceCalendarResponse
+- Form16TaxCalculationService
+- CreateHolidayRequest
+- AttendanceBreak
+- PayrollAction
+- LeaveRequestQueryStatusTest.java
+- RevokedToken
+- FinancialYearUtil
+- lombok
+- Form16SalaryServiceImpl
+- PayrollStatus
+- B2StorageConfig.java
+- EmployeeStatus
+- UpdateHolidayRequest
+- apply-leave-approvals-edits.mjs
+- CreateSalaryRevisionRequest
+- LeaveReportRequest.java
+- User
 - NumberToWordsConverter
+- JwtService
 - graphify
-- org.springframework.stereotype.Component
 - SalaryComponentType
 - TokenType
 - fix-integration-test.mjs
 - AppConstants
 - LeaveAllocationType
 - SecurityConstants
+- AGENTS.md
 - AuditEntity.java
 - LeaveSpecification.java
 - my_hourly/util/SecurityUtils.java
 - StringUtils.java
 - ValidationUtils.java
 - com.my_hourly:my_hourly
+- Form16Salary
+- Form16ExemptionServiceImpl
+- EmployeePaymentDetailsServiceImpl
+- LeaveSettingsResponse
+- Implementation Checklist
+- StringToEnumConverterFactory
+- Form16Exemption
+- LeaveTransactionType
+- Backend (Java/Spring Boot)
+- SwaggerConfig.java
+- BusinessException
+- UpdateSalaryTemplateRequest
+- FailedPayroll
+- LeaveReportSpecification.java
+- Implementation Plan: Configurable Sandwich Leave Policy
+- ErrorResponseFactory.java
 
 ## God Nodes (most connected - your core abstractions)
-1. `Employee` - 180 edges
+1. `Employee` - 178 edges
 2. `ResourceNotFoundException` - 162 edges
 3. `ApiResponse` - 125 edges
 4. `ErrorCode` - 125 edges
-5. `LeaveRequest` - 95 edges
+5. `LeaveRequest` - 103 edges
 6. `Attendance` - 73 edges
-7. `LeaveRequestRepository` - 65 edges
-8. `AttendanceStatus` - 63 edges
-9. `ValidationException` - 62 edges
+7. `AttendanceStatus` - 63 edges
+8. `ValidationException` - 62 edges
+9. `LeaveRequestRepository` - 59 edges
 10. `User` - 57 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `HIGH-4: LeaveApplicationContext Field Names Don't Match Usage` --references--> `LeaveApplicationContext`  [INFERRED]
-  .agents/tasks/sandwich-leave/design-review.md → src/main/java/com/my_hourly/leave/context/LeaveApplicationContext.java
-- `Summary` --references--> `LeaveRequest`  [INFERRED]
-  .agents/tasks/sandwich-leave/design.md → src/main/java/com/my_hourly/leave/entity/LeaveRequest.java
+- `HIGH Severity Findings - All Resolved` --references--> `workingDays()`  [INFERRED]
+  .agents/tasks/sandwich-leave/design.md → src/main/java/com/my_hourly/leave/service/impl/LeavePaidLopServiceImpl.java
+- `Verification Summary` --references--> `LeaveSandwichPolicyTest`  [INFERRED]
+  .agents/tasks/sandwich-leave/plan.md → src/test/java/com/my_hourly/leave/LeaveSandwichPolicyTest.java
+- `1. Original Dates Preserved` --references--> `LeaveRequest`  [INFERRED]
+  .agents/tasks/sandwich-leave/verification.md → src/main/java/com/my_hourly/leave/entity/LeaveRequest.java
+- `PAID/LOP Split (Not in Worktree)` --references--> `LeaveRequest`  [INFERRED]
+  .agents/tasks/sandwich-leave/verification.md → src/main/java/com/my_hourly/leave/entity/LeaveRequest.java
 - `2. API surface` --references--> `LeaveRequestResponse`  [INFERRED]
   docs/leave/LEAVE_PAID_LOP_FRONTEND_GUIDE.md → src/main/java/com/my_hourly/leave/api/response/LeaveRequestResponse.java
-- `6.6 Payroll — **cross-module inconsistency to be aware of**` --references--> `PayrollServiceImpl`  [INFERRED]
-  docs/leave/LEAVE_PAID_LOP_FRONTEND_GUIDE.md → src/main/java/com/my_hourly/payroll/service/impl/PayrollServiceImpl.java
-- `9. Error handling` --references--> `ApiError`  [INFERRED]
-  docs/leave/LEAVE_PAID_LOP_FRONTEND_GUIDE.md → src/main/java/com/my_hourly/common/payload/response/ApiError.java
 
 ## Import Cycles
 - None detected.
 
-## Communities (177 total, 88 thin omitted)
+## Communities (202 total, 114 thin omitted)
 
-### Community 0 - "lombok.Getter"
-Cohesion: 0.10
-Nodes (25): BreakEndRequest, CreateRegularizationDetailRequest, CreateRegularizationRequest, RegularizationDetailActionRequest, RegularizationDetailResponse, AdminRegisterRequest, EmployeeRegisterRequest, GrantRoleRequest (+17 more)
-
-### Community 1 - "ApiResponse"
-Cohesion: 0.04
-Nodes (7): AdminController, ApiResponse, PageResponse, LeaveTransactionController, DepartmentController, JobTitleController, NotificationController
-
-### Community 2 - "lombok.RequiredArgsConstructor"
-Cohesion: 0.07
-Nodes (18): AttendanceRegularizationEmailService, EmailService, PasswordResetEmailServiceImpl, DataInitializer, B2FileStorageServiceImpl, LeaveTypeRepository, AttendanceSeeder, CsvReader (+10 more)
-
-### Community 3 - "DataInitializer.java"
-Cohesion: 0.05
-Nodes (10): LookupMapper, LookupServiceImpl, Department, Designation, JobTitle, DesignationMapper, JobTitleMapper, DepartmentRepository (+2 more)
-
-### Community 4 - "NotificationType"
-Cohesion: 0.04
-Nodes (40): FileStorageServiceB2, AnnouncementRequest, NotificationResponse, UpcomingBirthdayResponse, Announcement, Notification, NotificationType, ABSENT (+32 more)
-
-### Community 5 - "PerformanceReview"
-Cohesion: 0.14
-Nodes (5): PerformanceReview, ReviewType, MONTHLY, YEARLY, PerformanceReviewRepository
-
-### Community 6 - "org.springframework.transaction.annotation.Transactional"
+### Community 0 - "JobTitleResponse"
 Cohesion: 0.12
-Nodes (5): BadRequestException, ResourceNotFoundException, Form16, Form16Repository, PayslipPdfServiceImpl
+Nodes (3): JobTitleController, JobTitleResponse, JobTitleService
 
-### Community 7 - "list"
-Cohesion: 0.10
-Nodes (9): RefreshTokenRepository, Form16ChapterVIARepository, Form16ExemptionRepository, Form16LastFieldsRepository, Form16SalaryRepository, Form16Section16DeductionRepository, HolidayRepository, LeaveRequestMonthAllocationRepository (+1 more)
+### Community 1 - "org.springframework.http.ResponseEntity"
+Cohesion: 0.04
+Nodes (9): EmployeeController, Form16LastFieldsController, Form16ChallanController, LeaveTransactionController, PayrollController, SalaryStructureController, SalaryTemplateController, PayslipPdfService (+1 more)
 
-### Community 8 - "org.springframework.security.access.prepost.PreAuthorize"
+### Community 2 - "org.junit.jupiter.api.Test"
+Cohesion: 0.08
+Nodes (5): MonthAllocation, PaidLopAllocation, LeaveBalanceServicePaidDeductionTest, LeavePaidLopAllocationTest, LeaveRequestManagerActionTest
+
+### Community 3 - "io.swagger.v3.oas.annotations.Operation"
+Cohesion: 0.06
+Nodes (4): AttendanceRegularizationController, Form16EmployerMasterController, HolidayController, EmployeePaymentDetailsController
+
+### Community 4 - "LeaveRequest"
+Cohesion: 0.04
+Nodes (8): 12. Known backend gaps & open questions, Appendix — files touched by the backend change, LeaveRequest, TypeReference<Set<LocalDate>>, LeaveRequestMapper, LeaveRequestRepository, LeaveAuthorizationServiceImpl, LeaveRequestServiceImpl
+
+### Community 5 - "lombok.extern.slf4j.Slf4j"
 Cohesion: 0.05
-Nodes (7): Form16LastFieldsController, HolidayController, PayrollController, SalaryStructureController, SalaryTemplateController, PayslipPdfService, SettingController
+Nodes (18): BaseEntity, LeaveTypeRepository, LookupMapper, Department, Designation, DepartmentRepository, DesignationRepository, AttendanceSeeder (+10 more)
 
-### Community 9 - "Employee"
-Cohesion: 0.08
-Nodes (5): BaseEntity, Employee, LeaveAction, APPROVE, REJECT
-
-### Community 10 - "Form16ChallanResponse"
-Cohesion: 0.06
-Nodes (8): Form16ChallanController, Form16ChallanListResponse, Form16ChallanRequest, Form16ChallanResponse, Form16Challan, Form16ChallanRepository, Form16ChallanService, Form16ChallanServiceImpl
-
-### Community 11 - "ErrorCode"
+### Community 6 - "ErrorCode"
 Cohesion: 0.03
-Nodes (63): ErrorCode, ACCESS_DENIED, APPROVAL_PENDING, ATTENDANCE_ALREADY_EXISTS, ATTENDANCE_BELONGS_TO_ANOTHER_EMPLOYEE, ATTENDANCE_DATE_OUT_OF_RANGE, ATTENDANCE_NOT_FOUND, BAD_REQUEST (+55 more)
+Nodes (60): ErrorCode, ACCESS_DENIED, APPROVAL_PENDING, ATTENDANCE_ALREADY_EXISTS, ATTENDANCE_BELONGS_TO_ANOTHER_EMPLOYEE, ATTENDANCE_DATE_OUT_OF_RANGE, ATTENDANCE_NOT_FOUND, BAD_REQUEST (+52 more)
 
-### Community 12 - "RoleName"
+### Community 7 - "org.springframework.transaction.annotation.Transactional"
 Cohesion: 0.08
-Nodes (18): UpdateUserStatusRequest, LoginResponse, UserProfileResponse, RoleName, CLIENT, EMPLOYEE, HR_ADMIN, MANAGER (+10 more)
+Nodes (9): BadRequestException, DuplicateResourceException, ResourceNotFoundException, Form16, Form16Repository, Form16CertificateNumberGenerator, Form16ServiceImpl, LeaveApprovalServiceImpl (+1 more)
 
-### Community 13 - "AttendanceStatus"
-Cohesion: 0.10
-Nodes (18): AttendanceStatus, ABSENT, HALF_DAY, HOLIDAY, LATE, LEAVE, MISSED_CHECKOUT, PRESENT (+10 more)
+### Community 8 - "NotificationType"
+Cohesion: 0.05
+Nodes (40): AnnouncementRequest, NotificationResponse, UpcomingBirthdayResponse, Notification, NotificationPriority, HIGH, LOW, MEDIUM (+32 more)
 
-### Community 14 - "Form16QuarterResponse"
+### Community 9 - "org.springframework.context.annotation.Configuration"
+Cohesion: 0.18
+Nodes (4): JpaAuditConfig, JacksonConfig, SchedulingConfig, PasswordConfig
+
+### Community 10 - "com.my_hourly.employee.entity.Employee"
 Cohesion: 0.06
-Nodes (7): Form16QuarterController, Form16QuarterRequest, Form16QuarterResponse, Form16Quarter, Form16QuarterRepository, Form16QuarterService, Form16QuarterServiceImpl
+Nodes (16): LeavePaidLopServiceImpl Integration Verification, Unverified/Wrong Assumptions, LeaveApplicationContext, LeaveBalanceRepository, LeaveBalanceServiceImpl, alreadyPaidDaysInMonth(), classify(), holidayDates() (+8 more)
 
-### Community 15 - "org.junit.jupiter.api.DisplayName"
-Cohesion: 0.09
-Nodes (6): MonthAllocation, PaidLopAllocation, LeaveBalanceServicePaidDeductionTest, LeavePaidLopAllocationTest, LeaveRequestManagerActionTest, LeaveRequestMapperTest
+### Community 11 - "RoleName"
+Cohesion: 0.06
+Nodes (14): RoleName, CLIENT, EMPLOYEE, HR_ADMIN, MANAGER, PAYROLL_ADMIN, SUPER_ADMIN, UserRepository (+6 more)
 
-### Community 16 - "LeaveRequestResponse"
-Cohesion: 0.09
-Nodes (4): LeaveRequestResponse, LeaveAuthorizationServiceImpl, LeaveRequestServiceImpl, LeaveAuthorizationService
-
-### Community 17 - "Form16ChapterVIAResponse"
+### Community 12 - "Form16ChapterVIAResponse"
 Cohesion: 0.07
 Nodes (6): Form16ChapterVIAController, Form16ChapterVIARequest, Form16ChapterVIAResponse, Form16ChapterVIA, Form16ChapterVIAService, Form16ChapterVIAServiceImpl
 
-### Community 18 - "com.my_hourly.employee.entity.Employee"
+### Community 13 - "Form16ChallanResponse"
 Cohesion: 0.07
-Nodes (12): HIGH-1: Critical Architectural Flaw - Storing Expanded Dates Breaks PAID/LOP Calculation, 1.1 Approved days are split into PAID and LOP, 1.2 The monthly allowance decides how many days can be PAID, 1.3 The approver is recorded on the request, 1.4 Submission no longer rejects an over-balance request, 1.5 The balance only moves on PAID days, 1. What changed in the backend, LeaveBalanceRepository (+4 more)
+Nodes (7): Form16ChallanListResponse, Form16ChallanRequest, Form16ChallanResponse, Form16Challan, Form16ChallanRepository, Form16ChallanService, Form16ChallanServiceImpl
 
-### Community 19 - "Form16Section16DeductionResponse"
-Cohesion: 0.08
-Nodes (5): Form16Section16DeductionController, Form16Section16DeductionRequest, Form16Section16DeductionResponse, Form16Section16DeductionService, Form16Section16DeductionServiceImpl
-
-### Community 21 - "SalaryStructureResponse"
+### Community 14 - "LeaveReportRequest"
 Cohesion: 0.12
-Nodes (4): CreateSalaryStructureRequest, SalaryStructureResponse, SalaryStructureServiceImpl, SalaryStructureService
+Nodes (10): LeaveStatus, APPROVED, CANCELLED, PENDING, REJECTED, ReportController, LeaveReportRequest, LeaveExcelExporter (+2 more)
 
-### Community 22 - "Form16VerificationResponse"
+### Community 16 - "Form16EmployerMasterResponse"
+Cohesion: 0.08
+Nodes (5): Form16EmployerMasterRequest, Form16EmployerMasterResponse, Form16EmployerMaster, Form16EmployerMasterService, Form16EmployerMasterServiceImpl
+
+### Community 17 - "Form16QuarterResponse"
+Cohesion: 0.06
+Nodes (7): Form16QuarterController, Form16QuarterRequest, Form16QuarterResponse, Form16Quarter, Form16QuarterRepository, Form16QuarterService, Form16QuarterServiceImpl
+
+### Community 18 - "Form16VerificationResponse"
 Cohesion: 0.07
 Nodes (7): Form16VerificationController, Form16VerificationRequest, Form16VerificationResponse, Form16Verification, Form16VerificationRepository, Form16VerificationService, Form16VerificationServiceImpl
 
-### Community 23 - "LeaveTransaction"
-Cohesion: 0.13
-Nodes (4): LeaveTransaction, LeaveTransactionMapper, LeaveTransactionRepository, LeaveTransactionServiceImpl
-
-### Community 24 - "LeavePaidLopServiceImpl.java"
-Cohesion: 0.06
-Nodes (26): 1. Database Schema, 2. Backend - Entity Layer, 3. Backend - DTO Layer, 4. Backend - Mapper Layer, 5. Backend - Service Layer (Core Business Logic), 6. Frontend - Settings UI, Affected Components, Algorithm Details (+18 more)
-
-### Community 25 - "ValidationException"
+### Community 19 - "EmployeeResponse"
 Cohesion: 0.12
-Nodes (4): AttendanceRegularizationServiceImpl, RegularizationValidator, ValidationException, AttendanceRegularizationServiceTest
+Nodes (10): CreateEmployeeRequest, UpdateEmployeeByEmployeeRequest, UpdateEmployeeRequest, EmployeeResponse, EmploymentType, CONTRACT, FULL_TIME, INTERN (+2 more)
 
-### Community 26 - "LeaveExpiryServiceTest"
-Cohesion: 0.12
-Nodes (6): ExpiryEntry, LeaveExpiryPlan, MappedPaidDaysProjection, PaidDaysProjection, LeaveExpiryServiceImpl, LeaveExpiryServiceTest
+### Community 20 - "EmployeePaymentDetailsResponse"
+Cohesion: 0.10
+Nodes (8): CreateEmployeePaymentDetailsRequest, EmployeePaymentDetailsResponse, PaymentMode, BANK_TRANSFER, CASH, CHEQUE, UPI, EmployeePaymentDetailsService
 
-### Community 27 - "EmployeePaymentDetails"
-Cohesion: 0.08
-Nodes (6): CreateEmployeePaymentDetailsRequest, EmployeePaymentDetailsResponse, EmployeePaymentDetails, EmployeePaymentDetailsRepository, EmployeePaymentDetailsService, EmployeePaymentDetailsServiceImpl
+### Community 21 - "org.springframework.stereotype.Component"
+Cohesion: 0.11
+Nodes (12): AttendanceScheduler, UserMapper, EmployeeRepository, LeaveScheduler, LeaveExpiryService, BirthdayScheduler, HolidayScheduler, NotificationScheduler (+4 more)
 
-### Community 28 - "Form16LastFieldsResponse"
-Cohesion: 0.09
+### Community 22 - "Form16Section16DeductionResponse"
+Cohesion: 0.07
+Nodes (6): Form16Section16DeductionController, Form16Section16DeductionRequest, Form16Section16DeductionResponse, Form16Section16Deduction, Form16Section16DeductionService, Form16Section16DeductionServiceImpl
+
+### Community 23 - "Form16LastFieldsResponse"
+Cohesion: 0.10
 Nodes (5): Form16LastFieldsRequest, Form16LastFieldsResponse, Form16LastFields, Form16LastFieldsService, Form16LastFieldsServiceImpl
 
-### Community 31 - "LeaveTypeResponse"
-Cohesion: 0.12
-Nodes (3): LeaveTypeRequest, LeaveTypeResponse, LeaveTypeService
-
-### Community 32 - "SalaryTemplateResponse"
+### Community 24 - "notnull"
 Cohesion: 0.13
-Nodes (4): CreateSalaryTemplateRequest, SalaryTemplateResponse, SalaryTemplateServiceImpl, SalaryTemplateService
+Nodes (3): Gender, FEMALE, MALE
 
-### Community 33 - "JobTitleResponse"
-Cohesion: 0.08
-Nodes (5): CreateJobTitleRequest, UpdateJobTitleRequest, JobTitleResponse, JobTitleServiceImpl, JobTitleService
+### Community 25 - "Form16SalaryRequest"
+Cohesion: 0.14
+Nodes (3): Form16SalaryController, Form16SalaryRequest, Form16SalaryService
 
-### Community 34 - "CompanySettings"
+### Community 28 - "LeaveSettings"
+Cohesion: 0.19
+Nodes (3): LeaveSettings, LeaveSettingsMapper, LeaveSettingsServiceImpl
+
+### Community 29 - "lombok.Getter"
+Cohesion: 0.13
+Nodes (17): BreakEndRequest, AdminRegisterRequest, EmployeeRegisterRequest, GrantRoleRequest, UpdateUserStatusRequest, LoginResponse, RefreshTokenResponse, RegisterResponse (+9 more)
+
+### Community 30 - "CalendarServiceImpl"
 Cohesion: 0.09
-Nodes (7): CompanySettingsRequest, CompanySettingsResponse, CompanySettings, CompanySettingsMapper, CompanySettingsRepository, CompanySettingsService, CompanySettingsServiceImpl
+Nodes (13): CalendarEventResponse, CalendarResponse, CalendarEventType, ATTENDANCE, BIRTHDAY, HOLIDAY, LEAVE, WORK_ANNIVERSARY (+5 more)
 
-### Community 35 - "DepartmentResponse"
+### Community 31 - "Form16ExemptionResponse"
+Cohesion: 0.10
+Nodes (4): Form16ExemptionController, Form16ExemptionRequest, Form16ExemptionResponse, Form16ExemptionService
+
+### Community 32 - "DepartmentResponse"
 Cohesion: 0.08
 Nodes (6): CreateDepartmentRequest, UpdateDepartmentRequest, DepartmentResponse, DepartmentMapper, DepartmentService, DepartmentServiceImpl
 
-### Community 36 - "BreakType"
+### Community 33 - "JobTitle"
 Cohesion: 0.08
-Nodes (10): BreakStartRequest, AttendanceDashboardResponse, BreakStartResponse, BreakType, LUNCH, MEETING, NO_ACTIVE_BREAK, OTHER (+2 more)
+Nodes (6): CreateJobTitleRequest, UpdateJobTitleRequest, JobTitle, JobTitleMapper, JobTitleRepository, JobTitleServiceImpl
 
-### Community 37 - "CalendarServiceImpl.java"
+### Community 34 - "Leave PAID / LOP Split & Approver — Frontend Implementation Guide"
+Cohesion: 0.07
+Nodes (24): 0. TL;DR — what the frontend actually has to do, 10. Worked examples, 11. Test checklist, 13. Gotchas / checklist, 1.1 Approved days are split into PAID and LOP, 1.2 The monthly allowance decides how many days can be PAID, 1.3 The approver is recorded on the request, 1.4 Submission no longer rejects an over-balance request (+16 more)
+
+### Community 35 - "Employee"
+Cohesion: 0.10
+Nodes (4): Employee, EmployeeMapper, EmployeeServiceImpl, EmployeeSpecification
+
+### Community 36 - "Technical Design: Configurable Sandwich Leave Policy"
 Cohesion: 0.08
-Nodes (13): CalendarEventResponse, CalendarResponse, CalendarEventType, ATTENDANCE, BIRTHDAY, HOLIDAY, LEAVE, WORK_ANNIVERSARY (+5 more)
+Nodes (23): 1. Database Schema, 2. Backend - Entity Layer, 3. Backend - DTO Layer, 4. Backend - Mapper Layer, 5. Backend - Service Layer (Core Business Logic), 6. Frontend - Settings UI, Affected Components, Algorithm Details (+15 more)
 
-### Community 39 - "ReportController.java"
+### Community 37 - "LeaveRequestResponse"
+Cohesion: 0.06
+Nodes (6): LeaveActionRequest, LeaveRequestResponse, LeaveApprovalController, LeaveRequestController, LeaveAuthorizationService, LeaveRequestService
+
+### Community 38 - "AttendanceReportServiceImpl.java"
+Cohesion: 0.16
+Nodes (6): AttendanceReportRequest, AttendanceExcelExporter, AttendancePdfExporter, AttendanceReportService, AttendanceReportServiceImpl, AttendanceReportSpecification
+
+### Community 39 - "SalaryTemplateResponse"
+Cohesion: 0.13
+Nodes (4): CreateSalaryTemplateRequest, SalaryTemplateResponse, SalaryTemplateServiceImpl, SalaryTemplateService
+
+### Community 40 - "CompanySettings"
 Cohesion: 0.09
-Nodes (13): 6.5 Reports — **backend gap, no frontend change yet**, LeaveStatus, APPROVED, CANCELLED, PENDING, REJECTED, LeaveReportRequest, LeaveReportPageResponse (+5 more)
+Nodes (7): CompanySettingsRequest, CompanySettingsResponse, CompanySettings, CompanySettingsMapper, CompanySettingsRepository, CompanySettingsService, CompanySettingsServiceImpl
 
-### Community 40 - "PayrollHistoryAction"
+### Community 41 - "ApiResponse"
+Cohesion: 0.06
+Nodes (6): AttendanceResponse, AttendanceController, AttendanceService, AdminController, AdminService, ApiResponse
+
+### Community 42 - "SalaryStructureResponse"
+Cohesion: 0.15
+Nodes (3): CreateSalaryStructureRequest, SalaryStructureResponse, SalaryStructureService
+
+### Community 43 - "LeaveExpiryServiceTest"
+Cohesion: 0.12
+Nodes (6): ExpiryEntry, LeaveExpiryPlan, MappedPaidDaysProjection, PaidDaysProjection, LeaveExpiryServiceImpl, LeaveExpiryServiceTest
+
+### Community 44 - "UserProfileResponse"
+Cohesion: 0.13
+Nodes (8): UserProfileResponse, UserStatus, ACTIVE, DISABLED, INACTIVE, LOCKED, PASSWORD_EXPIRED, AuthenticationMapper
+
+### Community 45 - "DesignationResponse"
+Cohesion: 0.08
+Nodes (6): CreateDesignationRequest, UpdateDesignationRequest, DesignationResponse, DesignationMapper, DesignationService, DesignationServiceImpl
+
+### Community 46 - "PayrollResponse"
+Cohesion: 0.10
+Nodes (4): RegeneratePayrollRequest, UpdateDraftPayrollRequest, PayrollResponse, PayrollService
+
+### Community 47 - "PayrollHistoryAction"
 Cohesion: 0.08
 Nodes (13): PayrollHistoryResponse, PayrollHistory, PayrollHistoryAction, APPROVED, CANCELLED, GENERATED, PAID, REGENERATED (+5 more)
 
-### Community 42 - "lombok"
-Cohesion: 0.05
-Nodes (4): EmployeeStatus, CHECKED_OUT, ON_BREAK, WORKING
-
-### Community 43 - "EmployeeResponse"
-Cohesion: 0.07
-Nodes (6): EmployeeResponse, EmployeeController, MultipartFileValidator, EmployeeMapper, EmployeeService, EmployeeServiceImpl
-
-### Community 44 - "LeaveApprovalServiceImpl.java"
-Cohesion: 0.10
-Nodes (9): LeaveApprovalResponse, LeaveApproval, ApprovalLevel, HR, MANAGER, LeaveApprovalMapper, LeaveApprovalRepository, LeaveApprovalServiceImpl (+1 more)
-
-### Community 47 - "AttendanceService"
-Cohesion: 0.08
-Nodes (4): CheckInRequest, CheckOutRequest, AttendanceController, AttendanceService
-
-### Community 48 - "Form16ExemptionResponse"
-Cohesion: 0.09
-Nodes (4): Form16ExemptionController, Form16ExemptionRequest, Form16ExemptionResponse, Form16ExemptionService
-
-### Community 49 - "GlobalExceptionHandler.java"
-Cohesion: 0.18
-Nodes (3): ErrorResponseFactory, GlobalExceptionHandler, ApiError
-
-### Community 50 - "LookupResponse"
-Cohesion: 0.08
-Nodes (5): EmployeeIdName, LookupResponse, ReportingManagerLookupResponse, LookupController, LookupService
-
-### Community 51 - "DesignationResponse"
-Cohesion: 0.07
-Nodes (5): DesignationController, CreateDesignationRequest, UpdateDesignationRequest, DesignationResponse, DesignationService
-
-### Community 53 - "Attendance"
-Cohesion: 0.08
-Nodes (5): AttendanceCalendarResponse, Attendance, AttendanceRepository, AttendanceValidationService, AttendanceValidationServiceImpl
-
-### Community 54 - "AttendanceSettings"
-Cohesion: 0.11
-Nodes (6): AttendanceSettingsRequest, AttendanceSettings, AttendanceSettingsMapper, AttendanceSettingsRepository, AttendanceSettingsService, AttendanceSettingsServiceImpl
-
-### Community 55 - "User"
-Cohesion: 0.07
-Nodes (6): User, PasswordResetTokenRepository, UserRepository, AdminServiceImpl, AuthenticationServiceImpl, PasswordResetEmailService
-
-### Community 56 - "Design Review: Configurable Sandwich Leave Policy"
+### Community 48 - "LeaveApproval"
 Cohesion: 0.06
-Nodes (30): API Contract Backward Compatibility, Correctness Assessment, DB Migration Safety, Design Review: Configurable Sandwich Leave Policy, Executive Summary, Findings, HIGH-2: Missing Method Signature for calculateLeaveDays with forcedWorkingDays, HIGH-3: Ambiguous Double-Counting Prevention Logic (+22 more)
+Nodes (15): AttendanceRegularizationEmailService, EmailService, PasswordResetEmailServiceImpl, PasswordResetEmailService, LeaveApprovalResponse, LeaveEmailService, LeaveApproval, ApprovalLevel (+7 more)
 
-### Community 57 - "EmploymentType"
-Cohesion: 0.28
-Nodes (5): EmploymentType, CONTRACT, FULL_TIME, INTERN, PART_TIME
-
-### Community 58 - "AttendanceRegularization"
+### Community 50 - "AttendanceSettings"
 Cohesion: 0.11
-Nodes (8): AttendanceRegularization, RegularizationStatus, APPROVED, CANCELLED, PARTIALLY_APPROVED, PENDING, REJECTED, AttendanceRegularizationRepository
+Nodes (5): AttendanceSettingsRequest, AttendanceSettings, AttendanceSettingsMapper, AttendanceSettingsService, AttendanceSettingsServiceImpl
 
-### Community 59 - "Form16EmployerMasterResponse"
-Cohesion: 0.09
-Nodes (4): Form16EmployerMasterController, Form16EmployerMasterRequest, Form16EmployerMasterResponse, Form16EmployerMasterService
+### Community 52 - "Design Review: Configurable Sandwich Leave Policy (Re-review #2)"
+Cohesion: 0.07
+Nodes (27): 1. No-Double-Counting Algorithm, 2. Integration Completeness, 3. DB Migration Safety, 4. API Contract Backward Compatibility, 5. Test Coverage, 6. Were Previous Findings Addressed?, Algorithm Verification, Attendance Overlap Check Verification (+19 more)
 
-### Community 61 - "LeaveSettings"
-Cohesion: 0.11
-Nodes (7): Implementation Checklist, LeaveSettingsRequest, LeaveSettingsResponse, LeaveSettings, LeaveSettingsMapper, LeaveSettingsServiceImpl, LeaveSettingsService
-
-### Community 62 - "SecurityConfig.java"
-Cohesion: 0.11
-Nodes (3): SecurityConfig, JwtAccessDeniedHandler, JwtAuthenticationEntryPoint
-
-### Community 63 - "RegularizationResponse"
-Cohesion: 0.18
-Nodes (3): RegularizationResponse, AttendanceRegularizationController, AttendanceRegularizationService
-
-### Community 64 - "Form16SalaryRequest"
-Cohesion: 0.13
-Nodes (3): Form16SalaryController, Form16SalaryRequest, Form16SalaryService
-
-### Community 66 - "PerformanceServiceImpl.java"
-Cohesion: 0.12
-Nodes (10): PerformanceReviewFilterRequest, PerformanceRating, AVERAGE, EXCELLENT, GOOD, NEEDS_IMPROVEMENT, VERY_GOOD, ReviewStatus (+2 more)
-
-### Community 67 - "AttendanceServiceImpl"
-Cohesion: 0.13
-Nodes (3): AttendanceResponse, AttendanceServiceImpl, AttendanceSpecification
-
-### Community 68 - "LeaveActionRequest"
-Cohesion: 0.08
-Nodes (4): LeaveActionRequest, LeaveApprovalController, LeaveRequestController, LeaveRequestService
-
-### Community 69 - "PayrollResponse"
-Cohesion: 0.13
-Nodes (3): RegeneratePayrollRequest, PayrollResponse, PayrollService
-
-### Community 70 - "PayrollStatus"
-Cohesion: 0.09
-Nodes (8): PayrollStatus, APPROVED, CANCELLED, DRAFT, GENERATED, PAID, SUPERSEDED, PayrollRepository
-
-### Community 71 - "PerformanceController.java"
-Cohesion: 0.19
-Nodes (3): PerformanceController, UpdatePerformanceReviewRequest, PerformanceService
-
-### Community 72 - "AttendanceBreak"
-Cohesion: 0.11
-Nodes (4): BreakEndResponse, AttendanceBreak, AttendanceMapper, AttendanceBreakRepository
-
-### Community 75 - "LeaveBalance"
-Cohesion: 0.10
-Nodes (4): LeaveTransactionResponse, LeaveBalance, LeaveBalanceMapper, LeaveTransactionService
-
-### Community 78 - "Form16EmployerMasterServiceImpl"
-Cohesion: 0.15
-Nodes (3): Form16EmployerMaster, Form16EmployerMasterRepository, Form16EmployerMasterServiceImpl
-
-### Community 79 - "CalendarController.java"
-Cohesion: 0.11
-Nodes (4): CalendarController, LeaveAllocationController, LeaveAllocationService, ReportController
-
-### Community 81 - "AuthenticationController"
-Cohesion: 0.08
-Nodes (5): AuthenticationController, ForgotPasswordRequest, RefreshTokenRequest, ResetPasswordRequest, AuthenticationService
-
-### Community 82 - "Leave PAID / LOP Split & Approver — Frontend Implementation Guide"
-Cohesion: 0.10
-Nodes (19): Risk 2: Existing leave requests with pending approval, 0. TL;DR — what the frontend actually has to do, 10. Worked examples, 11. Test checklist, 12. Known backend gaps & open questions, 13. Gotchas / checklist, 2. API surface, 3. Response schema — `LeaveRequestResponse` (+11 more)
-
-### Community 83 - "Form16Response"
+### Community 53 - "Form16Response"
 Cohesion: 0.11
 Nodes (3): Form16Controller, Form16Response, Form16Service
 
-### Community 84 - "Holiday"
-Cohesion: 0.05
-Nodes (14): CreateHolidayRequest, UpdateHolidayRequest, HolidayCalendarResponse, HolidayResponse, Holiday, HolidayType, HOLIDAY, OPTIONAL_HOLIDAY (+6 more)
+### Community 54 - "LookupResponse"
+Cohesion: 0.09
+Nodes (5): EmployeeIdName, LookupResponse, ReportingManagerLookupResponse, LookupController, LookupService
 
-### Community 85 - "SalaryStructure"
+### Community 57 - "org.springframework.data.jpa.repository.JpaRepository"
+Cohesion: 0.16
+Nodes (7): Form16ChapterVIARepository, Form16EmployerMasterRepository, Form16LastFieldsRepository, Form16SalaryRepository, Form16Section16DeductionRepository, LeaveRequestMonthAllocationRepository, AttendanceSettingsRepository
+
+### Community 58 - "BreakType"
+Cohesion: 0.11
+Nodes (9): AttendanceDashboardResponse, BreakStartResponse, BreakType, LUNCH, MEETING, NO_ACTIVE_BREAK, OTHER, PERSONAL (+1 more)
+
+### Community 59 - "CalendarController.java"
+Cohesion: 0.16
+Nodes (3): CalendarController, LeaveAllocationController, LeaveAllocationService
+
+### Community 66 - "Sandwich Leave Policy - Implementation Verification"
+Cohesion: 0.11
+Nodes (18): 1. Original Dates Preserved, 2. Forced Working Days Storage, 3. Rule Precedence, 4. Backward Compatibility, 5. Null-Safe Defaults, Architecture Decisions, Backend, Compilation (+10 more)
+
+### Community 69 - "LeaveTransaction"
+Cohesion: 0.17
+Nodes (3): LeaveTransaction, LeaveTransactionMapper, LeaveTransactionRepository
+
+### Community 70 - "PerformanceReview"
+Cohesion: 0.14
+Nodes (5): PerformanceReview, ReviewType, MONTHLY, YEARLY, PerformanceReviewRepository
+
+### Community 71 - "AttendanceServiceImpl.java"
+Cohesion: 0.10
+Nodes (4): BreakStartRequest, CheckInRequest, CheckOutRequest, TimeUtil
+
+### Community 72 - ".getCurrentEmployee"
+Cohesion: 0.08
+Nodes (12): AttendanceRegularization, RegularizationStatus, APPROVED, CANCELLED, PARTIALLY_APPROVED, PENDING, REJECTED, AttendanceRegularizationMapper (+4 more)
+
+### Community 74 - "Attendance"
+Cohesion: 0.10
+Nodes (5): Attendance, AttendanceRepository, AttendanceValidationService, AttendanceValidationServiceImpl, ValidationException
+
+### Community 78 - ".totalDays"
+Cohesion: 0.11
+Nodes (17): Risk 1: Double-counting in edge cases, Risk 2: Existing leave requests with pending approval, Risk 3: Integration with LeavePaidLopServiceImpl, Risk 4: UI confusion - displayed date range vs selected date range, Risk 5: Performance impact on leave validation, Risk 6: Database migration rollback, Risk 7: Attendance marking for sandwich weekends, Risk Assessment and Mitigation (+9 more)
+
+### Community 79 - "Announcement"
 Cohesion: 0.15
+Nodes (3): Announcement, AnnouncementRepository, AnnouncementService
+
+### Community 80 - "AttendanceStatus"
+Cohesion: 0.08
+Nodes (11): CheckInResponse, CheckOutResponse, AttendanceStatus, ABSENT, HALF_DAY, HOLIDAY, LATE, LEAVE (+3 more)
+
+### Community 81 - "LeaveType"
+Cohesion: 0.14
+Nodes (3): LeaveTypeRequest, LeaveType, LeaveTypeMapper
+
+### Community 84 - "SalaryStructure"
+Cohesion: 0.16
 Nodes (5): SalaryStructure, SalaryStructureStatus, ACTIVE, INACTIVE, SalaryStructureRepository
 
-### Community 88 - "Graphify Setup and Usage Guide"
+### Community 85 - "io.swagger.v3.oas.annotations.media.Schema"
+Cohesion: 0.18
+Nodes (7): 6.5 Reports — **backend gap, no frontend change yet**, AttendanceReportPageResponse, AttendanceReportResponse, AttendanceSummaryResponse, LeaveReportPageResponse, LeaveReportResponse, LeaveSummaryResponse
+
+### Community 89 - "Graphify Setup and Usage Guide"
 Cohesion: 0.11
 Nodes (17): 1. Project location, 2. Graphify version and executable, 3. Refresh the graph after code changes, 4. Commands at a glance, 5. Git hooks and when they run, 6. Codebuff MCP configuration, 7. Recommended workflow for AI-assisted code changes, 8. Troubleshooting (+9 more)
 
-### Community 89 - "MonthType"
+### Community 90 - "PerformanceReviewResponse"
+Cohesion: 0.16
+Nodes (3): PerformanceController, PerformanceReviewResponse, PerformanceService
+
+### Community 91 - "LeaveSettingsRequest"
+Cohesion: 0.13
+Nodes (9): Backend implementation of configurable Sandwich Leave policy, DTO fields marked @NotNull in LeaveSettingsRequest break backward compatibility, Empty file artifact `Mon-only)` in commit, Forced working days persisted as JSON in LeaveRequest entity, Frontend Settings UI missing from commit, High-level view, LeavePaidLopServiceImpl integration gap, Sandwich expansion algorithm and rule precedence (+1 more)
+
+### Community 95 - "PerformanceRating"
+Cohesion: 0.12
+Nodes (10): PerformanceReviewFilterRequest, PerformanceRating, AVERAGE, EXCELLENT, GOOD, NEEDS_IMPROVEMENT, VERY_GOOD, ReviewStatus (+2 more)
+
+### Community 105 - "MonthType"
 Cohesion: 0.14
 Nodes (13): MonthType, APRIL, AUGUST, DECEMBER, FEBRUARY, JANUARY, JULY, JUNE (+5 more)
 
-### Community 95 - "WebConfig.java"
-Cohesion: 0.14
-Nodes (3): StringToEnumConverter, StringToEnumConverterFactory, WebConfig
+### Community 107 - "LeaveSandwichPolicyTest"
+Cohesion: 0.13
+Nodes (4): Test coverage comprehensive with edge cases, LeaveRequestRequest, LeaveValidationService, LeaveSandwichPolicyTest
 
-### Community 96 - "AttendanceRegularizationDetail"
-Cohesion: 0.18
-Nodes (3): AttendanceRegularizationDetail, AttendanceRegularizationMapper, AttendanceRegularizationDetailRepository
+### Community 108 - "DataInitializer.java"
+Cohesion: 0.13
+Nodes (3): DataInitializer, HolidayRepository, LeaveSettingsRepository
 
-### Community 105 - "org.springframework.context.annotation.Configuration"
+### Community 111 - "AttendanceRegularizationServiceTest.java"
+Cohesion: 0.12
+Nodes (11): CreateRegularizationDetailRequest, CreateRegularizationRequest, RegularizationDetailActionRequest, RegularizationDetailResponse, RegularizationResponse, RegularizationDetailStatus, APPROVED, PENDING (+3 more)
+
+### Community 112 - "AuthenticationController"
 Cohesion: 0.08
-Nodes (6): JpaAuditConfig, JacksonConfig, SchedulingConfig, B2StorageConfig, SwaggerConfig, PasswordConfig
+Nodes (5): AuthenticationController, ForgotPasswordRequest, RefreshTokenRequest, ResetPasswordRequest, AuthenticationService
 
-### Community 109 - "LeaveTransactionType"
-Cohesion: 0.20
-Nodes (9): LeaveTransactionType, ALLOCATION, ALLOCATION_ADJUSTED, CARRY_FORWARD, EXPIRED, EXPIRY, HR_ADJUSTMENT, LEAVE_APPROVED (+1 more)
+### Community 120 - "HolidayType"
+Cohesion: 0.13
+Nodes (6): HolidayCalendarResponse, HolidayType, HOLIDAY, OPTIONAL_HOLIDAY, PUBLIC_HOLIDAY, WEEKEND
 
-### Community 114 - "RegularizationDetailStatus"
-Cohesion: 0.33
-Nodes (5): RegularizationDetailStatus, APPROVED, PENDING, REJECTED, REVERTED
+### Community 121 - "LeaveBalance"
+Cohesion: 0.15
+Nodes (3): LeaveBalance, LeaveBalanceMapper, LeaveTransactionServiceImpl
 
-### Community 115 - "6. Screen-by-screen implementation plan"
-Cohesion: 0.33
-Nodes (6): 6.1 Employee page — `src/pages/Leave.jsx` (+ `Leave.css`), 6.2 Manager page — `src/pages/LeaveApprovals.jsx` (+ `LeaveApprovals.css`), 6.3 Settings → Leave Types — `src/pages/settings/LeaveTypesSettings.jsx`, 6.4 Dashboard — `src/pages/Dashboard.jsx`, 6.6 Payroll — **cross-module inconsistency to be aware of**, 6. Screen-by-screen implementation plan
-
-### Community 118 - "PaymentMode"
-Cohesion: 0.33
-Nodes (5): PaymentMode, BANK_TRANSFER, CASH, CHEQUE, UPI
-
-### Community 120 - "JwtAuthenticationFilter.java"
-Cohesion: 0.09
-Nodes (4): RevokedToken, RevokedTokenRepository, JwtAuthenticationFilter, JwtService
-
-### Community 123 - "LeaveRequest"
-Cohesion: 0.10
-Nodes (3): LeaveEmailService, LeaveRequest, LeaveRequestRepository
-
-### Community 124 - "PayrollAction"
+### Community 128 - "PayrollAction"
 Cohesion: 0.22
 Nodes (8): PayrollAction, APPROVED, CANCELLED, GENERATED, PAID, REGENERATED, SUPERSEDED, UPDATED
 
-### Community 130 - "EmployeeStatus"
+### Community 132 - "lombok"
+Cohesion: 0.06
+Nodes (4): EmployeeStatus, CHECKED_OUT, ON_BREAK, WORKING
+
+### Community 134 - "PayrollStatus"
+Cohesion: 0.17
+Nodes (7): PayrollStatus, APPROVED, CANCELLED, DRAFT, GENERATED, PAID, SUPERSEDED
+
+### Community 136 - "EmployeeStatus"
 Cohesion: 0.29
 Nodes (6): EmployeeStatus, ACTIVE, INACTIVE, NOTICE_PERIOD, RESIGNED, TERMINATED
 
-### Community 133 - "LeaveRequestRequest"
-Cohesion: 0.20
-Nodes (3): LeaveRequestRequest, LeaveApplicationContext, LeaveValidationService
-
-### Community 149 - "graphify"
+### Community 144 - "graphify"
 Cohesion: 0.50
 Nodes (3): graphify, C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe\uvx.exe, graphify-mcp
 
-### Community 150 - "org.springframework.stereotype.Component"
-Cohesion: 0.09
-Nodes (16): AttendanceScheduler, DateTimeUtil, EmployeeRepository, LeaveScheduler, LeaveExpiryService, NotificationPriority, HIGH, LOW (+8 more)
-
-### Community 151 - "SalaryComponentType"
+### Community 145 - "SalaryComponentType"
 Cohesion: 0.50
 Nodes (3): SalaryComponentType, DEDUCTION, EARNING
 
-### Community 152 - "TokenType"
+### Community 146 - "TokenType"
 Cohesion: 0.50
 Nodes (3): TokenType, ACCESS, REFRESH
 
+### Community 186 - "Implementation Checklist"
+Cohesion: 0.33
+Nodes (9): Design Review Findings - Resolution Summary, HIGH Severity Findings - All Resolved, Implementation Checklist, MEDIUM Severity Findings - All Addressed, NIT Findings - All Addressed, Summary of Changes, Implementation Steps, 5. Service Layer - Core Logic (+1 more)
+
+### Community 189 - "LeaveTransactionType"
+Cohesion: 0.20
+Nodes (9): LeaveTransactionType, ALLOCATION, ALLOCATION_ADJUSTED, CARRY_FORWARD, EXPIRED, EXPIRY, HR_ADJUSTMENT, LEAVE_APPROVED (+1 more)
+
+### Community 190 - "Backend (Java/Spring Boot)"
+Cohesion: 0.22
+Nodes (9): 1. Database Migration, 2. Entity Layer, 3. DTO Layer, 4. Mapper Layer, 6. Test Coverage, Backend (Java/Spring Boot), Changes Implemented, Frontend (React/TypeScript) (+1 more)
+
+### Community 192 - "BusinessException"
+Cohesion: 0.22
+Nodes (3): BusinessException, ForbiddenException, UnauthorizedException
+
+### Community 196 - "Implementation Plan: Configurable Sandwich Leave Policy"
+Cohesion: 0.50
+Nodes (3): Implementation Plan: Configurable Sandwich Leave Policy, Notes, Verification Summary
+
 ## Knowledge Gaps
-- **214 isolated node(s):** `C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe\uvx.exe`, `graphify-mcp`, `FEMALE`, `MALE`, `APPROVED` (+209 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1347 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **88 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **214 isolated node(s):** `CLIENT`, `EMPLOYEE`, `HR_ADMIN`, `MANAGER`, `PAYROLL_ADMIN` (+209 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1395 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **114 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Employee` connect `Employee` to `lombok.Getter`, `lombok.RequiredArgsConstructor`, `DataInitializer.java`, `NotificationType`, `LeaveRequestRequest`, `org.springframework.transaction.annotation.Transactional`, `list`, `CreatePayrollRequest`, `PerformanceReview`, `RoleName`, `org.junit.jupiter.api.DisplayName`, `LeaveRequestResponse`, `SalaryStructureResponse`, `org.springframework.stereotype.Component`, `LeaveTransaction`, `ValidationException`, `EmployeePaymentDetails`, `LeaveAllocationServiceImpl`, `CalendarServiceImpl.java`, `PayrollHistoryAction`, `lombok`, `EmployeeResponse`, `LeaveApprovalServiceImpl.java`, `Payroll`, `Attendance`, `User`, `EmploymentType`, `AttendanceRegularization`, `PayrollServiceImpl`, `PerformanceServiceImpl.java`, `AttendanceServiceImpl`, `PayrollStatus`, `LeaveBalance`, `SalaryStructure`, `org.springframework.data.jpa.domain.Specification`, `EmployeeServiceImpl.java`, `PerformanceReviewResponse`, `.calculateAttendance`, `LeaveRequest`?**
-  _High betweenness centrality (0.077) - this node is a cross-community bridge._
-- **What connects `C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe\uvx.exe`, `graphify-mcp`, `FEMALE` to the rest of the system?**
+- **Why does `Employee` connect `Employee` to `LeaveRequest`, `lombok.extern.slf4j.Slf4j`, `lombok`, `org.springframework.transaction.annotation.Transactional`, `NotificationType`, `PayrollStatus`, `RoleName`, `User`, `EmployeeResponse`, `org.springframework.stereotype.Component`, `notnull`, `io.swagger.v3.oas.annotations.tags.Tag`, `CalendarServiceImpl`, `JobTitle`, `LeaveRequestResponse`, `PayrollHistoryAction`, `LeaveApproval`, `PayrollServiceImpl`, `EmployeePaymentDetailsServiceImpl`, `org.springframework.data.jpa.repository.JpaRepository`, `LeaveTransaction`, `PerformanceReview`, `AttendanceServiceImpl.java`, `.getCurrentEmployee`, `Attendance`, `AttendanceServiceImpl`, `list`, `AttendanceStatus`, `CreatePayrollRequest`, `Payroll`, `SalaryStructure`, `SalaryStructureServiceImpl`, `EmployeePaymentDetails`, `PerformanceServiceImpl`, `LeaveSandwichPolicyTest`, `AttendanceRegularizationServiceTest.java`, `LeaveBalance`, `LeaveAllocationServiceImpl`, `AttendanceCalendarResponse`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
+- **What connects `CLIENT`, `EMPLOYEE`, `HR_ADMIN` to the rest of the system?**
   _214 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `lombok.Getter` be split into smaller, more focused modules?**
-  _Cohesion score 0.09535201640464798 - nodes in this community are weakly interconnected._
-- **Why does `ResourceNotFoundException` connect `org.springframework.transaction.annotation.Transactional` to `lombok.Getter`, `lombok.RequiredArgsConstructor`, `NotificationType`, `org.springframework.security.access.prepost.PreAuthorize`, `Employee`, `Form16ChallanResponse`, `ErrorCode`, `Form16QuarterResponse`, `Form16ChapterVIAResponse`, `Form16Section16DeductionResponse`, `org.springframework.http.ResponseEntity`, `SalaryStructureResponse`, `Form16VerificationResponse`, `LeaveTransaction`, `LeavePaidLopServiceImpl.java`, `ValidationException`, `EmployeePaymentDetails`, `Form16LastFieldsResponse`, `LeaveAllocationServiceImpl`, `SalaryTemplateResponse`, `JobTitleResponse`, `CompanySettings`, `DepartmentResponse`, `EmployeeResponse`, `LeaveApprovalServiceImpl.java`, `GlobalExceptionHandler.java`, `AttendanceSettings`, `User`, `LeaveSettings`, `PayrollServiceImpl`, `PerformanceServiceImpl.java`, `Form16ServiceImpl`, `Form16EmployerMasterServiceImpl`, `Holiday`, `SalaryStructure`, `AuthenticationServiceImpl.java`, `EmployeeServiceImpl.java`, `Form16SalaryServiceImpl`, `PerformanceReviewResponse`, `LeaveTypeServiceImpl`, `Form16ExemptionServiceImpl`, `DesignationServiceImpl`, `.calculateAttendance`?**
-  _High betweenness centrality (0.049) - this node is a cross-community bridge._
-- **Should `ApiResponse` be split into smaller, more focused modules?**
-  _Cohesion score 0.03996473699676756 - nodes in this community are weakly interconnected._
-- **Why does `ErrorCode` connect `ErrorCode` to `lombok.Getter`, `EmployeeServiceImpl.java`, `lombok.RequiredArgsConstructor`, `PerformanceServiceImpl.java`, `org.springframework.transaction.annotation.Transactional`, `Employee`, `LeaveApprovalServiceImpl.java`, `GlobalExceptionHandler.java`, `org.springframework.http.ResponseEntity`, `AttendanceSettings`, `SecurityConfig.java`, `LeavePaidLopServiceImpl.java`, `ValidationException`, `AuthenticationServiceImpl.java`?**
-  _High betweenness centrality (0.032) - this node is a cross-community bridge._
-- **Should `lombok.RequiredArgsConstructor` be split into smaller, more focused modules?**
-  _Cohesion score 0.06970740103270223 - nodes in this community are weakly interconnected._
+- **Should `JobTitleResponse` be split into smaller, more focused modules?**
+  _Cohesion score 0.11822660098522167 - nodes in this community are weakly interconnected._
+- **Why does `ResourceNotFoundException` connect `org.springframework.transaction.annotation.Transactional` to `org.springframework.http.ResponseEntity`, `Form16SalaryServiceImpl`, `ErrorCode`, `NotificationType`, `com.my_hourly.employee.entity.Employee`, `RoleName`, `Form16ChapterVIAResponse`, `User`, `Form16ChallanResponse`, `Form16EmployerMasterResponse`, `Form16QuarterResponse`, `Form16VerificationResponse`, `Form16Section16DeductionResponse`, `Form16LastFieldsResponse`, `io.swagger.v3.oas.annotations.tags.Tag`, `LeaveSettings`, `DepartmentResponse`, `JobTitle`, `Employee`, `SalaryTemplateResponse`, `CompanySettings`, `DesignationResponse`, `AttendanceSettings`, `Form16ExemptionServiceImpl`, `GlobalExceptionHandler.java`, `EmployeePaymentDetailsServiceImpl`, `PayrollServiceImpl`, `BusinessException`, `.getCurrentEmployee`, `CreatePayrollRequest`, `SalaryStructureServiceImpl`, `EmployeePaymentDetails`, `AuthenticationServiceImpl`, `PerformanceServiceImpl`, `AttendanceRegularizationServiceTest.java`, `HolidayServiceImpl`, `LeaveTypeServiceImpl`, `LeaveBalance`, `LeaveAllocationServiceImpl`?**
+  _High betweenness centrality (0.056) - this node is a cross-community bridge._
+- **Should `org.springframework.http.ResponseEntity` be split into smaller, more focused modules?**
+  _Cohesion score 0.04088872292755788 - nodes in this community are weakly interconnected._
+- **Why does `Designation` connect `lombok.extern.slf4j.Slf4j` to `JobTitle`, `Employee`, `org.springframework.transaction.annotation.Transactional`, `RoleName`, `DataInitializer.java`, `DesignationResponse`, `EmployeeResponse`?**
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+- **Should `org.junit.jupiter.api.Test` be split into smaller, more focused modules?**
+  _Cohesion score 0.08468468468468468 - nodes in this community are weakly interconnected._

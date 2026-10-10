@@ -24,8 +24,10 @@ import com.my_hourly.leave.mapper.LeaveRequestMapper;
 import com.my_hourly.leave.repository.LeaveRequestMonthAllocationRepository;
 import com.my_hourly.leave.repository.LeaveRequestRepository;
 import com.my_hourly.leave.service.*;
+import com.my_hourly.leave.specification.LeaveSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -387,7 +390,8 @@ public class LeaveRequestServiceImpl
                                     leaveRequest.getEmployee(),
                                     leaveRequest.getLeaveType(),
                                     leaveRequest.getStartDate(),
-                                    leaveRequest.getEndDate()
+                                    leaveRequest.getEndDate(),
+                                    leaveRequest.getForcedWorkingDays()
                             );
 
                     paidDays = allocation.paidDays();
@@ -678,11 +682,24 @@ public class LeaveRequestServiceImpl
 
     @Override
     @Transactional(readOnly = true)
-    public List<LeaveRequestResponse> getMyLeaveRequests() {
+    public List<LeaveRequestResponse> getMyLeaveRequests(
+            Integer month,
+            Integer year) {
 
         Employee employee = employeeService.getCurrentEmployee();
 
-        return leaveRequestRepository.findByEmployee(employee)
+        LeaveSpecification.MonthRange range =
+                LeaveSpecification.resolveRange(month, year);
+
+        Specification<LeaveRequest> specification =
+                Specification.where(LeaveSpecification.hasEmployee(employee));
+
+        if (range != null) {
+            specification = specification.and(
+                    LeaveSpecification.overlaps(range.from(), range.to()));
+        }
+
+        return leaveRequestRepository.findAll(specification)
                 .stream()
                 .map(leaveRequestMapper::toResponse)
                 .toList();
@@ -703,9 +720,18 @@ public class LeaveRequestServiceImpl
 
     @Override
     @Transactional(readOnly = true)
-    public List<LeaveRequestResponse> getAllLeaveRequests() {
+    public List<LeaveRequestResponse> getAllLeaveRequests(
+            Integer month,
+            Integer year) {
 
-        return leaveRequestRepository.findAll()
+        LeaveSpecification.MonthRange range =
+                LeaveSpecification.resolveRange(month, year);
+
+        Specification<LeaveRequest> specification = range == null
+                ? null
+                : LeaveSpecification.overlaps(range.from(), range.to());
+
+        return leaveRequestRepository.findAll(specification)
                 .stream()
                 .map(leaveRequestMapper::toResponse)
                 .toList();

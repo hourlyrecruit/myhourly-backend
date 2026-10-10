@@ -19,11 +19,25 @@ public interface LeaveRequestService {
     LeaveRequestResponse getLeaveRequest(
             Long leaveRequestId);
 
-    List<LeaveRequestResponse> getMyLeaveRequests();
+    /**
+     * The current employee's leave requests, optionally filtered to a calendar
+     * month ({@code month} + {@code year}) or a whole year ({@code year} only).
+     * A request is returned when its date range overlaps the selected period.
+     */
+    List<LeaveRequestResponse> getMyLeaveRequests(
+            Integer month,
+            Integer year);
 
     List<LeaveRequestResponse> getTeamLeaveRequests();
 
-    List<LeaveRequestResponse> getAllLeaveRequests();
+    /**
+     * Every leave request, optionally filtered to a calendar month
+     * ({@code month} + {@code year}) or a whole year ({@code year} only).
+     * A request is returned when its date range overlaps the selected period.
+     */
+    List<LeaveRequestResponse> getAllLeaveRequests(
+            Integer month,
+            Integer year);
 
     LeaveRequestResponse cancelLeave(
             Long leaveRequestId);

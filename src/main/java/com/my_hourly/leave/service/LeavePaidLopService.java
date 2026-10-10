@@ -5,10 +5,7 @@ import com.my_hourly.leave.dto.PaidLopAllocation;
 import com.my_hourly.leave.entity.LeaveType;
 
 import java.time.LocalDate;
-<<<<<<< HEAD
-=======
 import java.util.Set;
->>>>>>> feature/sandwich-leave
 
 /**
  * Splits a leave request's days into PAID and LOP before any balance is touched.
@@ -39,8 +36,6 @@ public interface LeavePaidLopService {
             LeaveType leaveType,
             LocalDate startDate,
             LocalDate endDate);
-<<<<<<< HEAD
-=======
 
     /**
      * Classifies every working day of {@code [startDate, endDate]}, including
@@ -69,5 +64,4 @@ public interface LeavePaidLopService {
             LocalDate startDate,
             LocalDate endDate,
             Set<LocalDate> forcedWorkingDays);
->>>>>>> feature/sandwich-leave
 }

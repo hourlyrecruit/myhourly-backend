@@ -1,7 +1,5 @@
 package com.my_hourly.leave;
 
-import com.my_hourly.common.enums.ErrorCode;
-import com.my_hourly.common.exception.BadRequestException;
 import com.my_hourly.employee.entity.Employee;
 import com.my_hourly.holiday.entity.Holiday;
 import com.my_hourly.holiday.repository.HolidayRepository;
@@ -9,442 +7,337 @@ import com.my_hourly.leave.api.request.LeaveRequestRequest;
 import com.my_hourly.leave.context.LeaveApplicationContext;
 import com.my_hourly.leave.entity.LeaveBalance;
 import com.my_hourly.leave.entity.LeaveType;
-import com.my_hourly.leave.repository.LeaveBalanceRepository;
-import com.my_hourly.leave.repository.LeaveTypeRepository;
-import com.my_hourly.leave.service.LeaveValidationService;
+import com.my_hourly.leave.repository.LeaveRequestRepository;
+import com.my_hourly.leave.service.LeaveBalanceService;
+import com.my_hourly.leave.service.LeaveTypeService;
+import com.my_hourly.leave.service.impl.LeaveValidationServiceImpl;
 import com.my_hourly.settings.leave.entity.LeaveSettings;
-import com.my_hourly.settings.leave.repository.LeaveSettingsRepository;
+import com.my_hourly.settings.leave.service.LeaveSettingsService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@Transactional
-public class LeaveSandwichPolicyTest {
+/**
+ * Pins the configurable sandwich leave expansion of
+ * {@code LeaveValidationServiceImpl}:
+ *
+ * <ul>
+ *   <li><b>Monday rule</b> — leave on a Monday also charges the preceding
+ *       Saturday and Sunday (3 days).</li>
+ *   <li><b>Friday rule</b> — leave on a Friday also charges the following
+ *       Saturday and Sunday (3 days).</li>
+ *   <li><b>Friday + Monday rule</b> — leave spanning Friday to Monday charges
+ *       the intervening weekend once (4 days).</li>
+ * </ul>
+ *
+ * <p>The rules are independent. When several are enabled the Friday+Monday rule
+ * takes precedence, and the weekend days are stored in a {@code Set} so they can
+ * never be counted twice.</p>
+ *
+ * <p>Dates are anchored on real weekdays in November 2026 (Nov 27 2026 is a
+ * Friday, Nov 30 2026 is a Monday) and are in the future because leave cannot be
+ * applied for a past date.</p>
+ */
+@ExtendWith(MockitoExtension.class)
+@DisplayName("Configurable sandwich leave policy")
+class LeaveSandwichPolicyTest {
 
-    @Autowired
-    private LeaveValidationService leaveValidationService;
+    private static final LocalDate THURSDAY = LocalDate.of(2026, 11, 26);
+    private static final LocalDate FRIDAY = LocalDate.of(2026, 11, 27);
+    private static final LocalDate SATURDAY = LocalDate.of(2026, 11, 28);
+    private static final LocalDate SUNDAY = LocalDate.of(2026, 11, 29);
+    private static final LocalDate MONDAY = LocalDate.of(2026, 11, 30);
+    private static final LocalDate TUESDAY = LocalDate.of(2026, 12, 1);
 
-    @Autowired
-    private LeaveSettingsRepository leaveSettingsRepository;
+    @Mock
+    private LeaveTypeService leaveTypeService;
 
-    @Autowired
-    private LeaveTypeRepository leaveTypeRepository;
+    @Mock
+    private LeaveBalanceService leaveBalanceService;
 
-    @Autowired
-    private LeaveBalanceRepository leaveBalanceRepository;
+    @Mock
+    private LeaveRequestRepository leaveRequestRepository;
 
-    @Autowired
+    @Mock
     private HolidayRepository holidayRepository;
+
+    @Mock
+    private LeaveSettingsService leaveSettingsService;
+
+    @InjectMocks
+    private LeaveValidationServiceImpl leaveValidationService;
 
     private Employee employee;
     private LeaveType leaveType;
-    private LeaveSettings leaveSettings;
+    private LeaveSettings settings;
 
     @BeforeEach
     void setUp() {
-        // Create test employee
-        employee = Employee.builder()
-                .employeeCode("EMP001")
-                .firstName("Test")
-                .lastName("Employee")
-                .email("test@example.com")
-                .dateOfJoining(LocalDate.now().minusYears(1))
-                .active(true)
-                .build();
 
-        // Create test leave type
+        employee = Employee.builder().firstName("John").lastName("Test").build();
+        employee.setId(1L);
+
         leaveType = LeaveType.builder()
                 .name("Annual Leave")
-                .code("AL")
+                .paid(true)
+                .allocatedDays(24)
+                .monthlyGuideline(2)
                 .active(true)
                 .build();
-        leaveType = leaveTypeRepository.save(leaveType);
+        leaveType.setId(10L);
 
-        // Create leave balance
-        LeaveBalance leaveBalance = LeaveBalance.builder()
-                .employee(employee)
-                .leaveType(leaveType)
-                .year(LocalDate.now().getYear())
-                .totalLeaves(24)
-                .usedLeaves(0)
-                .remainingLeaves(24)
+        settings = LeaveSettings.builder()
+                .carryForwardAllowed(false)
+                .monthlyGuideline(2)
+                .annualPaidLeave(24)
                 .build();
-        leaveBalanceRepository.save(leaveBalance);
 
-        // Get or create leave settings
-        leaveSettings = leaveSettingsRepository.findFirstByOrderByIdAsc()
-                .orElse(LeaveSettings.builder()
-                        .carryForwardAllowed(false)
-                        .monthlyGuideline(2)
-                        .annualPaidLeave(24)
-                        .sandwichLeaveMondayEnabled(false)
-                        .sandwichLeaveFridayEnabled(false)
-                        .sandwichLeaveFridayMondayEnabled(false)
-                        .active(true)
+        when(leaveTypeService.getLeaveTypeEntity(leaveType.getId())).thenReturn(leaveType);
+        when(leaveSettingsService.getSettings()).thenReturn(settings);
+        when(leaveBalanceService.getLeaveBalanceEntity(any(), any(), any()))
+                .thenReturn(LeaveBalance.builder()
+                        .employee(employee)
+                        .leaveType(leaveType)
+                        .year(LocalDate.now().getYear())
+                        .allocatedLeaves(24)
+                        .usedLeaves(0)
+                        .expiredLeaves(0)
+                        .remainingLeaves(24)
                         .build());
-        leaveSettings = leaveSettingsRepository.save(leaveSettings);
+        when(leaveRequestRepository
+                .existsByEmployeeAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                        any(), anyList(), any(), any()))
+                .thenReturn(false);
+        when(holidayRepository.findByHolidayDateBetween(any(), any()))
+                .thenReturn(List.of());
+    }
+
+    private LeaveApplicationContext validate(LocalDate start, LocalDate end) {
+
+        return leaveValidationService.validateLeaveApplication(
+                employee,
+                new LeaveRequestRequest(leaveType.getId(), start, end, "Sandwich leave test"));
+    }
+
+    // -----------------------------------------------------------------------
+    // No rule enabled: plain weekend skipping
+    // -----------------------------------------------------------------------
+
+    @Test
+    @DisplayName("No rules: Friday-only leave charges 1 day")
+    void noRulesFridayOnlyChargesOneDay() {
+
+        LeaveApplicationContext context = validate(FRIDAY, FRIDAY);
+
+        assertEquals(1, context.totalDays());
+        assertTrue(context.forcedWorkingDays().isEmpty());
     }
 
     @Test
-    void testNoRulesEnabled_FridayOnly_OneDayCharged() {
-        // Arrange: Friday Oct 27, 2023
-        LocalDate friday = LocalDate.of(2023, 10, 27);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                friday,
-                friday,
-                "Test leave"
-        );
+    @DisplayName("No rules: Monday-only leave charges 1 day")
+    void noRulesMondayOnlyChargesOneDay() {
 
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
+        LeaveApplicationContext context = validate(MONDAY, MONDAY);
 
-        // Assert
-        assertEquals(1, context.totalDays(), "Should charge only 1 day when no rules enabled");
-        assertTrue(context.forcedWorkingDays().isEmpty(), "No forced working days");
+        assertEquals(1, context.totalDays());
+        assertTrue(context.forcedWorkingDays().isEmpty());
     }
 
     @Test
-    void testNoRulesEnabled_MondayOnly_OneDayCharged() {
-        // Arrange: Monday Oct 30, 2023
-        LocalDate monday = LocalDate.of(2023, 10, 30);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                monday,
-                monday,
-                "Test leave"
-        );
+    @DisplayName("No rules: Friday to Monday charges only the two working days")
+    void noRulesFridayToMondayChargesTwoDays() {
 
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
+        LeaveApplicationContext context = validate(FRIDAY, MONDAY);
 
-        // Assert
-        assertEquals(1, context.totalDays(), "Should charge only 1 day when no rules enabled");
-        assertTrue(context.forcedWorkingDays().isEmpty(), "No forced working days");
+        assertEquals(2, context.totalDays());
+        assertTrue(context.forcedWorkingDays().isEmpty());
     }
 
-    @Test
-    void testNoRulesEnabled_FridayPlusMonday_TwoDaysCharged() {
-        // Arrange: Friday Oct 27 to Monday Oct 30, 2023
-        LocalDate friday = LocalDate.of(2023, 10, 27);
-        LocalDate monday = LocalDate.of(2023, 10, 30);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                friday,
-                monday,
-                "Test leave"
-        );
-
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
-
-        // Assert
-        assertEquals(2, context.totalDays(), "Should charge only 2 working days (Fri + Mon)");
-        assertTrue(context.forcedWorkingDays().isEmpty(), "No forced working days");
-    }
+    // -----------------------------------------------------------------------
+    // Monday rule
+    // -----------------------------------------------------------------------
 
     @Test
-    void testMondayRuleEnabled_MondayLeave_ThreeDaysCharged() {
-        // Arrange: Enable Monday rule
-        leaveSettings.setSandwichLeaveMondayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
+    @DisplayName("Monday rule: Monday leave charges the preceding weekend (3 days)")
+    void mondayRuleChargesPrecedingWeekend() {
 
-        LocalDate monday = LocalDate.of(2023, 10, 30);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                monday,
-                monday,
-                "Test leave"
-        );
+        settings.setSandwichLeaveMondayEnabled(true);
 
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
+        LeaveApplicationContext context = validate(MONDAY, MONDAY);
 
-        // Assert
-        assertEquals(3, context.totalDays(), "Should charge 3 days (Sat + Sun + Mon)");
-        assertEquals(2, context.forcedWorkingDays().size(), "Should have 2 forced working days");
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 28)), "Saturday should be forced");
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 29)), "Sunday should be forced");
-    }
-
-    @Test
-    void testMondayRuleEnabled_TuesdayLeave_OneDayCharged() {
-        // Arrange: Enable Monday rule
-        leaveSettings.setSandwichLeaveMondayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
-
-        LocalDate tuesday = LocalDate.of(2023, 10, 31);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                tuesday,
-                tuesday,
-                "Test leave"
-        );
-
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
-
-        // Assert
-        assertEquals(1, context.totalDays(), "Tuesday should charge only 1 day");
-        assertTrue(context.forcedWorkingDays().isEmpty(), "No forced working days for Tuesday");
-    }
-
-    @Test
-    void testFridayRuleEnabled_FridayLeave_ThreeDaysCharged() {
-        // Arrange: Enable Friday rule
-        leaveSettings.setSandwichLeaveFridayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
-
-        LocalDate friday = LocalDate.of(2023, 10, 27);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                friday,
-                friday,
-                "Test leave"
-        );
-
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
-
-        // Assert
-        assertEquals(3, context.totalDays(), "Should charge 3 days (Fri + Sat + Sun)");
-        assertEquals(2, context.forcedWorkingDays().size(), "Should have 2 forced working days");
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 28)), "Saturday should be forced");
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 29)), "Sunday should be forced");
-    }
-
-    @Test
-    void testFridayRuleEnabled_ThursdayLeave_OneDayCharged() {
-        // Arrange: Enable Friday rule
-        leaveSettings.setSandwichLeaveFridayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
-
-        LocalDate thursday = LocalDate.of(2023, 10, 26);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                thursday,
-                thursday,
-                "Test leave"
-        );
-
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
-
-        // Assert
-        assertEquals(1, context.totalDays(), "Thursday should charge only 1 day");
-        assertTrue(context.forcedWorkingDays().isEmpty(), "No forced working days for Thursday");
-    }
-
-    @Test
-    void testFridayMondayRuleEnabled_FridayPlusMonday_FourDaysCharged() {
-        // Arrange: Enable Friday+Monday rule
-        leaveSettings.setSandwichLeaveFridayMondayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
-
-        LocalDate friday = LocalDate.of(2023, 10, 27);
-        LocalDate monday = LocalDate.of(2023, 10, 30);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                friday,
-                monday,
-                "Test leave"
-        );
-
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
-
-        // Assert
-        assertEquals(4, context.totalDays(), "Should charge 4 days (Fri + Sat + Sun + Mon)");
-        assertEquals(2, context.forcedWorkingDays().size(), "Should have 2 forced working days");
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 28)), "Saturday should be forced");
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 29)), "Sunday should be forced");
-    }
-
-    @Test
-    void testFridayMondayRuleEnabled_FridayOnly_OneDayCharged() {
-        // Arrange: Enable Friday+Monday rule (but apply for Friday only)
-        leaveSettings.setSandwichLeaveFridayMondayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
-
-        LocalDate friday = LocalDate.of(2023, 10, 27);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                friday,
-                friday,
-                "Test leave"
-        );
-
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
-
-        // Assert
-        assertEquals(1, context.totalDays(), "Should charge only 1 day when Monday not included");
-        assertTrue(context.forcedWorkingDays().isEmpty(), "No forced working days");
-    }
-
-    @Test
-    void testAllRulesEnabled_FridayPlusMondaySpan_PrecedenceWorks() {
-        // Arrange: Enable all three rules
-        leaveSettings.setSandwichLeaveMondayEnabled(true);
-        leaveSettings.setSandwichLeaveFridayEnabled(true);
-        leaveSettings.setSandwichLeaveFridayMondayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
-
-        LocalDate friday = LocalDate.of(2023, 10, 27);
-        LocalDate monday = LocalDate.of(2023, 10, 30);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                friday,
-                monday,
-                "Test leave"
-        );
-
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
-
-        // Assert
-        assertEquals(4, context.totalDays(), "Should charge 4 days total");
-        assertEquals(2, context.forcedWorkingDays().size(), "Should have exactly 2 forced working days (no double-counting)");
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 28)), "Saturday counted once");
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 29)), "Sunday counted once");
-    }
-
-    @Test
-    void testAllRulesEnabled_FridayOnly_FridayRuleFires() {
-        // Arrange: Enable all three rules
-        leaveSettings.setSandwichLeaveMondayEnabled(true);
-        leaveSettings.setSandwichLeaveFridayEnabled(true);
-        leaveSettings.setSandwichLeaveFridayMondayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
-
-        LocalDate friday = LocalDate.of(2023, 10, 27);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                friday,
-                friday,
-                "Test leave"
-        );
-
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
-
-        // Assert
-        assertEquals(3, context.totalDays(), "Friday-only rule should fire (3 days)");
-        assertEquals(2, context.forcedWorkingDays().size());
-    }
-
-    @Test
-    void testAllRulesEnabled_MondayOnly_MondayRuleFires() {
-        // Arrange: Enable all three rules
-        leaveSettings.setSandwichLeaveMondayEnabled(true);
-        leaveSettings.setSandwichLeaveFridayEnabled(true);
-        leaveSettings.setSandwichLeaveFridayMondayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
-
-        LocalDate monday = LocalDate.of(2023, 10, 30);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                monday,
-                monday,
-                "Test leave"
-        );
-
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
-
-        // Assert
-        assertEquals(3, context.totalDays(), "Monday-only rule should fire (3 days)");
-        assertEquals(2, context.forcedWorkingDays().size());
-    }
-
-    @Test
-    void testMondayRuleWithPublicHolidayOnSaturday_StillThreeDays() {
-        // Arrange: Create public holiday on Saturday
-        Holiday saturdayHoliday = Holiday.builder()
-                .holidayDate(LocalDate.of(2023, 10, 28))
-                .name("Test Holiday")
-                .active(true)
-                .build();
-        holidayRepository.save(saturdayHoliday);
-
-        leaveSettings.setSandwichLeaveMondayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
-
-        LocalDate monday = LocalDate.of(2023, 10, 30);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                monday,
-                monday,
-                "Test leave"
-        );
-
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
-
-        // Assert: Sandwich weekends are counted regardless of public holidays
-        assertEquals(3, context.totalDays(), "Should still charge 3 days even with holiday on Saturday");
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 28)), "Holiday Saturday still forced");
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 29)), "Sunday still forced");
-    }
-
-    @Test
-    void testFridayRuleCrossingMonthBoundary() {
-        // Arrange: Friday Oct 31, 2023 (last day of October)
-        leaveSettings.setSandwichLeaveFridayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
-
-        LocalDate friday = LocalDate.of(2023, 10, 27);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                friday,
-                friday,
-                "Test leave"
-        );
-
-        // Act
-        LeaveApplicationContext context = leaveValidationService.validateLeaveApplication(employee, request);
-
-        // Assert
         assertEquals(3, context.totalDays());
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 28)), "Sat in Oct");
-        assertTrue(context.forcedWorkingDays().contains(LocalDate.of(2023, 10, 29)), "Sun in Oct");
+        assertEquals(2, context.forcedWorkingDays().size());
+        assertTrue(context.forcedWorkingDays().contains(SATURDAY));
+        assertTrue(context.forcedWorkingDays().contains(SUNDAY));
     }
 
     @Test
-    void testInsufficientBalanceWithMondayRule() {
-        // Arrange: Employee has only 2 days balance
-        LeaveBalance balance = leaveBalanceRepository.findByEmployeeAndLeaveTypeAndYear(
-                employee, leaveType, LocalDate.now().getYear()).orElseThrow();
-        balance.setRemainingLeaves(2);
-        balance.setUsedLeaves(22);
-        leaveBalanceRepository.save(balance);
+    @DisplayName("Monday rule: leaves not on Monday are unaffected")
+    void mondayRuleIgnoresNonMonday() {
 
-        leaveSettings.setSandwichLeaveMondayEnabled(true);
-        leaveSettingsRepository.save(leaveSettings);
+        settings.setSandwichLeaveMondayEnabled(true);
 
-        LocalDate monday = LocalDate.of(2023, 10, 30);
-        LeaveRequestRequest request = new LeaveRequestRequest(
-                leaveType.getId(),
-                monday,
-                monday,
-                "Test leave"
-        );
+        LeaveApplicationContext context = validate(TUESDAY, TUESDAY);
 
-        // Act & Assert: Should fail validation
-        BadRequestException exception = assertThrows(BadRequestException.class, () -> {
-            leaveValidationService.validateLeaveApplication(employee, request);
-        });
+        assertEquals(1, context.totalDays());
+        assertTrue(context.forcedWorkingDays().isEmpty());
+    }
 
-        assertEquals(ErrorCode.INSUFFICIENT, exception.getErrorCode());
-        assertTrue(exception.getMessage().contains("Insufficient leave balance"));
+    // -----------------------------------------------------------------------
+    // Friday rule
+    // -----------------------------------------------------------------------
+
+    @Test
+    @DisplayName("Friday rule: Friday leave charges the following weekend (3 days)")
+    void fridayRuleChargesFollowingWeekend() {
+
+        settings.setSandwichLeaveFridayEnabled(true);
+
+        LeaveApplicationContext context = validate(FRIDAY, FRIDAY);
+
+        assertEquals(3, context.totalDays());
+        assertEquals(2, context.forcedWorkingDays().size());
+        assertTrue(context.forcedWorkingDays().contains(SATURDAY));
+        assertTrue(context.forcedWorkingDays().contains(SUNDAY));
+    }
+
+    @Test
+    @DisplayName("Friday rule: leaves not on Friday are unaffected")
+    void fridayRuleIgnoresNonFriday() {
+
+        settings.setSandwichLeaveFridayEnabled(true);
+
+        LeaveApplicationContext context = validate(THURSDAY, THURSDAY);
+
+        assertEquals(1, context.totalDays());
+        assertTrue(context.forcedWorkingDays().isEmpty());
+    }
+
+    // -----------------------------------------------------------------------
+    // Friday + Monday rule
+    // -----------------------------------------------------------------------
+
+    @Test
+    @DisplayName("Friday+Monday rule: Friday to Monday charges the weekend (4 days)")
+    void fridayMondayRuleChargesInterveningWeekend() {
+
+        settings.setSandwichLeaveFridayMondayEnabled(true);
+
+        LeaveApplicationContext context = validate(FRIDAY, MONDAY);
+
+        assertEquals(4, context.totalDays());
+        assertEquals(2, context.forcedWorkingDays().size());
+        assertTrue(context.forcedWorkingDays().contains(SATURDAY));
+        assertTrue(context.forcedWorkingDays().contains(SUNDAY));
+    }
+
+    @Test
+    @DisplayName("Friday+Monday rule: Friday alone does not fire")
+    void fridayMondayRuleNeedsMonday() {
+
+        settings.setSandwichLeaveFridayMondayEnabled(true);
+
+        LeaveApplicationContext context = validate(FRIDAY, FRIDAY);
+
+        assertEquals(1, context.totalDays());
+        assertTrue(context.forcedWorkingDays().isEmpty());
+    }
+
+    // -----------------------------------------------------------------------
+    // Independence and precedence (no double counting)
+    // -----------------------------------------------------------------------
+
+    @Test
+    @DisplayName("All rules: Friday to Monday still charges 4 days exactly once")
+    void allRulesFridayToMondayNoDoubleCounting() {
+
+        settings.setSandwichLeaveMondayEnabled(true);
+        settings.setSandwichLeaveFridayEnabled(true);
+        settings.setSandwichLeaveFridayMondayEnabled(true);
+
+        LeaveApplicationContext context = validate(FRIDAY, MONDAY);
+
+        assertEquals(4, context.totalDays());
+        assertEquals(2, context.forcedWorkingDays().size());
+    }
+
+    @Test
+    @DisplayName("All rules: Friday alone uses the Friday rule")
+    void allRulesFridayUsesFridayRule() {
+
+        settings.setSandwichLeaveMondayEnabled(true);
+        settings.setSandwichLeaveFridayEnabled(true);
+        settings.setSandwichLeaveFridayMondayEnabled(true);
+
+        LeaveApplicationContext context = validate(FRIDAY, FRIDAY);
+
+        assertEquals(3, context.totalDays());
+        assertEquals(2, context.forcedWorkingDays().size());
+    }
+
+    @Test
+    @DisplayName("All rules: Monday alone uses the Monday rule")
+    void allRulesMondayUsesMondayRule() {
+
+        settings.setSandwichLeaveMondayEnabled(true);
+        settings.setSandwichLeaveFridayEnabled(true);
+        settings.setSandwichLeaveFridayMondayEnabled(true);
+
+        LeaveApplicationContext context = validate(MONDAY, MONDAY);
+
+        assertEquals(3, context.totalDays());
+        assertEquals(2, context.forcedWorkingDays().size());
+    }
+
+    @Test
+    @DisplayName("Friday and Monday rules without the combined rule: weekend counted once")
+    void overlappingSingleRulesCountWeekendOnce() {
+
+        settings.setSandwichLeaveFridayEnabled(true);
+        settings.setSandwichLeaveMondayEnabled(true);
+
+        LeaveApplicationContext context = validate(FRIDAY, MONDAY);
+
+        assertEquals(4, context.totalDays());
+        assertEquals(2, context.forcedWorkingDays().size());
+        assertTrue(context.forcedWorkingDays().contains(SATURDAY));
+        assertTrue(context.forcedWorkingDays().contains(SUNDAY));
+    }
+
+    // -----------------------------------------------------------------------
+    // Sandwich weekends override holidays and month boundaries
+    // -----------------------------------------------------------------------
+
+    @Test
+    @DisplayName("Monday rule: a public holiday on the forced Saturday still charges 3 days")
+    void forcedWeekendOverridesHoliday() {
+
+        when(holidayRepository.findByHolidayDateBetween(any(), any()))
+                .thenReturn(List.of(Holiday.builder()
+                        .holidayDate(SATURDAY)
+                        .holidayName("Test Holiday")
+                        .active(true)
+                        .build()));
+
+        settings.setSandwichLeaveMondayEnabled(true);
+
+        LeaveApplicationContext context = validate(MONDAY, MONDAY);
+
+        assertEquals(3, context.totalDays());
+        assertTrue(context.forcedWorkingDays().contains(SATURDAY));
+        assertTrue(context.forcedWorkingDays().contains(SUNDAY));
     }
 }

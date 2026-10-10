@@ -3,13 +3,13 @@
 -- when leave is taken on specific days of the week.
 
 ALTER TABLE leave_settings 
-ADD COLUMN sandwich_leave_monday_enabled BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN sandwich_leave_friday_enabled BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN sandwich_leave_friday_monday_enabled BOOLEAN NOT NULL DEFAULT false;
+ADD COLUMN IF NOT EXISTS sandwich_leave_monday_enabled BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN IF NOT EXISTS sandwich_leave_friday_enabled BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN IF NOT EXISTS sandwich_leave_friday_monday_enabled BOOLEAN NOT NULL DEFAULT false;
 
 -- Add column to store forced working days (sandwich leave weekends) in leave_requests
 ALTER TABLE leave_requests
-ADD COLUMN forced_working_days_json TEXT;
+ADD COLUMN IF NOT EXISTS forced_working_days_json TEXT;
 
 -- Add comments for documentation
 COMMENT ON COLUMN leave_settings.sandwich_leave_monday_enabled IS 

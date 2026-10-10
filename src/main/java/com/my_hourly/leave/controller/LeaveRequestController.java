@@ -8,10 +8,13 @@ import com.my_hourly.leave.service.LeaveRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -20,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/leave-requests")
 @RequiredArgsConstructor
+@Validated
 @Tag(name="07-Leave Request Controller", description = "Employee can apply for leave")
 public class LeaveRequestController {
 
@@ -125,13 +129,18 @@ public class LeaveRequestController {
         );
     }
 
-    @Operation(summary = "Get My Leave Requests. Access: EMPLOYEE")
+    @Operation(summary = "Get My Leave Requests, optionally filtered by month/year. Access: EMPLOYEE")
     @GetMapping("/my")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getMyLeaveRequests() {
+    public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getMyLeaveRequests(
+
+            @RequestParam(required = false) @Min(1) @Max(12) Integer month,
+
+            @RequestParam(required = false) @Min(2000) @Max(2100) Integer year
+    ) {
 
         List<LeaveRequestResponse> response =
-                leaveRequestService.getMyLeaveRequests();
+                leaveRequestService.getMyLeaveRequests(month, year);
 
         return ResponseEntity.ok(
                 ApiResponse.<List<LeaveRequestResponse>>builder()
@@ -161,13 +170,18 @@ public class LeaveRequestController {
         );
     }
 
-    @Operation(summary = "Get All Leave Requests. Access: HR_ADMIN, SUPER_ADMIN, MANAGER")
+    @Operation(summary = "Get All Leave Requests, optionally filtered by month/year. Access: HR_ADMIN, SUPER_ADMIN, MANAGER")
     @GetMapping
     @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getAllLeaveRequests() {
+    public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getAllLeaveRequests(
+
+            @RequestParam(required = false) @Min(1) @Max(12) Integer month,
+
+            @RequestParam(required = false) @Min(2000) @Max(2100) Integer year
+    ) {
 
         List<LeaveRequestResponse> response =
-                leaveRequestService.getAllLeaveRequests();
+                leaveRequestService.getAllLeaveRequests(month, year);
 
         return ResponseEntity.ok(
                 ApiResponse.<List<LeaveRequestResponse>>builder()

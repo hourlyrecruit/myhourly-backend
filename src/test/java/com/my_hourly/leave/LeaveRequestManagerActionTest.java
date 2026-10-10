@@ -209,7 +209,7 @@ class LeaveRequestManagerActionTest {
         LocalDate start = pending.getStartDate();
         YearMonth month = YearMonth.from(start);
 
-        when(leavePaidLopService.classify(eq(employee), eq(paidType), eq(start), eq(pending.getEndDate())))
+        when(leavePaidLopService.classify(eq(employee), eq(paidType), eq(start), eq(pending.getEndDate()), any()))
                 .thenReturn(new PaidLopAllocation(2, 1, List.of(
                         new PaidLopAllocation.MonthAllocation(month, 3, 2, 2, 1)
                 )));
@@ -273,7 +273,7 @@ class LeaveRequestManagerActionTest {
                 eq(employee), eq(paidType), eq(LocalDate.of(2027, 1, 1))))
                 .thenReturn(balance2027);
 
-        when(leavePaidLopService.classify(eq(employee), eq(paidType), any(LocalDate.class), any(LocalDate.class)))
+        when(leavePaidLopService.classify(eq(employee), eq(paidType), any(LocalDate.class), any(LocalDate.class), any()))
                 .thenReturn(new PaidLopAllocation(3, 2, List.of(
                         new PaidLopAllocation.MonthAllocation(YearMonth.of(2026, 12), 3, 2, 2, 1),
                         new PaidLopAllocation.MonthAllocation(YearMonth.of(2027, 1), 2, 2, 1, 1)
@@ -303,7 +303,7 @@ class LeaveRequestManagerActionTest {
                 () -> leaveRequestService.managerAction(REQUEST_ID, approveRequest()));
 
         assertEquals(ErrorCode.LEAVE_ALREADY_PROCESSED, error.getErrorCode());
-        verify(leavePaidLopService, never()).classify(any(), any(), any(), any());
+        verify(leavePaidLopService, never()).classify(any(), any(), any(), any(), any());
         verify(leaveBalanceService, never()).deductPaidLeaveDays(any(), any(), anyInt0());
         verify(leaveRequestMonthAllocationRepository, never()).saveAll(any());
         assertNull(pending.getApprovedBy(),
@@ -358,7 +358,7 @@ class LeaveRequestManagerActionTest {
         YearMonth second = first.plusMonths(1);
 
         givenApprovableRequest();
-        when(leavePaidLopService.classify(eq(employee), eq(paidType), eq(start), eq(pending.getEndDate())))
+        when(leavePaidLopService.classify(eq(employee), eq(paidType), eq(start), eq(pending.getEndDate()), any()))
                 .thenReturn(new PaidLopAllocation(3, 2, List.of(
                         new PaidLopAllocation.MonthAllocation(first, 3, 2, 2, 1),
                         new PaidLopAllocation.MonthAllocation(second, 2, 2, 1, 1)
@@ -406,7 +406,7 @@ class LeaveRequestManagerActionTest {
         assertEquals(4, pending.getPaidDays() + pending.getLopDays());
 
         verify(leaveBalanceService).deductLeaveBalance(balance, pending);
-        verify(leavePaidLopService, never()).classify(any(), any(), any(), any());
+        verify(leavePaidLopService, never()).classify(any(), any(), any(), any(), any());
         verify(leaveRequestMonthAllocationRepository, never()).saveAll(any());
     }
 

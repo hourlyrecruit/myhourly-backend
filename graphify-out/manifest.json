@@ -1368,10 +1368,10 @@
     "semantic_hash": "1879b6251f443db0b9bf106b11a291da"
   },
   "src/main/java/com/my_hourly/leave/context/LeaveApplicationContext.java": {
-    "mtime": 1788938917.1695642,
-    "seen": 1791555581.6542094,
-    "ast_hash": "c70c62bfc96581e3599a47c26c096726",
-    "semantic_hash": "c70c62bfc96581e3599a47c26c096726"
+    "mtime": 1791584806.3272934,
+    "seen": 1791585038.0526638,
+    "ast_hash": "4f58e7cbf3666a921b77d98e46824aa7",
+    "semantic_hash": "4f58e7cbf3666a921b77d98e46824aa7"
   },
   "src/main/java/com/my_hourly/leave/controller/LeaveAllocationController.java": {
     "mtime": 1788938917.1705644,
@@ -1440,10 +1440,10 @@
     "semantic_hash": "a031ef68fa8f6c8fea1354b720a2a7b0"
   },
   "src/main/java/com/my_hourly/leave/entity/LeaveRequest.java": {
-    "mtime": 1791537940.7818239,
-    "seen": 1791555581.654284,
-    "ast_hash": "f156a0637d051ed0b977f80f2ef5c671",
-    "semantic_hash": "f156a0637d051ed0b977f80f2ef5c671"
+    "mtime": 1791584806.3283155,
+    "seen": 1791585038.0585437,
+    "ast_hash": "70f74e04f72a41927d10f11fbe900d77",
+    "semantic_hash": "70f74e04f72a41927d10f11fbe900d77"
   },
   "src/main/java/com/my_hourly/leave/entity/LeaveRequestMonthAllocation.java": {
     "mtime": 1791545924.8889387,
@@ -1602,10 +1602,10 @@
     "semantic_hash": "b94b68b576e09104beba3e2b6f33acee"
   },
   "src/main/java/com/my_hourly/leave/service/LeavePaidLopService.java": {
-    "mtime": 1791537981.045024,
-    "seen": 1791555581.6544712,
-    "ast_hash": "9e33c54e8ab17ded6f638df295ed0162",
-    "semantic_hash": "9e33c54e8ab17ded6f638df295ed0162"
+    "mtime": 1791584806.3367589,
+    "seen": 1791585038.0695305,
+    "ast_hash": "adeb4136d5e83b1b4d261cae892747d9",
+    "semantic_hash": "adeb4136d5e83b1b4d261cae892747d9"
   },
   "src/main/java/com/my_hourly/leave/service/LeaveRequestService.java": {
     "mtime": 1788938917.2069619,
@@ -1662,16 +1662,16 @@
     "semantic_hash": "e09890091ba7084e212b815ef8b642ad"
   },
   "src/main/java/com/my_hourly/leave/service/impl/LeavePaidLopServiceImpl.java": {
-    "mtime": 1791546063.2176757,
-    "seen": 1791555581.654524,
-    "ast_hash": "daf716405d400e65ef81ccfd81f61577",
-    "semantic_hash": "daf716405d400e65ef81ccfd81f61577"
+    "mtime": 1791584806.3377564,
+    "seen": 1791585038.074979,
+    "ast_hash": "a8807c0ae9acd329328c31e60a9e2212",
+    "semantic_hash": "a8807c0ae9acd329328c31e60a9e2212"
   },
   "src/main/java/com/my_hourly/leave/service/impl/LeaveRequestServiceImpl.java": {
-    "mtime": 1791546110.909509,
-    "seen": 1791555581.654529,
-    "ast_hash": "06537bd53dba08f7ff6454052b4b3ff2",
-    "semantic_hash": "06537bd53dba08f7ff6454052b4b3ff2"
+    "mtime": 1791584806.3397555,
+    "seen": 1791585038.0749857,
+    "ast_hash": "50d5125aee80b9abfe3e8189ca84c991",
+    "semantic_hash": "50d5125aee80b9abfe3e8189ca84c991"
   },
   "src/main/java/com/my_hourly/leave/service/impl/LeaveTransactionServiceImpl.java": {
     "mtime": 1788938917.219532,
@@ -1686,10 +1686,10 @@
     "semantic_hash": "8528e8731b11263513160d750d3b456d"
   },
   "src/main/java/com/my_hourly/leave/service/impl/LeaveValidationServiceImpl.java": {
-    "mtime": 1791568751.263473,
-    "seen": 1791577310.7870908,
-    "ast_hash": "22effe1385a3c6e1a80d74a537d845db",
-    "semantic_hash": "22effe1385a3c6e1a80d74a537d845db"
+    "mtime": 1791584806.3407845,
+    "seen": 1791585038.076294,
+    "ast_hash": "76858f04f71b3985dfee3e1e89445156",
+    "semantic_hash": "76858f04f71b3985dfee3e1e89445156"
   },
   "src/main/java/com/my_hourly/leave/specification/LeaveSpecification.java": {
     "mtime": 1788938917.222531,
@@ -2826,28 +2826,28 @@
     "semantic_hash": "f2cd3ff2b48deccdce1caad98697a51a"
   },
   "src/main/java/com/my_hourly/settings/leave/dto/request/LeaveSettingsRequest.java": {
-    "mtime": 1788954328.2957275,
-    "seen": 1791555581.655835,
-    "ast_hash": "6fa8f6c7a5ab1aa9478e2b0c48904c01",
-    "semantic_hash": "6fa8f6c7a5ab1aa9478e2b0c48904c01"
+    "mtime": 1791584806.3427596,
+    "seen": 1791585038.1869872,
+    "ast_hash": "5edfebfede1d9cf925f9927083cba85a",
+    "semantic_hash": "5edfebfede1d9cf925f9927083cba85a"
   },
   "src/main/java/com/my_hourly/settings/leave/dto/response/LeaveSettingsResponse.java": {
-    "mtime": 1788954328.2968395,
-    "seen": 1791555581.6558418,
-    "ast_hash": "595f45449b158bf7a64fa8abf13bd618",
-    "semantic_hash": "595f45449b158bf7a64fa8abf13bd618"
+    "mtime": 1791584806.345348,
+    "seen": 1791585038.1869912,
+    "ast_hash": "1ca73adc63ece3f34268e60131b22e3f",
+    "semantic_hash": "1ca73adc63ece3f34268e60131b22e3f"
   },
   "src/main/java/com/my_hourly/settings/leave/entity/LeaveSettings.java": {
-    "mtime": 1788954328.2978597,
-    "seen": 1791555581.6558483,
-    "ast_hash": "4751fd9bcf792b7563477a40414b195a",
-    "semantic_hash": "4751fd9bcf792b7563477a40414b195a"
+    "mtime": 1791584806.356171,
+    "seen": 1791585038.1869938,
+    "ast_hash": "f82bb3776d15eb269b63b8b968d11544",
+    "semantic_hash": "f82bb3776d15eb269b63b8b968d11544"
   },
   "src/main/java/com/my_hourly/settings/leave/mapper/LeaveSettingsMapper.java": {
-    "mtime": 1788954328.3000906,
-    "seen": 1791555581.6558552,
-    "ast_hash": "73e66baa7befe35a1eaa4d79c0305d27",
-    "semantic_hash": "73e66baa7befe35a1eaa4d79c0305d27"
+    "mtime": 1791584806.358174,
+    "seen": 1791585038.1869974,
+    "ast_hash": "7e784afa291648a71fb660f55107178b",
+    "semantic_hash": "7e784afa291648a71fb660f55107178b"
   },
   "src/main/java/com/my_hourly/settings/leave/repository/LeaveSettingsRepository.java": {
     "mtime": 1788938917.4599972,
@@ -3048,69 +3048,69 @@
     "semantic_hash": "59b530a22a7cd79c16ae3ba330b07f65"
   },
   ".agents/tasks/sandwich-leave/design-verdict.json": {
-    "mtime": 1791576837.5293007,
-    "seen": 1791577310.1431808,
-    "ast_hash": "507ac71ea73e7463505b95a8717705b7",
-    "semantic_hash": "507ac71ea73e7463505b95a8717705b7"
+    "mtime": 1791578012.9762826,
+    "seen": 1791585037.9428854,
+    "ast_hash": "5f5c9a56e0ab79d696fad0f581cb0e2e",
+    "semantic_hash": "5f5c9a56e0ab79d696fad0f581cb0e2e"
   },
   "src/main/resources/db/migration/V1__baseline_schema.sql": {
     "mtime": 1791388736.8157253,
-    "seen": 1791577050.422428,
+    "seen": 1791584936.2135506,
     "ast_hash": "",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V2__payrolls_date_of_joining_and_template_constraint.sql": {
     "mtime": 1789160985.2585692,
-    "seen": 1791577050.4224339,
+    "seen": 1791584936.2135563,
     "ast_hash": "",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V3__add_unique_employee_code.sql": {
     "mtime": 1789160985.2626271,
-    "seen": 1791577050.4224389,
+    "seen": 1791584936.2135615,
     "ast_hash": "",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V4__change_employee_type_to_string.sql": {
     "mtime": 1789711634.284758,
-    "seen": 1791577050.422444,
+    "seen": 1791584936.2135675,
     "ast_hash": "",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V5__form16_table_suite.sql": {
     "mtime": 1790586361.0237627,
-    "seen": 1791577050.4224494,
+    "seen": 1791584936.2135723,
     "ast_hash": "",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V6__add_half_days_and_half_day_amount_to_payrolls.sql": {
     "mtime": 1791358204.0695748,
-    "seen": 1791577050.4224553,
+    "seen": 1791584936.2135785,
     "ast_hash": "",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V7__alter_salary_template_employee_type.sql": {
     "mtime": 1791358204.0705771,
-    "seen": 1791577050.4224737,
+    "seen": 1791584936.213584,
     "ast_hash": "",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V8__add_query_performance_indexes.sql": {
     "mtime": 1791528725.4247122,
-    "seen": 1791577050.4224787,
+    "seen": 1791584936.2135887,
     "ast_hash": "",
     "semantic_hash": ""
   },
   ".agents/tasks/sandwich-leave/design-review.md": {
-    "mtime": 1791576802.4754908,
-    "seen": 1791577050.4477496,
-    "ast_hash": "bf19ee8107305c581441d2b187b9ddde",
+    "mtime": 1791578007.0423243,
+    "seen": 1791584936.2204113,
+    "ast_hash": "0c3f220fe0503183540f98caf7927d7c",
     "semantic_hash": ""
   },
   ".agents/tasks/sandwich-leave/design.md": {
-    "mtime": 1791577045.8958373,
-    "seen": 1791577050.4477556,
-    "ast_hash": "3c67f0daa676ebc6f9682a0c7e8628bb",
+    "mtime": 1791577802.2721152,
+    "seen": 1791584936.2204194,
+    "ast_hash": "936c93e7df4f1bb167666d90fe77818c",
     "semantic_hash": ""
   },
   ".agents/tasks/sandwich-leave/setup.txt": {
@@ -3381,6 +3381,48 @@
     "mtime": 1789160985.3232074,
     "seen": 1791577050.4480793,
     "ast_hash": "c2e1adeaa7e8dfff10258ec90584e157",
+    "semantic_hash": ""
+  },
+  ".agents/tasks/sandwich-leave/review.json": {
+    "mtime": 1791582176.4190872,
+    "seen": 1791585037.9429004,
+    "ast_hash": "bca94f1bca5180bd55d7b1666b75a526",
+    "semantic_hash": "bca94f1bca5180bd55d7b1666b75a526"
+  },
+  "src/main/resources/db/migration/V10__leave_request_month_allocations.sql": {
+    "mtime": 1791545924.880913,
+    "seen": 1791584936.2135434,
+    "ast_hash": "",
+    "semantic_hash": ""
+  },
+  "src/main/resources/db/migration/V9__leave_request_paid_lop_and_approver.sql": {
+    "mtime": 1791537933.5222852,
+    "seen": 1791584936.213593,
+    "ast_hash": "",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/my_hourly/leave/LeaveSandwichPolicyTest.java": {
+    "mtime": 1791584806.3690186,
+    "seen": 1791585038.206525,
+    "ast_hash": "422a99fcaabbca762fa06db6a4d54d7b",
+    "semantic_hash": "422a99fcaabbca762fa06db6a4d54d7b"
+  },
+  ".agents/tasks/sandwich-leave/2025-01-22-033000-code-review.md": {
+    "mtime": 1791582161.5018032,
+    "seen": 1791584936.2203984,
+    "ast_hash": "a4ada95c86a0320e17711c146f8957af",
+    "semantic_hash": ""
+  },
+  ".agents/tasks/sandwich-leave/plan.md": {
+    "mtime": 1791578243.8862154,
+    "seen": 1791584936.2204237,
+    "ast_hash": "9b1f6d45dce4d5a9c2a3612d21d0286f",
+    "semantic_hash": ""
+  },
+  ".agents/tasks/sandwich-leave/verification.md": {
+    "mtime": 1791581605.608952,
+    "seen": 1791584936.220827,
+    "ast_hash": "876fe65a8e6589d30266719a1ef940df",
     "semantic_hash": ""
   }
 }
