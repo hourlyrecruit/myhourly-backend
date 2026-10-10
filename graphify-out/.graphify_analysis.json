@@ -5045,28 +5045,6 @@
   ],
   "surprises": [
     {
-      "source": "1. Original Dates Preserved",
-      "target": "LeaveRequest",
-      "source_files": [
-        ".agents/tasks/sandwich-leave/verification.md",
-        "src/main/java/com/my_hourly/leave/entity/LeaveRequest.java"
-      ],
-      "confidence": "INFERRED",
-      "relation": "references",
-      "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories; bridges separate communities; peripheral node `1. Original Dates Preserved` unexpectedly reaches hub `LeaveRequest`"
-    },
-    {
-      "source": "PAID/LOP Split (Not in Worktree)",
-      "target": "LeaveRequest",
-      "source_files": [
-        ".agents/tasks/sandwich-leave/verification.md",
-        "src/main/java/com/my_hourly/leave/entity/LeaveRequest.java"
-      ],
-      "confidence": "INFERRED",
-      "relation": "references",
-      "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories; bridges separate communities; peripheral node `PAID/LOP Split (Not in Worktree)` unexpectedly reaches hub `LeaveRequest`"
-    },
-    {
       "source": "Test coverage comprehensive with edge cases",
       "target": "LeaveSandwichPolicyTest",
       "source_files": [
@@ -5089,11 +5067,33 @@
       "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories; bridges separate communities; peripheral node `Verification Summary` unexpectedly reaches hub `LeaveSandwichPolicyTest`"
     },
     {
-      "source": "Unverified/Wrong Assumptions",
-      "target": "LeaveRequestServiceImpl",
+      "source": "1. Original Dates Preserved",
+      "target": "LeaveRequest",
       "source_files": [
-        ".agents/tasks/sandwich-leave/design-review.md",
-        "src/main/java/com/my_hourly/leave/service/impl/LeaveRequestServiceImpl.java"
+        ".agents/tasks/sandwich-leave/verification.md",
+        "src/main/java/com/my_hourly/leave/entity/LeaveRequest.java"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories; bridges separate communities; peripheral node `1. Original Dates Preserved` unexpectedly reaches hub `LeaveRequest`"
+    },
+    {
+      "source": "PAID/LOP Split (Not in Worktree)",
+      "target": "LeaveRequest",
+      "source_files": [
+        ".agents/tasks/sandwich-leave/verification.md",
+        "src/main/java/com/my_hourly/leave/entity/LeaveRequest.java"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories; bridges separate communities; peripheral node `PAID/LOP Split (Not in Worktree)` unexpectedly reaches hub `LeaveRequest`"
+    },
+    {
+      "source": "`LeaveBalanceResponse`",
+      "target": "LeaveBalanceResponse",
+      "source_files": [
+        "docs/leave/LEAVE_MANAGEMENT_FRONTEND_GUIDE.md",
+        "src/main/java/com/my_hourly/leave/api/response/LeaveBalanceResponse.java"
       ],
       "confidence": "INFERRED",
       "relation": "references",
