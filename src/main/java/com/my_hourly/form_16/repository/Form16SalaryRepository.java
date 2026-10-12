@@ -1,23 +1,35 @@
-package com.my_hourly.form_16.service;
+package com.my_hourly.form_16.repository;
 
-import com.my_hourly.form_16.dto.Form16SalaryRequest;
-import com.my_hourly.form_16.dto.Form16SalaryResponse;
+import com.my_hourly.form_16.entity.Form16Salary;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface Form16SalaryService {
+import java.util.Optional;
 
-    Form16SalaryResponse createSalary(
-            Long form16Id,
-            Form16SalaryRequest request
-    );
 
-    Form16SalaryResponse getSalaryByForm16Id(
+@Repository
+public interface Form16SalaryRepository
+        extends JpaRepository<Form16Salary, Long> {
+
+    /**
+     * Find salary details by Form16 ID.
+     */
+    Optional<Form16Salary> findByForm16Id(
             Long form16Id
     );
 
-    Form16SalaryResponse updateSalary(
-            Long form16Id,
-            Form16SalaryRequest request
+    /**
+     * Check whether salary details
+     * already exist for a Form16.
+     */
+    boolean existsByForm16Id(
+            Long form16Id
     );
 
-    void deleteSalary(Long form16Id);
+    /**
+     * Delete salary details by Form16 ID.
+     */
+    void deleteByForm16Id(
+            Long form16Id
+    );
 }
