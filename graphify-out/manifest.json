@@ -3031,50 +3031,50 @@
   },
   "src/main/resources/db/migration/V1__baseline_schema.sql": {
     "mtime": 1791388736.8157253,
-    "seen": 1791629567.6970012,
-    "ast_hash": "",
+    "seen": 1791809034.8503335,
+    "ast_hash": "547899e4f8564b1956136444a21f2e66",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V2__payrolls_date_of_joining_and_template_constraint.sql": {
     "mtime": 1789160985.2585692,
-    "seen": 1791629567.6970036,
-    "ast_hash": "",
+    "seen": 1791809034.8503387,
+    "ast_hash": "2bfe20a0a8bbf2d56b913a5bd00b3c21",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V3__add_unique_employee_code.sql": {
     "mtime": 1789160985.2626271,
-    "seen": 1791629567.6970055,
-    "ast_hash": "",
+    "seen": 1791809034.850345,
+    "ast_hash": "ad50ffe35b7b0cfaad606cdbbd21eb38",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V4__change_employee_type_to_string.sql": {
     "mtime": 1789711634.284758,
-    "seen": 1791629567.697008,
-    "ast_hash": "",
+    "seen": 1791809034.8503504,
+    "ast_hash": "009dd096a0266767f9972190d6ef7854",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V5__form16_table_suite.sql": {
     "mtime": 1790586361.0237627,
-    "seen": 1791629567.6970096,
-    "ast_hash": "",
+    "seen": 1791809034.8503563,
+    "ast_hash": "3a6c9610340776f68f5e154b2593e144",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V6__add_half_days_and_half_day_amount_to_payrolls.sql": {
     "mtime": 1791358204.0695748,
-    "seen": 1791629567.6970117,
-    "ast_hash": "",
+    "seen": 1791809034.850362,
+    "ast_hash": "747139bec0f7856c6b1fc67d569cedd5",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V7__alter_salary_template_employee_type.sql": {
     "mtime": 1791358204.0705771,
-    "seen": 1791629567.6970136,
-    "ast_hash": "",
+    "seen": 1791809034.850368,
+    "ast_hash": "84245126e1b2fad5afcc34448896bc7d",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V8__add_query_performance_indexes.sql": {
     "mtime": 1791528725.4247122,
-    "seen": 1791629567.697015,
-    "ast_hash": "",
+    "seen": 1791809034.8503733,
+    "ast_hash": "14a7b157eadd7e4b097bf5d520663aaf",
     "semantic_hash": ""
   },
   ".agents/tasks/sandwich-leave/design-review.md": {
@@ -3330,15 +3330,15 @@
     "semantic_hash": "9fdee9769ea68af521e2fac8274a6d2a"
   },
   "src/main/resources/db/migration/V10__leave_request_month_allocations.sql": {
-    "mtime": 1791545924.880913,
-    "seen": 1791629567.6969981,
-    "ast_hash": "",
+    "mtime": 1791642331.2478309,
+    "seen": 1791809034.8503208,
+    "ast_hash": "edc0990e54ec944715934fd8a86fae0e",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V9__leave_request_paid_lop_and_approver.sql": {
-    "mtime": 1791537933.5222852,
-    "seen": 1791629567.6970167,
-    "ast_hash": "",
+    "mtime": 1791642331.2503412,
+    "seen": 1791809034.8503866,
+    "ast_hash": "32d1f87cd265bf4cc126518480a500d8",
     "semantic_hash": ""
   },
   "src/test/java/com/my_hourly/leave/LeaveSandwichPolicyTest.java": {
@@ -3396,15 +3396,39 @@
     "semantic_hash": "e751ca93dd8c4eff23c05a2f3e4b6756"
   },
   "docs/leave/LEAVE_MANAGEMENT_FRONTEND_GUIDE.md": {
-    "mtime": 1791642329.8596158,
-    "seen": 1791642745.855999,
-    "ast_hash": "116d3270433159266d0255917289079e",
+    "mtime": 1791643883.584939,
+    "seen": 1791809034.8506057,
+    "ast_hash": "4be7284452baa1113dc7a8b1c553eccc",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V11__add_sandwich_leave_settings.sql": {
-    "mtime": 1791585462.7729344,
-    "seen": 1791629957.0652392,
-    "ast_hash": "",
+    "mtime": 1791642331.248829,
+    "seen": 1791809034.8503277,
+    "ast_hash": "90aca34346b299fd1a79c31275c4f613",
+    "semantic_hash": ""
+  },
+  "docs/Backend Workflow/BACKEND_DOCUMENTATION_WITH_MODULE_WORKFLOWS.md": {
+    "mtime": 1791797725.9091895,
+    "seen": 1791809034.8505518,
+    "ast_hash": "8c10e295be5401823c0c233c7776a87c",
+    "semantic_hash": ""
+  },
+  "docs/Graphify Guide/Graphify_Windows_HRMS_Guide.md": {
+    "mtime": 1791642329.8536015,
+    "seen": 1791809034.8505569,
+    "ast_hash": "c4265e250cdc2d0c816b634eb0ce078d",
+    "semantic_hash": ""
+  },
+  "docs/Backend Workflow/MyHourly_Backend_Requirements_and_Planning.pdf": {
+    "mtime": 1791801347.6254604,
+    "seen": 1791809034.850699,
+    "ast_hash": "eca8c0f1835f19f43d83f6749be97492",
+    "semantic_hash": ""
+  },
+  "docs/leave/MyHourly Leave Management Dashboard.png": {
+    "mtime": 1791646136.8365002,
+    "seen": 1791809034.8507755,
+    "ast_hash": "102de64d259347f38617c81400104800",
     "semantic_hash": ""
   }
 }
