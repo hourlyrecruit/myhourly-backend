@@ -142,13 +142,6 @@ There is **no delete endpoint** (commented out in the controller).
 | `POST` | `/leave-allocation/all-employee` | HR_ADMIN, MANAGER | Allocate/adjust the current year for all active employees. |
 | `POST` | `/leave-allocation/leave-type/{leaveTypeId}` | HR_ADMIN, MANAGER | Re-sync balances after a leave type's allocated days changed. |
 
-### 3.5 Leave settings (`/settings/leave`)
-
-| Method | Path | Roles | Purpose |
-|---|---|---|---|
-| `GET` | `/settings/leave` | SUPER_ADMIN, HR_ADMIN, MANAGER | Read the leave policy. |
-| `PUT` | `/settings/leave` | SUPER_ADMIN, HR_ADMIN, MANAGER | Update the leave policy. |
-
 ### 3.6 Month filter (`month`, `year`)
 
 Both are optional and **independent** on `/leave-requests/my` and
@@ -364,10 +357,6 @@ created `active = true`.
   request object itself has no rejection-reason field.
 * Optional extra tab: `GET /leave-transactions/leave-request/{id}` (HR/manager)
   for the resulting balance movements.
-
-### 5.7 Leave Policy Settings (SUPER_ADMIN, HR_ADMIN, MANAGER)
-* `GET /settings/leave` to load, `PUT /settings/leave` to save — see
-  [§9](#9-leave-policy-settings).
 
 ---
 
@@ -606,51 +595,6 @@ Presentation guidance (recommended, not implemented by the backend):
 
 ---
 
-## 9. Leave policy settings
-
-`GET /settings/leave` returns the single active row (`findFirstByActiveTrue`).
-If no row exists the API answers `404` / `RESOURCE_NOT_FOUND` —
-`"Leave settings not found."`
-
-| Field | Type | Meaning | Default | Validation on save | Suggested control |
-|---|---|---|---|---|---|
-| `carryForwardAllowed` | boolean | `true` = the month-end allowance review is skipped (nothing is reported as lapsing); `false` = the unused part of the monthly guideline is reported. Never credits the annual balance. | no DB default — must be sent | `@NotNull` | Toggle |
-| `monthlyGuideline` | number | Paid days per employee **per calendar month**, shared across paid leave types (drives the PAID/LOP split). `0` = all LOP. | `2` | `@NotNull`, `@Min(0)` | Number input, min 0 |
-| `annualPaidLeave` | number | Fallback annual allocation used only when a **paid** leave type has `allocatedDays <= 0`; a leave type's own value always wins. | `24` | `@NotNull`, `@Min(0)` | Number input, min 0 |
-| `sandwichLeaveMondayEnabled` | boolean | Monday leave also charges the preceding Sat+Sun (3 days). | `false` | optional — omitted/null is stored as `false` | Toggle |
-| `sandwichLeaveFridayEnabled` | boolean | Friday leave also charges the following Sat+Sun (3 days). | `false` | optional — omitted/null is stored as `false` | Toggle |
-| `sandwichLeaveFridayMondayEnabled` | boolean | Friday→Monday leave charges the intervening weekend once (4 days); takes precedence over the two rules above. | `false` | optional — omitted/null is stored as `false` | Toggle |
-| `active` | boolean | Read-only flag from the settings base entity. | `true` | not accepted in the request | Display only |
-| `id` | number | Row id. | — | not accepted in the request | Display only |
-
-Save payload (`PUT /settings/leave` — all three toggles should be sent; omitting
-one resets it to `false`):
-
-```json
-{
-  "carryForwardAllowed": false,
-  "monthlyGuideline": 2,
-  "annualPaidLeave": 24,
-  "sandwichLeaveMondayEnabled": true,
-  "sandwichLeaveFridayEnabled": true,
-  "sandwichLeaveFridayMondayEnabled": true
-}
-```
-
-The response is the saved `LeaveSettingsResponse` (`id`, `carryForwardAllowed`,
-`monthlyGuideline`, `annualPaidLeave`, the three sandwich flags, `active`).
-Settings apply from the next submission/approval — pending requests are **not**
-re-evaluated when settings change.
-
-**Do not invent settings that are not in this table.** Fields such as
-`halfDayLeaveAllowed`, `minimumAdvanceNoticeDays`, `maximumConsecutiveLeaveDays`,
-`managerApprovalRequired`, `hrApprovalRequired`, `autoApproveLeave`,
-`allowLeaveOnHoliday`, `allowLeaveOnWeekend`, `allowNegativeLeaveBalance` and
-`allowBackdatedLeaveApplication` are commented out in the entity/DTO and are
-**not** exposed by the API.
-
----
-
 ## 10. Frontend testing checklist
 
 **Application**
@@ -691,8 +635,6 @@ re-evaluated when settings change.
 - [ ] HR_ADMIN / SUPER_ADMIN can view everything but have **no** Approve/Reject controls.
 - [ ] `SUPER_ADMIN` does not see leave-type or allocation actions; `/leave-transactions/my` is unavailable to them.
 
-**Settings and states**
-- [ ] GET/PUT round-trips all six policy fields and the toggles take effect on the next submission/approval.
-- [ ] `404` when settings are missing shows a config error, not an empty form.
+**General states**
 - [ ] Empty lists render an empty state; loading skeletons and disabled submits prevent double effects.
 - [ ] 401 → re-login; 403 → hide the action; 500/offline → retry with the form preserved.

@@ -26,10 +26,6 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 
     private final LeaveTypeRepository leaveTypeRepository;
     private final LeaveTypeMapper leaveTypeMapper;
-    private final LeaveRequestRepository leaveRequestRepository;
-    private final LeaveBalanceRepository leaveBalanceRepository;
-    private final LeaveTransactionRepository leaveTransactionRepository;
-    private final LeaveApprovalRepository leaveApprovalRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -130,29 +126,6 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
         LeaveType updatedLeaveType = leaveTypeRepository.save(leaveType);
 
         return leaveTypeMapper.toResponse(updatedLeaveType);
-    }
-
-    /**
-     * Hard-deletes a leave type together with every record that references it.
-     *
-     * <p>Delete order is driven by the foreign keys: approvals and transactions
-     * reference leave requests, which (like balances) reference the leave type
-     * itself, so dependents are removed leaf-first before the type disappears.</p>
-     */
-    @Override
-    public void deleteLeaveType(Long leaveTypeId) {
-
-        LeaveType leaveType = getLeaveTypeEntity(leaveTypeId);
-
-        // Approvals -> transactions -> requests reference the request chain.
-        leaveApprovalRepository.deleteByLeaveTypeId(leaveTypeId);
-        leaveTransactionRepository.deleteByLeaveTypeId(leaveTypeId);
-        leaveRequestRepository.deleteByLeaveTypeId(leaveTypeId);
-
-        // Balances reference the leave type directly.
-        leaveBalanceRepository.deleteByLeaveTypeId(leaveTypeId);
-
-        leaveTypeRepository.delete(leaveType);
     }
 
     /**
