@@ -8,4 +8,9 @@ import java.util.List;
 public interface AnnouncementService {
     List<Announcement> getAnnouncementsForToday();
     List<NotificationResponse> getCelebrationWallForToday();
+
+    /**
+     * Deletes an announcement and the notifications that were broadcast for it.
+     */
+    void deleteAnnouncement(Long announcementId);
 }

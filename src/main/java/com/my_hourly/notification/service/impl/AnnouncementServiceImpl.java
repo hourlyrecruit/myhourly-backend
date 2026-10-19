@@ -1,5 +1,7 @@
 package com.my_hourly.notification.service.impl;
 
+import com.my_hourly.common.enums.ErrorCode;
+import com.my_hourly.common.exception.ResourceNotFoundException;
 import com.my_hourly.notification.api.response.NotificationResponse;
 import com.my_hourly.notification.entity.Announcement;
 import com.my_hourly.notification.entity.Notification;
@@ -40,6 +42,28 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             NotificationType.WORK_ANNIVERSARY,
             NotificationType.HOLIDAY
     );
+
+    @Override
+    @Transactional
+    public void deleteAnnouncement(Long announcementId) {
+
+        Announcement announcement = announcementRepository.findById(announcementId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Announcement not found with ID: " + announcementId,
+                        ErrorCode.ANNOUNCEMENT_NOT_FOUND
+                ));
+
+        // The broadcast notifications are not removed by any foreign key, so
+        // delete them explicitly before removing the announcement.
+        notificationRepository.deleteByReferenceTypeAndReferenceId(
+                ReferenceType.ANNOUNCEMENT,
+                announcement.getId()
+        );
+
+        // Attachment URL rows are an @ElementCollection and are removed with
+        // the announcement.
+        announcementRepository.delete(announcement);
+    }
 
     @Override
     public List<Announcement> getAnnouncementsForToday() {

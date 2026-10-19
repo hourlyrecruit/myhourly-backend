@@ -2,6 +2,7 @@ package com.my_hourly.attendance.controller;
 
 import com.my_hourly.attendance.api.request.CreateRegularizationRequest;
 import com.my_hourly.attendance.api.request.RegularizationDetailActionRequest;
+import com.my_hourly.attendance.api.request.UpdateRegularizationRequest;
 import com.my_hourly.attendance.api.response.RegularizationResponse;
 import com.my_hourly.attendance.service.AttendanceRegularizationService;
 import com.my_hourly.common.payload.response.ApiResponse;
@@ -38,6 +39,45 @@ public class AttendanceRegularizationController {
                 ApiResponse.<RegularizationResponse>builder()
                         .success(true)
                         .message("Regularization request created successfully.")
+                        .data(response)
+                        .timestamp(LocalDateTime.now())
+                        .build()
+        );
+    }
+
+    @Operation(summary = "Update a PENDING regularization request. Access: EMPLOYEE, MANAGER, HR_ADMIN")
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<RegularizationResponse>> updateRegularization(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateRegularizationRequest request
+    ) {
+        RegularizationResponse response =
+                regularizationService.updateRegularization(id, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.<RegularizationResponse>builder()
+                        .success(true)
+                        .message("Regularization request updated successfully.")
+                        .data(response)
+                        .timestamp(LocalDateTime.now())
+                        .build()
+        );
+    }
+
+    @Operation(summary = "Cancel a PENDING regularization request. Access: EMPLOYEE, MANAGER, HR_ADMIN")
+    @PutMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<RegularizationResponse>> cancelRegularization(
+            @PathVariable Long id
+    ) {
+        RegularizationResponse response =
+                regularizationService.cancelRegularization(id);
+
+        return ResponseEntity.ok(
+                ApiResponse.<RegularizationResponse>builder()
+                        .success(true)
+                        .message("Regularization request cancelled successfully.")
                         .data(response)
                         .timestamp(LocalDateTime.now())
                         .build()

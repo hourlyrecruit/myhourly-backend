@@ -3,6 +3,7 @@ package com.my_hourly.attendance;
 import com.my_hourly.attendance.api.request.CreateRegularizationDetailRequest;
 import com.my_hourly.attendance.api.request.CreateRegularizationRequest;
 import com.my_hourly.attendance.api.request.RegularizationDetailActionRequest;
+import com.my_hourly.attendance.api.request.UpdateRegularizationRequest;
 import com.my_hourly.attendance.api.response.RegularizationResponse;
 import com.my_hourly.attendance.entity.*;
 import com.my_hourly.attendance.repository.AttendanceRegularizationDetailRepository;
@@ -162,6 +163,7 @@ class AttendanceRegularizationServiceTest {
         otherAttendance.setId(102L);
 
         when(employeeService.getCurrentEmployee()).thenReturn(employee);
+        when(regularizationRepository.save(any())).thenReturn(regularization);
         when(attendanceRepository.findById(102L)).thenReturn(Optional.of(otherAttendance));
 
         CreateRegularizationRequest request = CreateRegularizationRequest.builder()
@@ -297,6 +299,243 @@ class AttendanceRegularizationServiceTest {
                 () -> regularizationService.createRegularization(request)
         );
         assertEquals(ErrorCode.INVALID_STATUS_TRANSITION, exception.getErrorCode());
+    }
+
+    /* =================== Update Tests =================== */
+
+    @Test
+    @DisplayName("Employee can update their own PENDING regularization request")
+    void updateRegularization_Success() {
+        when(regularizationRepository.findById(1L)).thenReturn(Optional.of(regularization));
+        when(employeeService.getCurrentEmployee()).thenReturn(employee);
+        when(attendanceRepository.findById(101L)).thenReturn(Optional.of(attendance));
+        when(regularizationRepository
+                .existsActiveRegularizationForAttendanceExcluding(101L, 1L))
+                .thenReturn(false);
+        when(regularizationRepository.save(any(AttendanceRegularization.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(mapper.toResponse(any())).thenReturn(RegularizationResponse.builder().id(1L).build());
+
+        UpdateRegularizationRequest request = UpdateRegularizationRequest.builder()
+                .fromDate(LocalDate.of(2026, 8, 1))
+                .toDate(LocalDate.of(2026, 8, 31))
+                .reason("Corrected reason")
+                .details(List.of(
+                        CreateRegularizationDetailRequest.builder()
+                                .attendanceId(101L)
+                                .requestedStatus(AttendanceStatus.PRESENT)
+                                .build()
+                ))
+                .build();
+
+        RegularizationResponse response =
+                regularizationService.updateRegularization(1L, request);
+
+        assertNotNull(response);
+        assertEquals("Corrected reason", regularization.getReason());
+        assertEquals(RegularizationStatus.PENDING, regularization.getStatus());
+        assertEquals(1, regularization.getDetails().size());
+        assertNotSame(detail, regularization.getDetails().get(0));
+        assertEquals(
+                RegularizationDetailStatus.PENDING,
+                regularization.getDetails().get(0).getStatus()
+        );
+        verify(regularizationValidator)
+                .validateStatusTransition(AttendanceStatus.LATE, AttendanceStatus.PRESENT);
+        verify(detailRepository).saveAll(anyList());
+    }
+
+    @Test
+    @DisplayName("Non-PENDING regularization request cannot be updated")
+    void updateRegularization_NotPending() {
+        regularization.setStatus(RegularizationStatus.APPROVED);
+
+        when(regularizationRepository.findById(1L)).thenReturn(Optional.of(regularization));
+        when(employeeService.getCurrentEmployee()).thenReturn(employee);
+
+        UpdateRegularizationRequest request = UpdateRegularizationRequest.builder()
+                .fromDate(LocalDate.of(2026, 8, 1))
+                .toDate(LocalDate.of(2026, 8, 31))
+                .reason("Corrected reason")
+                .details(List.of())
+                .build();
+
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> regularizationService.updateRegularization(1L, request)
+        );
+        assertEquals(ErrorCode.REGULARIZATION_NOT_PENDING, exception.getErrorCode());
+        assertEquals(RegularizationStatus.APPROVED, regularization.getStatus());
+    }
+
+    @Test
+    @DisplayName("Cancelled regularization request cannot be updated")
+    void updateRegularization_Cancelled() {
+        regularization.setStatus(RegularizationStatus.CANCELLED);
+
+        when(regularizationRepository.findById(1L)).thenReturn(Optional.of(regularization));
+        when(employeeService.getCurrentEmployee()).thenReturn(employee);
+
+        UpdateRegularizationRequest request = UpdateRegularizationRequest.builder()
+                .fromDate(LocalDate.of(2026, 8, 1))
+                .toDate(LocalDate.of(2026, 8, 31))
+                .reason("Corrected reason")
+                .details(List.of())
+                .build();
+
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> regularizationService.updateRegularization(1L, request)
+        );
+        assertEquals(ErrorCode.REGULARIZATION_NOT_PENDING, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("Employee cannot update another employee's regularization request")
+    void updateRegularization_NotOwner() {
+        Employee otherEmployee = Employee.builder()
+                .firstName("Jane")
+                .reportingManager(manager)
+                .build();
+        otherEmployee.setId(3L);
+
+        when(regularizationRepository.findById(1L)).thenReturn(Optional.of(regularization));
+        when(employeeService.getCurrentEmployee()).thenReturn(otherEmployee);
+
+        UpdateRegularizationRequest request = UpdateRegularizationRequest.builder()
+                .fromDate(LocalDate.of(2026, 8, 1))
+                .toDate(LocalDate.of(2026, 8, 31))
+                .reason("Corrected reason")
+                .details(List.of())
+                .build();
+
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> regularizationService.updateRegularization(1L, request)
+        );
+        assertEquals(ErrorCode.NOT_ALLOWED, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("Update rejects a from date after the to date")
+    void updateRegularization_InvalidDateRange() {
+        when(regularizationRepository.findById(1L)).thenReturn(Optional.of(regularization));
+        when(employeeService.getCurrentEmployee()).thenReturn(employee);
+
+        UpdateRegularizationRequest request = UpdateRegularizationRequest.builder()
+                .fromDate(LocalDate.of(2026, 8, 31))
+                .toDate(LocalDate.of(2026, 8, 1))
+                .reason("Invalid range")
+                .details(List.of())
+                .build();
+
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> regularizationService.updateRegularization(1L, request)
+        );
+        assertEquals(ErrorCode.VALIDATION_FAILED, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("From date cannot be after to date"));
+    }
+
+    @Test
+    @DisplayName("Update rejects details outside the new date range")
+    void updateRegularization_DetailOutsideNewRange() {
+        when(regularizationRepository.findById(1L)).thenReturn(Optional.of(regularization));
+        when(employeeService.getCurrentEmployee()).thenReturn(employee);
+        when(attendanceRepository.findById(101L)).thenReturn(Optional.of(attendance));
+
+        UpdateRegularizationRequest request = UpdateRegularizationRequest.builder()
+                .fromDate(LocalDate.of(2026, 9, 1))
+                .toDate(LocalDate.of(2026, 9, 30))
+                .reason("Moved range")
+                .details(List.of(
+                        CreateRegularizationDetailRequest.builder()
+                                .attendanceId(101L)
+                                .requestedStatus(AttendanceStatus.PRESENT)
+                                .build()
+                ))
+                .build();
+
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> regularizationService.updateRegularization(1L, request)
+        );
+        assertEquals(ErrorCode.ATTENDANCE_DATE_OUT_OF_RANGE, exception.getErrorCode());
+        assertEquals(LocalDate.of(2026, 8, 1), regularization.getFromDate());
+    }
+
+    /* =================== Cancel Tests =================== */
+
+    @Test
+    @DisplayName("Employee can cancel their own PENDING regularization request")
+    void cancelRegularization_Success() {
+        when(regularizationRepository.findById(1L)).thenReturn(Optional.of(regularization));
+        when(employeeService.getCurrentEmployee()).thenReturn(employee);
+        when(regularizationRepository.save(any(AttendanceRegularization.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(mapper.toResponse(any())).thenReturn(
+                RegularizationResponse.builder()
+                        .id(1L)
+                        .status(RegularizationStatus.CANCELLED)
+                        .build()
+        );
+
+        RegularizationResponse response = regularizationService.cancelRegularization(1L);
+
+        assertNotNull(response);
+        assertEquals(RegularizationStatus.CANCELLED, regularization.getStatus());
+        verify(regularizationRepository).save(regularization);
+    }
+
+    @Test
+    @DisplayName("Non-PENDING regularization request cannot be cancelled")
+    void cancelRegularization_NotPending() {
+        regularization.setStatus(RegularizationStatus.PARTIALLY_APPROVED);
+
+        when(regularizationRepository.findById(1L)).thenReturn(Optional.of(regularization));
+        when(employeeService.getCurrentEmployee()).thenReturn(employee);
+
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> regularizationService.cancelRegularization(1L)
+        );
+        assertEquals(ErrorCode.REGULARIZATION_NOT_PENDING, exception.getErrorCode());
+        assertEquals(RegularizationStatus.PARTIALLY_APPROVED, regularization.getStatus());
+    }
+
+    @Test
+    @DisplayName("Approved regularization request cannot be cancelled")
+    void cancelRegularization_Approved() {
+        regularization.setStatus(RegularizationStatus.APPROVED);
+
+        when(regularizationRepository.findById(1L)).thenReturn(Optional.of(regularization));
+        when(employeeService.getCurrentEmployee()).thenReturn(employee);
+
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> regularizationService.cancelRegularization(1L)
+        );
+        assertEquals(ErrorCode.REGULARIZATION_NOT_PENDING, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("Employee cannot cancel another employee's regularization request")
+    void cancelRegularization_NotOwner() {
+        Employee otherEmployee = Employee.builder()
+                .firstName("Jane")
+                .reportingManager(manager)
+                .build();
+        otherEmployee.setId(3L);
+
+        when(regularizationRepository.findById(1L)).thenReturn(Optional.of(regularization));
+        when(employeeService.getCurrentEmployee()).thenReturn(otherEmployee);
+
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> regularizationService.cancelRegularization(1L)
+        );
+        assertEquals(ErrorCode.NOT_ALLOWED, exception.getErrorCode());
+        assertEquals(RegularizationStatus.PENDING, regularization.getStatus());
     }
 
     /* =================== Approval Tests =================== */

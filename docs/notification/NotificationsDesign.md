@@ -49,7 +49,9 @@ There are **four** scheduler components, all currently using `*/15 * * * * *` (e
 - `GET /api/v1/notifications/unread-count` — unread badge count.
 - `PATCH /api/v1/notifications/{id}/read` — mark one read (ownership-checked via `findByIdAndEmployee`).
 - `PATCH /api/v1/notifications/read-all` — mark all read.
+- `GET /api/v1/notifications/announcement/today` — announcements created today.
 - `POST /api/v1/notifications/announcement` — multipart create (MANAGER/HR_ADMIN/SUPER_ADMIN only).
+- `DELETE /api/v1/notifications/announcement/{announcementId}` — delete an announcement (MANAGER/HR_ADMIN/SUPER_ADMIN only). Returns `404` / `ANNOUNCEMENT_NOT_FOUND` when the id does not exist. The delete is transactional and also removes the broadcast `Notification` rows that point at it (`ReferenceType.ANNOUNCEMENT` + `referenceId`), because `notifications.reference_id` has no foreign key and would otherwise leave dangling inbox entries. Attachment URL rows are removed with the entity; the uploaded files themselves stay in object storage because `FileStorageServiceB2` exposes no delete operation.
 
 The [`NotificationMapper`](src/main/java/com/my_hourly/notification/mapper/NotificationMapper.java:16) converts entities to [`NotificationResponse`](src/main/java/com/my_hourly/notification/api/response/NotificationResponse.java), optionally attaching announcement URLs.
 

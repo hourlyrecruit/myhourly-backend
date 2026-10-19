@@ -116,6 +116,23 @@ public class NotificationController {
                 .build();
     }
 
+    @Operation(summary = "Delete an announcement. Access: 'MANAGER','HR_ADMIN','SUPER_ADMIN'")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','MANAGER')")
+    @DeleteMapping("/announcement/{announcementId}")
+    public ResponseEntity<ApiResponse<Void>> deleteAnnouncement(
+            @PathVariable Long announcementId
+    ) {
+
+        announcementService.deleteAnnouncement(announcementId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Announcement deleted successfully.")
+                        .build()
+        );
+    }
+
     @GetMapping("/announcement/today")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN')")
     @Operation(

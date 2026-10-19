@@ -56,6 +56,9 @@ public enum ErrorCode {
     REGULARIZATION_HAS_ACTIVE_REGULARIZATION,
     CANNOT_REVERT,
 
+    // Notification
+    ANNOUNCEMENT_NOT_FOUND,
+
     // User management
     USER_ALREADY_EXISTS,
     ROLE_NOT_FOUND,

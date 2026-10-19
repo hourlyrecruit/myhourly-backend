@@ -112,4 +112,23 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             LocalDateTime endOfDay,
             List<ReferenceType> excludedTypes
     );
+
+    /**
+     * Delete every notification pointing at the given reference (used when the
+     * referenced entity itself is deleted, e.g. an announcement).
+     *
+     * <p>{@code notifications.reference_id} has no foreign key, so these rows
+     * are not removed automatically and would otherwise stay in every
+     * employee's notification list.</p>
+     */
+    @Modifying
+    @Query("""
+            DELETE FROM Notification n
+             WHERE n.referenceType = :referenceType
+               AND n.referenceId = :referenceId
+            """)
+    int deleteByReferenceTypeAndReferenceId(
+            @Param("referenceType") ReferenceType referenceType,
+            @Param("referenceId") Long referenceId
+    );
 }

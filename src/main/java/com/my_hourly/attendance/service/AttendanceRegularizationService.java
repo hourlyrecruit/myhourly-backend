@@ -2,6 +2,7 @@ package com.my_hourly.attendance.service;
 
 import com.my_hourly.attendance.api.request.CreateRegularizationRequest;
 import com.my_hourly.attendance.api.request.RegularizationDetailActionRequest;
+import com.my_hourly.attendance.api.request.UpdateRegularizationRequest;
 import com.my_hourly.attendance.api.response.RegularizationResponse;
 
 import java.util.List;
@@ -12,6 +13,21 @@ public interface AttendanceRegularizationService {
      * Employee creates a regularization request.
      */
     RegularizationResponse createRegularization(CreateRegularizationRequest request);
+
+    /**
+     * Employee updates their own regularization request. Only PENDING requests
+     * can be updated; the submitted payload replaces the existing details.
+     */
+    RegularizationResponse updateRegularization(
+            Long regularizationId,
+            UpdateRegularizationRequest request
+    );
+
+    /**
+     * Employee cancels their own regularization request. Only PENDING requests
+     * can be cancelled.
+     */
+    RegularizationResponse cancelRegularization(Long regularizationId);
 
     /**
      * Employee views their own regularization requests.

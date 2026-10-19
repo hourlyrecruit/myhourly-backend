@@ -3,6 +3,7 @@ package com.my_hourly.attendance.service.impl;
 import com.my_hourly.attendance.api.request.CreateRegularizationDetailRequest;
 import com.my_hourly.attendance.api.request.CreateRegularizationRequest;
 import com.my_hourly.attendance.api.request.RegularizationDetailActionRequest;
+import com.my_hourly.attendance.api.request.UpdateRegularizationRequest;
 import com.my_hourly.attendance.api.response.RegularizationResponse;
 import com.my_hourly.attendance.email.AttendanceRegularizationEmailService;
 import com.my_hourly.attendance.entity.*;
@@ -22,7 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -87,10 +90,119 @@ public class AttendanceRegularizationServiceImpl implements AttendanceRegulariza
         return mapper.toResponse(regularization);
     }
 
+    @Override
+    @Transactional
+    public RegularizationResponse updateRegularization(
+            Long regularizationId,
+            UpdateRegularizationRequest request
+    ) {
+
+        Employee employee = employeeService.getCurrentEmployee();
+
+        AttendanceRegularization regularization = getAndValidateRegularization(regularizationId);
+
+        validateEmployeeOwnership(regularization, employee);
+        validatePendingForEmployeeAction(regularization, "updated");
+
+        if (request.getFromDate().isAfter(request.getToDate())) {
+            throw new ValidationException(
+                    "From date cannot be after to date.",
+                    ErrorCode.VALIDATION_FAILED
+            );
+        }
+
+        // Validate the whole replacement payload before touching the entity
+        List<AttendanceRegularizationDetail> replacementDetails = new ArrayList<>();
+        for (CreateRegularizationDetailRequest detailReq : request.getDetails()) {
+            replacementDetails.add(buildValidatedDetail(
+                    regularization,
+                    employee,
+                    detailReq,
+                    regularizationId,
+                    request.getFromDate(),
+                    request.getToDate()
+            ));
+        }
+
+        regularization.setFromDate(request.getFromDate());
+        regularization.setToDate(request.getToDate());
+        regularization.setReason(request.getReason());
+
+        // Replace the details; orphanRemoval removes the previous rows
+        regularization.getDetails().clear();
+        regularization.getDetails().addAll(replacementDetails);
+        detailRepository.saveAll(replacementDetails);
+
+        AttendanceRegularization saved =
+                regularizationRepository.save(regularization);
+
+        log.info(
+                "Regularization {} updated by employee {}",
+                regularizationId,
+                employee.getId()
+        );
+
+        return mapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public RegularizationResponse cancelRegularization(Long regularizationId) {
+
+        Employee employee = employeeService.getCurrentEmployee();
+
+        AttendanceRegularization regularization = getAndValidateRegularization(regularizationId);
+
+        validateEmployeeOwnership(regularization, employee);
+        validatePendingForEmployeeAction(regularization, "cancelled");
+
+        regularization.setStatus(RegularizationStatus.CANCELLED);
+
+        AttendanceRegularization saved =
+                regularizationRepository.save(regularization);
+
+        log.info(
+                "Regularization {} cancelled by employee {}",
+                regularizationId,
+                employee.getId()
+        );
+
+        return mapper.toResponse(saved);
+    }
+
     private void processDetailCreation(
             AttendanceRegularization regularization,
             Employee employee,
             CreateRegularizationDetailRequest detailReq
+    ) {
+        AttendanceRegularizationDetail detail = buildValidatedDetail(
+                regularization,
+                employee,
+                detailReq,
+                null,
+                regularization.getFromDate(),
+                regularization.getToDate()
+        );
+
+        detailRepository.save(detail);
+    }
+
+    /**
+     * Validates a detail payload and builds the detail entity (not persisted).
+     *
+     * @param excludedRegularizationId when updating, the request being updated;
+     *                                 its own details must not count as a
+     *                                 duplicate active regularization.
+     * @param fromDate the (possibly new) range start to validate against
+     * @param toDate the (possibly new) range end to validate against
+     */
+    private AttendanceRegularizationDetail buildValidatedDetail(
+            AttendanceRegularization regularization,
+            Employee employee,
+            CreateRegularizationDetailRequest detailReq,
+            Long excludedRegularizationId,
+            LocalDate fromDate,
+            LocalDate toDate
     ) {
         // 1. Validate attendance exists
         Attendance attendance = attendanceRepository.findById(detailReq.getAttendanceId())
@@ -108,8 +220,8 @@ public class AttendanceRegularizationServiceImpl implements AttendanceRegulariza
         }
 
         // 3. Validate attendance date is within fromDate and toDate
-        if (attendance.getAttendanceDate().isBefore(regularization.getFromDate())
-                || attendance.getAttendanceDate().isAfter(regularization.getToDate())) {
+        if (attendance.getAttendanceDate().isBefore(fromDate)
+                || attendance.getAttendanceDate().isAfter(toDate)) {
             throw new ValidationException(
                     "Attendance date " + attendance.getAttendanceDate()
                             + " is outside the requested date range.",
@@ -124,16 +236,21 @@ public class AttendanceRegularizationServiceImpl implements AttendanceRegulariza
         );
 
         // 5. Prevent duplicate active regularization for same attendance
-        if (regularizationRepository.existsActiveRegularizationForAttendance(
-                detailReq.getAttendanceId())) {
+        boolean duplicateActiveRegularization = excludedRegularizationId == null
+                ? regularizationRepository.existsActiveRegularizationForAttendance(
+                        detailReq.getAttendanceId())
+                : regularizationRepository.existsActiveRegularizationForAttendanceExcluding(
+                        detailReq.getAttendanceId(), excludedRegularizationId);
+
+        if (duplicateActiveRegularization) {
             throw new ValidationException(
                     "Attendance record already has an active regularization request.",
                     ErrorCode.DUPLICATE_ACTIVE_REGULARIZATION
             );
         }
 
-        // Create detail with snapshot
-        AttendanceRegularizationDetail detail = AttendanceRegularizationDetail.builder()
+        // Build detail with snapshot
+        return AttendanceRegularizationDetail.builder()
                 .regularization(regularization)
                 .attendance(attendance)
                 .originalStatus(attendance.getAttendanceStatus())
@@ -144,8 +261,6 @@ public class AttendanceRegularizationServiceImpl implements AttendanceRegulariza
                 .requestedCheckOut(attendance.getCheckOutTime())
                 .status(RegularizationDetailStatus.PENDING)
                 .build();
-
-        detailRepository.save(detail);
     }
 
     @Override
@@ -370,6 +485,41 @@ public class AttendanceRegularizationServiceImpl implements AttendanceRegulariza
                         "Regularization not found with ID: " + regularizationId,
                         ErrorCode.REGULARIZATION_NOT_FOUND
                 ));
+    }
+
+    /**
+     * Only the employee who raised the request may update or cancel it.
+     */
+    private void validateEmployeeOwnership(
+            AttendanceRegularization regularization,
+            Employee employee
+    ) {
+        if (regularization.getEmployee() == null
+                || !regularization.getEmployee().getId().equals(employee.getId())) {
+            throw new ValidationException(
+                    "You cannot modify another employee's regularization request.",
+                    ErrorCode.NOT_ALLOWED
+            );
+        }
+    }
+
+    /**
+     * Update and cancel are employee actions on a request that has not been
+     * decided yet.
+     */
+    private void validatePendingForEmployeeAction(
+            AttendanceRegularization regularization,
+            String action
+    ) {
+        if (regularization.getStatus() != RegularizationStatus.PENDING) {
+            throw new ValidationException(
+                    "Regularization request cannot be " + action
+                            + " because its current status is "
+                            + regularization.getStatus()
+                            + ". Only PENDING requests can be " + action + ".",
+                    ErrorCode.REGULARIZATION_NOT_PENDING
+            );
+        }
     }
 
     private void validateManagerAuthorization(

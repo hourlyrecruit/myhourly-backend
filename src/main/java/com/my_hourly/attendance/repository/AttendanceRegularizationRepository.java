@@ -48,6 +48,18 @@ public interface AttendanceRegularizationRepository extends JpaRepository<Attend
             SELECT COUNT(r) > 0 FROM AttendanceRegularization r
             JOIN r.details d
             WHERE d.attendance.id = :attendanceId
+            AND r.id <> :excludedRegularizationId
+            AND r.status IN ('PENDING', 'PARTIALLY_APPROVED')
+            """)
+    boolean existsActiveRegularizationForAttendanceExcluding(
+            @Param("attendanceId") Long attendanceId,
+            @Param("excludedRegularizationId") Long excludedRegularizationId
+    );
+
+    @Query("""
+            SELECT COUNT(r) > 0 FROM AttendanceRegularization r
+            JOIN r.details d
+            WHERE d.attendance.id = :attendanceId
             AND r.status = 'APPROVED'
             """)
     boolean existsApprovedRegularizationForAttendance(@Param("attendanceId") Long attendanceId);

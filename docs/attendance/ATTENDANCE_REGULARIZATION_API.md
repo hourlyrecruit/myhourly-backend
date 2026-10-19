@@ -1,7 +1,7 @@
 # Attendance Regularization Module — Frontend Implementation Guide
 
-> **Version:** 1.0  
-> **Last Updated:** September 07, 2026  
+> **Version:** 1.1  
+> **Last Updated:** October 19, 2026  
 > **Base URL:** `/api/v1`  
 > **Authentication:** Bearer Token (JWT)
 
@@ -15,12 +15,14 @@
 4. [Enums Reference](#enums-reference)
 5. [API Endpoints](#api-endpoints)
    - [5.1 Create Regularization Request](#51-create-regularization-request)
-   - [5.2 Get My Requests](#52-get-my-requests)
-   - [5.3 Get Pending Requests (Manager)](#53-get-pending-requests-manager)
-   - [5.4 Get All Requests (Manager)](#54-get-all-requests-manager)
-   - [5.5 Get Regularization Details](#55-get-regularization-details)
-   - [5.6 Approve/Reject a Detail](#56-approvereject-a-detail)
-   - [5.7 Revert a Detail (HR Admin)](#57-revert-a-detail-hr-admin)
+   - [5.2 Update Regularization Request](#52-update-regularization-request)
+   - [5.3 Cancel Regularization Request](#53-cancel-regularization-request)
+   - [5.4 Get My Requests](#54-get-my-requests)
+   - [5.5 Get Pending Requests (Manager)](#55-get-pending-requests-manager)
+   - [5.6 Get All Requests (Manager)](#56-get-all-requests-manager)
+   - [5.7 Get Regularization Details](#57-get-regularization-details)
+   - [5.8 Approve/Reject a Detail](#58-approvereject-a-detail)
+   - [5.9 Revert a Detail (HR Admin)](#59-revert-a-detail-hr-admin)
 6. [Standard Response Format](#standard-response-format)
 7. [Error Codes](#error-codes)
 8. [Status Flow Diagrams](#status-flow-diagrams)
@@ -60,7 +62,7 @@ The token is obtained from the existing auth/login endpoint.
 
 | Role | Can Do |
 |------|--------|
-| **EMPLOYEE** | Create requests, view own requests |
+| **EMPLOYEE** | Create requests, view own requests, update/cancel their own `PENDING` requests |
 | **MANAGER** | View pending requests for subordinates, approve/reject details |
 | **HR_ADMIN** | Same as MANAGER + revert approved details |
 | **SUPER_ADMIN** | Same as HR_ADMIN |
@@ -90,7 +92,7 @@ The token is obtained from the existing auth/login endpoint.
 | `PARTIALLY_APPROVED` | Some details approved, some still pending |
 | `APPROVED` | All details approved |
 | `REJECTED` | All details rejected |
-| `CANCELLED` | Request cancelled (reserved for future use) |
+| `CANCELLED` | Request cancelled by the employee while it was `PENDING` (terminal) |
 
 ### `RegularizationDetailStatus` (individual detail status)
 
@@ -245,7 +247,116 @@ POST /api/v1/attendance-regularizations
 
 ---
 
-### 5.2 Get My Requests
+### 5.2 Update Regularization Request
+
+**Replace the dates, reason and details of a request that is still `PENDING`.**
+
+```
+PUT /api/v1/attendance-regularizations/{id}
+```
+
+**Access:** EMPLOYEE, MANAGER, HR_ADMIN, SUPER_ADMIN (only the employee who created the request may update it)
+
+#### Request Body
+
+Same shape as [5.1 Create Regularization Request](#51-create-regularization-request):
+
+```json
+{
+  "fromDate": "2026-08-01",
+  "toDate": "2026-08-05",
+  "reason": "Corrected reason — biometric device was offline.",
+  "details": [
+    { "attendanceId": 101, "requestedStatus": "PRESENT" },
+    { "attendanceId": 102, "requestedStatus": "PRESENT" }
+  ]
+}
+```
+
+#### Rules
+
+| Rule | Behaviour |
+|------|-----------|
+| Status must be `PENDING` | Any other status returns `400` / `REGULARIZATION_NOT_PENDING` |
+| Caller must own the request | Otherwise `400` / `NOT_ALLOWED` |
+| `details` is required | This is a **full replacement**; the submitted details replace the existing rows |
+| `fromDate` ≤ `toDate` | Otherwise `400` / `VALIDATION_FAILED` |
+| Details re-validated against the new range | Attendance must exist, belong to the caller, fall inside the new range, allow the transition, and have no *other* active request |
+| Unchanged fields | `status`, `requestedAt`, `approvedBy`/`rejectedBy` are untouched |
+
+#### Response (200 OK)
+
+```json
+{
+  "success": true,
+  "message": "Regularization request updated successfully.",
+  "data": { "id": 1, "status": "PENDING", "details": [ ... ] },
+  "timestamp": "2026-10-19T10:30:00"
+}
+```
+
+Returns the full updated `RegularizationResponse`, including the replacement details with their new IDs.
+
+#### Error Responses
+
+| HTTP Code | Message | When |
+|-----------|---------|------|
+| 400 | `Regularization request cannot be updated because its current status is {status}. Only PENDING requests can be updated.` | Status is not `PENDING` |
+| 400 | `You cannot modify another employee's regularization request.` | Request belongs to another employee |
+| 400 | `From date cannot be after to date.` | Invalid date range |
+| 400 | `Attendance date {date} is outside the requested date range.` | Detail outside the new range |
+| 400 | `Attendance record already has an active regularization request.` | Another active request exists for that attendance |
+| 404 | `Regularization not found with ID: {id}` | Unknown ID |
+
+---
+
+### 5.3 Cancel Regularization Request
+
+**Cancel a request that is still `PENDING`.**
+
+```
+PUT /api/v1/attendance-regularizations/{id}/cancel
+```
+
+**Access:** EMPLOYEE, MANAGER, HR_ADMIN, SUPER_ADMIN (only the employee who created the request may cancel it)
+
+#### Request Body
+
+None.
+
+#### Rules
+
+| Rule | Behaviour |
+|------|-----------|
+| Status must be `PENDING` | Any other status returns `400` / `REGULARIZATION_NOT_PENDING` |
+| Caller must own the request | Otherwise `400` / `NOT_ALLOWED` |
+| Result | `status` becomes `CANCELLED`; terminal state |
+| Manager view | The request disappears from `/pending` because that query only returns `PENDING` |
+| Attendance | Never modified — a cancelled request changes no attendance record |
+| Detail statuses | Detail rows keep their stored status (there is no `CANCELLED` detail status); the parent status is authoritative |
+
+#### Response (200 OK)
+
+```json
+{
+  "success": true,
+  "message": "Regularization request cancelled successfully.",
+  "data": { "id": 1, "status": "CANCELLED", "details": [ ... ] },
+  "timestamp": "2026-10-19T10:30:00"
+}
+```
+
+#### Error Responses
+
+| HTTP Code | Message | When |
+|-----------|---------|------|
+| 400 | `Regularization request cannot be cancelled because its current status is {status}. Only PENDING requests can be cancelled.` | Status is not `PENDING` (including `CANCELLED` itself) |
+| 400 | `You cannot modify another employee's regularization request.` | Request belongs to another employee |
+| 404 | `Regularization not found with ID: {id}` | Unknown ID |
+
+---
+
+### 5.4 Get My Requests
 
 **Retrieve all regularization requests submitted by the logged-in employee.**
 
@@ -325,7 +436,7 @@ GET /api/v1/attendance-regularizations/my
 
 ---
 
-### 5.3 Get Pending Requests (Manager)
+### 5.5 Get Pending Requests (Manager)
 
 **Retrieve regularization requests pending approval for the manager's direct subordinates.**
 
@@ -343,7 +454,7 @@ Same format as "Get My Requests" — returns a `List<RegularizationResponse>` fi
 
 ---
 
-### 5.4 Get All Requests (Manager)
+### 5.6 Get All Requests (Manager)
 
 **Retrieve all regularization requests for the manager's subordinates (any status).**
 
@@ -359,7 +470,7 @@ Same format as "Get My Requests" — returns a `List<RegularizationResponse>` fo
 
 ---
 
-### 5.5 Get Regularization Details
+### 5.7 Get Regularization Details
 
 **Retrieve a single regularization request by its ID with all details.**
 
@@ -387,7 +498,7 @@ Returns a single `RegularizationResponse` object with full details.
 
 ---
 
-### 5.6 Approve/Reject a Detail
+### 5.8 Approve/Reject a Detail
 
 **Approve or reject an individual regularization detail within a request.**
 
@@ -452,7 +563,7 @@ Returns the full updated `RegularizationResponse` with all details (the parent s
 
 ---
 
-### 5.7 Revert a Detail (HR Admin || Manager)
+### 5.9 Revert a Detail (HR Admin || Manager)
 
 **Revert a previously approved regularization detail back to its original attendance state.**
 
@@ -532,6 +643,8 @@ Backend-specific error codes for the regularization module:
 | `REG_010` | 400 | Detail is not in pending status |
 | `REG_011` | 400 | Detail is not in approved status (for revert) |
 | `REG_012` | 400 | Another active regularization exists (blocks revert) |
+| `REGULARIZATION_NOT_PENDING` | 400 | Request is not `PENDING` (update/cancel rejected) |
+| `NOT_ALLOWED` | 400 | Request belongs to another employee |
 
 ---
 
@@ -560,6 +673,8 @@ Backend-specific error codes for the regularization module:
 
 **Rules:**
 - Starts as `PENDING` when created
+- Can be edited while `PENDING` (full replacement of dates/reason/details)
+- Can move to `CANCELLED` from `PENDING` only, when the employee cancels it — terminal, no attendance is changed
 - Auto-changes to `PARTIALLY_APPROVED` when at least one detail is approved but others are still pending
 - Auto-changes to `APPROVED` when all details are approved
 - Auto-changes to `REJECTED` when all details are rejected
