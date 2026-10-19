@@ -707,12 +707,26 @@ public class LeaveRequestServiceImpl
 
     @Override
     @Transactional(readOnly = true)
-    public List<LeaveRequestResponse> getTeamLeaveRequests() {
-
+    public List<LeaveRequestResponse> getTeamLeaveRequests(
+            Integer month,
+            Integer year
+    ) {
         Employee manager = employeeService.getCurrentEmployee();
 
+        LeaveSpecification.MonthRange range =
+                LeaveSpecification.resolveRange(month, year);
+
+        Specification<LeaveRequest> specification =
+                LeaveSpecification.hasReportingManager(manager);
+
+        if (range != null) {
+            specification = specification.and(
+                    LeaveSpecification.overlaps(range.from(), range.to())
+            );
+        }
+
         return leaveRequestRepository
-                .findByEmployeeReportingManager(manager)
+                .findAll(specification)
                 .stream()
                 .map(leaveRequestMapper::toResponse)
                 .toList();

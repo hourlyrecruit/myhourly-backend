@@ -39,6 +39,9 @@ public class LeaveRequestMapper {
 
                 .status(entity.getStatus())
 
+                // Submission time = createdAt from BaseEntity.
+                .appliedOn(entity.getCreatedAt())
+
                 .paidDays(entity.getPaidDays())
                 .lopDays(entity.getLopDays())
 

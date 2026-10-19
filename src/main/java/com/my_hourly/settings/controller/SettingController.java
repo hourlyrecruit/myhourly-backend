@@ -80,9 +80,9 @@ public class SettingController {
 
 //    ===================================================================
 
-    @Operation(summary = "Get Leave Settings. Access: SUPER_ADMIN, HR_ADMIN, MANAGER")
+    @Operation(summary = "Get Leave Settings. Access: all authenticated roles")
     @GetMapping("/leave")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','HR_ADMIN','MANAGER','EMPLOYEE')")
     public ResponseEntity<ApiResponse<LeaveSettingsResponse>> getLeaveSettings() {
 
         LeaveSettingsResponse response = leaveSettingsService.getLeaveSettings();

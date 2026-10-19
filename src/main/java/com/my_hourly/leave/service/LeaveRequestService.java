@@ -28,7 +28,10 @@ public interface LeaveRequestService {
             Integer month,
             Integer year);
 
-    List<LeaveRequestResponse> getTeamLeaveRequests();
+    List<LeaveRequestResponse> getTeamLeaveRequests(
+            Integer month,
+            Integer year
+    );
 
     /**
      * Every leave request, optionally filtered to a calendar month

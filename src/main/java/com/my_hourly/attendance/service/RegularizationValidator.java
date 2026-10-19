@@ -19,7 +19,8 @@ public class RegularizationValidator {
             AttendanceStatus.LATE, Set.of(AttendanceStatus.PRESENT),
             AttendanceStatus.HALF_DAY, Set.of(AttendanceStatus.PRESENT),
             AttendanceStatus.ABSENT, Set.of(AttendanceStatus.PRESENT),
-            AttendanceStatus.MISSED_CHECKOUT, Set.of(AttendanceStatus.PRESENT)
+            AttendanceStatus.MISSED_CHECKOUT, Set.of(AttendanceStatus.PRESENT),
+            AttendanceStatus.LEAVE, Set.of(AttendanceStatus.PRESENT)
     );
 
     /**

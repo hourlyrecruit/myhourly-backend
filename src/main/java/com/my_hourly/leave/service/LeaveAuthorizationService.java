@@ -15,6 +15,6 @@ public interface LeaveAuthorizationService {
     void validateHrApproval(
             Employee employee);
 
-    List<LeaveRequestResponse> getTeamLeaveRequests();
+  //  List<LeaveRequestResponse> getTeamLeaveRequests();
 
 }
