@@ -87,7 +87,7 @@ public class Form16EmployerMasterController {
 
     @GetMapping("/{id}")
     @PreAuthorize(
-            "hasAnyRole('EMPLOYEE', 'HR', 'MANAGER')"
+            "hasAnyRole('EMPLOYEE', 'HR_ADMIN', 'MANAGER')"
     )
     @Operation(
             summary = "Get Employer Master By ID"
@@ -111,7 +111,7 @@ public class Form16EmployerMasterController {
 
     @PutMapping("/{id}")
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     @Operation(
             summary = "Update Employer Master"
@@ -140,7 +140,7 @@ public class Form16EmployerMasterController {
 
     @PatchMapping("/{id}/activate")
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     @Operation(
             summary = "Activate Employer Master",
@@ -167,7 +167,7 @@ public class Form16EmployerMasterController {
 
     @PatchMapping("/{id}/deactivate")
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     @Operation(
             summary = "Deactivate Employer Master"
@@ -191,7 +191,7 @@ public class Form16EmployerMasterController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     @Operation(
             summary = "Delete Employer Master"
@@ -217,7 +217,7 @@ public class Form16EmployerMasterController {
 
     @GetMapping
     @PreAuthorize(
-            "hasAnyRole('HR', 'MANAGER')"
+            "hasAnyRole('HR_ADMIN', 'MANAGER')"
     )
     @Operation(
             summary = "Get All Employer Masters"
