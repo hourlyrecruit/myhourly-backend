@@ -70,17 +70,17 @@ public class LeaveAuthorizationServiceImpl
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<LeaveRequestResponse> getTeamLeaveRequests() {
-
-        Employee manager = employeeService.getCurrentEmployee();
-
-        return leaveRequestRepository
-                .findByEmployeeReportingManager(manager)
-                .stream()
-                .map(leaveRequestMapper::toResponse)
-                .toList();
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<LeaveRequestResponse> getTeamLeaveRequests() {
+//
+//        Employee manager = employeeService.getCurrentEmployee();
+//
+//        return leaveRequestRepository
+//                .findByEmployeeReportingManager(manager)
+//                .stream()
+//                .map(leaveRequestMapper::toResponse)
+//                .toList();
+//    }
 
 }

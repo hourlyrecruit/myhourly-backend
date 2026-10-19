@@ -155,10 +155,14 @@ public class LeaveRequestController {
     @Operation(summary = "Get Team Leave Requests. Access: MANAGER, SUPER_ADMIN")
     @GetMapping("/team")
     @PreAuthorize("hasAnyRole('MANAGER', 'SUPER_ADMIN')")
-    public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getTeamLeaveRequests() {
+    public ResponseEntity<ApiResponse<List<LeaveRequestResponse>>> getTeamLeaveRequests(
+            @RequestParam(required = false) @Min(1) @Max(12) Integer month,
+
+            @RequestParam(required = false) @Min(2000) @Max(2100) Integer year
+    ) {
 
         List<LeaveRequestResponse> response =
-                leaveRequestService.getTeamLeaveRequests();
+                leaveRequestService.getTeamLeaveRequests(month, year);
 
         return ResponseEntity.ok(
                 ApiResponse.<List<LeaveRequestResponse>>builder()

@@ -4,6 +4,7 @@ import com.my_hourly.leave.enums.LeaveStatus;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -33,6 +34,11 @@ public class LeaveRequestResponse {
     private String reason;
 
     private LeaveStatus status;
+
+    /**
+     * When the request was submitted (the row's createdAt).
+     */
+    private LocalDateTime appliedOn;
 
     /**
      * Days approved as PAID and deducted from the annual balance. Null while
