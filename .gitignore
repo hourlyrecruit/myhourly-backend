@@ -46,3 +46,6 @@ HRMS/
 ### Docker / deployment scratch ###
 *.log
 
+
+graphify-out/
+
