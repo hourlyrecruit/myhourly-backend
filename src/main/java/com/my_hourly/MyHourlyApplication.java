@@ -14,9 +14,5 @@ public class MyHourlyApplication {
 		SpringApplication.run(MyHourlyApplication.class, args);
 	}
 
-// trail in IDEA
-
-
-
 
 }
